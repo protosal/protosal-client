@@ -1,0 +1,19 @@
+  [
+    {
+        "from": "/media/*",
+        "to":   "/media/*"
+    },
+    
+    {
+        "from": "/api/get/list/:controller/*",
+        "to": "_view/list"
+    },
+    {
+      "from": "/",
+      "to": "index.html"
+    },
+    {
+        "from": "*",
+        "to": "index.html"
+    }
+  ]

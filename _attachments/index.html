@@ -13,9 +13,12 @@
             "route_id": null,
             "controller": null,
             "action": null,
-            "server_base": "http://ryth.cloudant.com/ryth/_design/helloworld/"
+            "server_base": "http://app.protosal.com",
+            "couch_server": "http://aaa.protosal.com",
         };
-
+        
+        if(window.location.pathname != "/") window.location = "/"; //handles 404 errors
+        
         // Dynamically load CSS files.
         head.css = function() {
             for(i = 0; i < arguments.length; i++) {
@@ -29,7 +32,7 @@
         
         head.css(
             "/media/css/style.css",
-            "media/css/demo_page.css",
+            "/media/css/demo_page.css",
             "/media/css/demo_table.css",
             "/media/css/jgrowl.css",
             "/media/css/jquery-ui/aristo/css/Aristo/jquery-ui-1.8.7.custom.css"
@@ -53,13 +56,15 @@
             GLOBALS.server_base + "/media/js/jquery/plugins/ryth/rythjsthtml.js",
             GLOBALS.server_base + "/media/js/jquery/plugins/ryth/rythform.js",
             GLOBALS.server_base + "/media/js/ryth_renderer_config.js",
-            "http://localhost:5984/_utils/script/sha1.js",
-            "http://localhost:5984/_utils/script/json2.js",
-            "http://localhost:5984/_utils/script/jquery.couch.js"
+            GLOBALS.server_base + "/_utils/script/sha1.js",
+            GLOBALS.server_base + "/_utils/script/json2.js",
+            GLOBALS.server_base + "/_utils/script/jquery.couch.js"
         );
 
 
        head.ready(function() {
+           
+           
             var ProtosalController = Backbone.Controller.extend({
             
               routes: {
@@ -80,7 +85,7 @@
                     $("#" + b[1]).addClass('ui-state-active').addClass('ui-tabs-selected');
                 
                     //get URL for the ajax call
-                    url = location.hash.substr(1); 
+                    url = GLOBALS.server_base + "/api/get/list" + location.hash.substr(1); 
                     
                     
                     $(".jckeditor").each( function(){
@@ -112,9 +117,7 @@
                         $("body").append(response);
                         
                          $.ajaxPrefilter(function( options ) {
-                         
-                            dataType: "json",
-                            options.url = "http://ryth.cloudant.com/ryth";
+                            //options.url = GLOBALS.server_base + "/api/get/" + options.url;
                         });
                        
                        protosal_controller = new ProtosalController;

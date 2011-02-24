@@ -4,9 +4,9 @@ var partials = {
                 "client_edit_view": [ "client_form" ]
             }
 var pageOptions = { 
+                       
                         success: function(data){
                         var obj = jQuery.parseJSON(data);
-                        console.log(obj);
                          
                         
                             
