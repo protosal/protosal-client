@@ -1,0 +1,42 @@
+<script type="text/template" id="fee_form_template"> 
+        <form id="<%= formName  %>" action="fee/ajax_edit/<%= id ? id : "" %>" method="post">
+
+       <br />
+
+        <div style="">
+            <div class="megaform" style=" float: left;">
+
+            <fieldset>
+                <label for="">
+                    Name
+                </label>
+                <input name="name" id="" type="text" value="<%= name %>" />
+                <label for="">
+                    Default Price
+                </label>
+                <input name="price" id="" type="text" value="<%= price %>" />
+
+                <p id="setquantityb">set quantity</p>
+                <div id="setquantity" style="display: none;">
+                    <label for="">
+                        Default Quantity
+                    </label>
+                    <input name="quantity" id="" type="text" value="<%= quantity %>" />
+                </div>
+                <label for="">
+                    Description</label>
+                <textarea rows="4" name="description" cols="30"><%= description %></textarea>
+            </fieldset>
+            
+            </div>
+        </div>
+
+    </form>
+    <jst>
+        
+        $("#setquantityb").click( function(){
+            $("#setquantity").toggle();
+        })
+    </jst>
+
+</script>

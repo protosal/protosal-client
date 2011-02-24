@@ -1,0 +1,80 @@
+<script type="text/template" id="common_list_view_template">
+<div id="pageheader"></div>
+<table class="list_view">
+   <thead>
+   <tr>
+        <% _.each( obj[obj.controller + "s"][0], function(val, key) { %>
+            <th><%= _(key).capitalize() %></th>
+        <% 
+        });
+        %>
+        <th style="width:119px;">Actions</th>
+   </tr>
+   </thead>
+   <tbody>
+        
+        <%
+        _.each( obj[obj.controller + "s"], function( row ){
+        %>
+           <tr row_id="<%= row.id %>">
+                <%
+                _.each( row, function( col ) {
+                    class = "";
+                    if( _(col).isInt() ){
+                        class = "int";
+                    }
+                %>
+                    <td class="<%= class %>"><%= _(col).escapeHTML() %></td>
+                <% 
+                });
+                %>
+               <td><a class="wrenchbutton edit" href="#/<%= controller %>/edit/<%= row.id %>">Edit</a> <a class="button delete">Delete</a></td>
+           </tr>
+        <%
+        });
+        %>
+        </tbody>
+   </table>
+   
+    <jst>
+        $(".list_view").dataTable({
+                          
+                            "aaSorting": [],
+                            "iDisplayLength": 250,
+                            "oLanguage": {
+                                "sSearch": "Search",
+                                "sLengthMenu" : "Show _MENU_"
+                            },
+                            "bJQueryUI": true,
+                            "sDom": 'frti',
+                        });
+        options = {
+            'title': '<%= _(controller).capitalize() %> List',
+            'buttons': [{
+                            'text': 'New <%= _(controller).capitalize() %>',
+                            'href': '#/<%= controller %>/edit',
+                            'classes': 'addbutton'
+                },
+            ]
+            
+        }
+        
+        $(".list_view .delete").click( function(){
+            var record_row = $(this).parents("tr");
+            $.ajax("<%= controller %>/delete/" + record_row.attr("row_id"), {
+                success: function() {
+                    record_row.remove();
+                }
+            });
+        })
+        
+        setTimeout( function (){     $(".dataTables_filter input").focus(); }, 400);
+        $(".dataTables_filter input").focusout( function(){
+            setTimeout( function (){     $(".dataTables_filter input").focus(); }, 700);
+        });
+        $("#pageheader").html( _.template( $("#page_header_template").html(), options ) );
+    
+        
+    </jst>
+
+</script>

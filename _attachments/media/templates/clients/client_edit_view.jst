@@ -1,0 +1,35 @@
+<script type="text/template" id="client_edit_view_template">
+
+
+<div id="stupid">
+
+    <div class="ui-widget-header">
+        <h3 style="float: left;"><%= clientoptions.id ? "Edit" : "New" %> Client</h3>
+        
+        <button type="submit" id="newclient" style="float: right;">Save</button>
+        <a class="button back-button" style="float: right;">Back</a>
+        <div style="clear:both;"></div>
+     
+    </div>
+    <%= client_form_partial( clientoptions ) %>
+</div>
+
+<jst>
+
+    $(document).ready(function() {
+        $("form").rythform();   
+    });
+    $("#newclient").click( function(){
+        $("#add_client_form").submit(); 
+    
+    });
+    form_options['add_client_form'] = {
+        success: function() {
+
+            redirect("client/list");
+        }
+    }
+
+</jst>
+
+</script>

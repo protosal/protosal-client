@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+
+    <head>
+        <meta charset="utf-8"/>
+        <title>protosal - where your dreams come true</title>
+        <link REL="shortcut icon" HREF="http://protosal.com/favicon.ico" type="image/x-icon">
+    
+        <script type="text/javascript" src="http://ajax.cdnjs.com/ajax/libs/headjs/0.9/head.load.min.js"></script>
+         
+        <script type="text/javascript">
+        var GLOBALS = {
+            "route_id": null,
+            "controller": null,
+            "action": null,
+            "server_base": "http://ryth.cloudant.com/ryth/_design/helloworld/"
+        };
+
+        // Dynamically load CSS files.
+        head.css = function() {
+            for(i = 0; i < arguments.length; i++) {
+                var fileref=document.createElement("link");
+                fileref.setAttribute("rel", "stylesheet");
+                fileref.setAttribute("type", "text/css");
+                fileref.setAttribute("href", GLOBALS.server_base + arguments[i]);
+                document.getElementsByTagName("head")[0].appendChild(fileref);
+            }
+        }
+        
+        head.css(
+            "/media/css/style.css",
+            "media/css/demo_page.css",
+            "/media/css/demo_table.css",
+            "/media/css/jgrowl.css",
+            "/media/css/jquery-ui/aristo/css/Aristo/jquery-ui-1.8.7.custom.css"
+        );
+        
+        head.js( 
+            "http://ajax.googleapis.com/ajax/libs/jquery/1.5.0/jquery.js",
+            "https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.9/jquery-ui.min.js",
+            GLOBALS.server_base + "/media/highchart/js/highcharts.js",
+            GLOBALS.server_base + "/media/highchart/js/modules/exporting.js",
+            GLOBALS.server_base + "/media/ckeditor/ckeditor.js",
+            GLOBALS.server_base + "/media/ckeditor/adapters/jquery.js",
+            GLOBALS.server_base + "/media/js/jquery.form.js",
+            GLOBALS.server_base + "/media/js/underscore.js",
+            GLOBALS.server_base + "/media/js/backbone.js",
+            GLOBALS.server_base + "/media/js/common.js",
+            GLOBALS.server_base + "/media/js/jgrowl.min.js",
+            GLOBALS.server_base + "/media/js/jquery.json-2.2.min.js",
+            GLOBALS.server_base + "/media/js/jquery.defaultvalue.js",
+            GLOBALS.server_base + "/media/js/jquery.dataTables.js",
+            GLOBALS.server_base + "/media/js/jquery/plugins/ryth/rythjsthtml.js",
+            GLOBALS.server_base + "/media/js/jquery/plugins/ryth/rythform.js",
+            GLOBALS.server_base + "/media/js/ryth_renderer_config.js",
+            "http://localhost:5984/_utils/script/sha1.js",
+            "http://localhost:5984/_utils/script/json2.js",
+            "http://localhost:5984/_utils/script/jquery.couch.js"
+        );
+
+
+       head.ready(function() {
+            var ProtosalController = Backbone.Controller.extend({
+            
+              routes: {
+                "/:controller/:action":                 "defaultRoute",
+                "/:controller/:action/:vid":                 "defaultRoute",
+                "":                                     "landingPage",
+              },
+                landingPage: function(){
+                  window.location = "#/home/dashboard"
+                },
+              defaultRoute: function(controller, action, vid) {
+                    GLOBALS.controller = controller;
+                    GLOBALS.action = action;
+                    GLOBALS.route_id = vid;
+
+                    $('.maintabs li').removeClass('ui-state-active').removeClass('ui-tabs-selected'); //Make all tabs inactive
+                    b = location.hash.split("/");
+                    $("#" + b[1]).addClass('ui-state-active').addClass('ui-tabs-selected');
+                
+                    //get URL for the ajax call
+                    url = location.hash.substr(1); 
+                    
+                    
+                    $(".jckeditor").each( function(){
+                        $(this).ckeditor(function(){ // a hack to make jck editor work on page refresh
+                            this.destroy();
+                        });
+                    });
+                    //$("#contentpane").fadeOut(150, function(){ // just some ui effects 
+                     //   $("#contentpane").fadeIn(150)
+                    //})
+                    //$("#contentpane").html($("#loadingbarpage").html() ); // Set the content pane HTML to an Ajax loading bar
+                    
+                    $.ajax( url, pageOptions );
+                
+              }, //end of DEFAULT ROUTE
+
+
+            });
+            $(".back-button").live("click", function() {
+                history.go(-1); 
+            });
+
+            // All ajax request are proxied through the server base
+
+            
+            $.ajax({ 
+                url: "media/all.jst",
+                success: function(response){
+                        $("body").append(response);
+                        
+                         $.ajaxPrefilter(function( options ) {
+                         
+                            dataType: "json",
+                            options.url = "http://ryth.cloudant.com/ryth";
+                        });
+                       
+                       protosal_controller = new ProtosalController;
+                       Backbone.history.start();
+
+                }
+            });
+            
+             
+        });
+        
+    </script>
+    </head>
+
+    <body>
+    aaa
+        <div class="container">
+            <div id="layout" class="ui-tabs ui-widget ui-widget-content ui-corner-all">
+                <div style="clear:both;"></div>
+                <ul style="position: relative; padding-top: 15px;" class="maintabs ui-tabs-nav ui-helper-reset ui-helper-clearfix ui-widget-header ui-corner-all">
+                    <a class="logo" href="/" border="0"></a>
+                    <li style="margin-lefT: 300px;" id="home" class="ui-state-default ui-corner-top"><a href="#/home/dashboard">Dashboard</a></li>
+                    <li id="proposal" class="ui-state-default ui-corner-top"><a href="#/proposal/list">Proposals</a></li>
+                    <li id="section" class="ui-state-default ui-corner-top"><a href="#/section/list">Sections</a></li>
+                    <li id="fee" class="ui-state-default ui-corner-top"><a href="#/fee/list">Fees</a></li>
+                    <li id="client" class="ui-state-default ui-corner-top"><a href="#/client/list">Clients</a></li>
+                    <li id="setting" class="ui-state-default ui-corner-top"><a href="#/setting/main">Settings</a></li>
+                    <div style="float: right; margin-right: 24px; margin-top: 10px;">help | <a href="#/user/logout">logout</a></div>
+                </ul>
+            </div> <!-- #layout -->
+
+            <div class="" id="contentcontainer">
+
+                <!-- This is where the magic happens. Basically everything the user mainpulates resides in here. -->
+                <div id="contentpane">
+
+                </div> <!--  #contentpane -->
+                
+                <div style="clear:both;"></div>
+
+            </div> <!--  #contentcontainer -->
+            <div style="text-align: center; padding-top: 40px;padding-bottom: 5px;">
+            Protosal.com &copy; 2011
+            </div>
+        </div> <!-- #Container  -->
+        
+        
+        <div style="display: none;" id="loadingbarpage"> <!-- loading bar -->
+            <div class='loading' style="text-align: center; padding-top: 200px;"> </div>
+        </div>
+    </body>    
+</html>      

@@ -1,0 +1,37 @@
+<script type="text/template" id="client_form_template"> 
+
+
+<form id="add_client_form" action="client/ajax_edit/<%= id ? id : "" %>" method="post">
+
+<div style="width: 840px; margin: auto;background: #ccc;">
+    <div class="megaform" style=" float: left;">
+
+    <fieldset>
+        <label for="">
+            Name</label>
+        <input name="name" id="" type="text" value="<%= name %>" />
+        <label for="">
+            Email</label>
+        <input name="email" id="" type="text" value="<%= email %>" />
+        <label for="">
+            Website</label>
+        <input name="website" id="" type="text" value="<%= website %>" />
+        <label for="">
+            Comment</label>
+        <textarea id="" rows="4" name="comment" cols="30"><%= comment %></textarea>
+    </fieldset>
+     
+    </form>
+    </div>
+  
+</div>
+
+<jst>
+form_options['add_client_form'] = {
+    success: function() {
+        redirect("client/list");
+    }
+}
+</jst>
+
+</script>

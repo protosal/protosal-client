@@ -1,0 +1,320 @@
+<script type="text/template" id="fee-template-form-header"> 
+            
+            //Dynamic Header
+            <h3 style="float: left;">EFFE</h3>
+            
+            //Loop through button config
+            <button type="submit" id="newfee" style="float: right;">Save</button>
+            <a class="button" href="#/fee/list" style="float: right;">Back</a>
+            
+            
+            <div style="clear:both;"></div>
+       
+</script>
+
+
+<script type="text/template" id="fee-template-form"> 
+        <form id="<%= formName  %>" action="fee/ajax_edit/<%= editing ? id : "" %>" method="post">
+
+       <br />
+
+        <div style="">
+            <div class="megaform" style=" float: left;">
+
+            <fieldset>
+                <label for="">
+                    Name
+                </label>
+                <input name="name" id="" type="text" value="<%= name %>" />
+                <label for="">
+                    Default Price
+                </label>
+                <input name="price" id="" type="text" value="<%= price %>" />
+
+                <p id="setquantityb">set quantity</p>
+                <div id="setquantity" style="display: none;">
+                    <label for="">
+                        Default Quantity
+                    </label>
+                    <input name="quantity" id="" type="text" value="<%= quantity %>" />
+                </div>
+                <label for="">
+                    Description</label>
+                <textarea rows="4" name="description" cols="30"><%= description %></textarea>
+            </fieldset>
+            
+            </div>
+        </div>
+
+    </form>
+    <script type="text/javascript">
+        
+        $("#setquantityb").click( function(){
+            $("#setquantity").toggle();
+        })
+    </script>
+
+</script>
+
+    
+    <script type="text/template" id="section-form-template">
+<form id="add_section_form" action="section/ajax_edit/<%= editing ? id : "" %>" method="post">
+
+   <br />
+<!--
+<div class="uihighlight halfsized">Coming Soon! <br />A control panel to edit your user settings such as email address, bookmarks and theme</div>
+-->
+<div style="width: 840px; margin: auto;background: #ccc;">
+    <div class="megaform" style=" float: left;">
+
+    <fieldset>
+        <label for="">
+            Name</label>
+        <input name="name" id="" type="text" value="<%= sectionname %>" />
+
+        <label for="">
+            Comment</label>
+        <textarea class="jckeditor" rows="4" name="content" cols="30"><%= sectioncontent %></textarea>
+
+
+
+
+
+    <br />
+    <br />
+
+<h3>Add Fees</h3>
+
+<div class="ui-widget">
+
+	<input type="text" id="fees" /><button type="button" id="add-fee">Add</button> 
+</div>
+
+
+        
+     
+
+
+    <div id="stupid"></div>
+    
+    <br />
+    <br />
+    <br />
+    <input type="text" name="feelist" id="feelist" value="" />
+    <h3>Fees</h3>
+    <ul id="sortablefees"></ul>
+    
+    </fieldset>
+    </form>
+    </div>
+</div>
+<script type="text/javascript">
+    
+    Fee = Backbone.Model.extend({
+        //Create a model to hold friend atribute
+        name: null
+    });
+    
+    Fees = Backbone.Collection.extend({
+      //This is our Friends collection and holds our Friend models
+      initialize: function (models, options) {
+        this.bind("add", options.view.addFee);
+        this.bind("remove", options.view.removeFee);
+        //Listen for new additions to the collection and call a view function if so
+        
+      }
+    });
+
+    AppViews = Backbone.View.extend({
+        initialize: function () {
+            this.fees = new Fees( null, { view: this });
+            blue = this.fees;
+            
+            $.ajax({
+               type: "POST",
+               url: "fee/lookup",
+               dataType: "json",
+               success: function( fees ){
+				
+               _.each(<%= sectionfee_arr %>, function(num){ blue.add(num); });
+                 $( "#fees" ).autocomplete({
+                    source: fees,
+                    minLength: 1,
+                    delay: 0,
+                    select: function( event, ui ) {
+                   
+                        if( sectionview.fees.get( ui.item.id ) ){
+                          $.jGrowl("You have already added this",{  theme: 'apple', position: "bottom-right"});
+                          $.jGrowl("Please try again",{  theme: 'apple', position: "bottom-right"});
+                            $( "#fees" ).val("").focus();
+                            return false;
+                        }else{
+                        sectionview.fees.add( {
+                            "id": ui.item.id,
+                            "name": ui.item.label,
+                            "price": ui.item.price,
+                        } );
+                        }
+                        $( "#fees" ).val("").focus();
+                        return false;
+                    },
+                    close: function(){
+                        
+                    }
+                });
+               }
+            });
+        },
+        events: {
+            
+            "click #add-fee":  "feemodal",
+            "keypress #fees":  "checkEnter",
+        },
+        addFee: function (model) {
+            
+            // $("#feetable tr:last").after("<tr>" + "<td>" + model.id + "</td>" + "<td>" + model.get("name") + "</td>" + "<td>" + model.get("price") + "</td>" + "<td><a href='' class='delete_fee'>Delete</a></td>" + "</tr>")
+            $("#sortablefees").append("<li id='" + model.id + "' class='ui-state-default'><span style='float: left;' class='ui-icon ui-icon-arrowthick-2-n-s'></span><p style='width: 250px; float: left;'>" + model.get("name") + "</p><span class='delete_fee' style='float: right;'>Delete</span></li>")
+            $( "#sortablefees" ).sortable({
+                update: sectionview.updateFeeValues
+            });
+
+            sectionview.updateFeeValues();
+        },
+        updateFeeValues: function(event, ui){
+                    
+            sections = $("#sortablefees").sortable('toArray').toString();
+            $("#feelist").val( sections );
+            
+        },
+        removeFee: function () {
+            
+            sectionview.updateFeeValues();
+            
+        },
+        checkEnter: function(e){
+            if (e.keyCode == 13	&& $("#fees").val() == '') return false;
+            if (e.keyCode != 13	|| $("#fees").val() == '') return;
+            //alert(currentVein);
+    
+            this.feemodal();
+            
+            return false;
+        },
+        feemodal: function(){
+        
+            var feeoptions = {
+                "id": "",
+                "name": escapeHtml($("#fees").val()),
+                "price": "",
+                "quantity": "",
+                "description": "",
+                "editing": "false",
+                "formName" : "add_fee_form",
+            }
+
+            var template = _.template( $('#fee-template-form').html(), feeoptions )
+            $("#stupid").html(template).dialog({
+                draggable: false,
+                resizable: false,
+                closeOnEscape: false,
+                title: "New Fee",
+                modal: true, 
+                open: function(){ $("form").rythform();     },
+                hide: 'drop',
+                width: "550px",
+                buttons: {
+                    "Save": function(){
+                        $("form", $(this).parents(".ui-dialog")).submit();
+                    }
+                }
+            });
+            
+            
+        }
+        
+        
+    });
+    
+    var sectionview = new AppViews;
+    
+    
+    $(".delete_fee").live("click", function() {
+        $(this).parents("li").remove();
+        
+        appview.fees.remove( appview.fees.get(  $(this).parents("li").attr("id") ) );
+        //appview.fees.get().remove();
+        
+        return false;
+    });
+</script>
+</script>
+
+
+    <script type="text/template" id="page-header-template">
+        <div class="ui-widget-header">
+            <h3 style="float: left;"><%= title %></h3>
+            <% _.each( buttons, function( button ) { %>
+                <a class="button <%= button.classes %>" href="<%= button.href %>" style="float: right;"><%= button.text %></a>
+            <% }); %>           
+            <div style="clear:both;"></div>
+        </div>
+    </script>
+
+    <script type="text/template" id="proposal-list-view">
+
+    <div id="pageheader"></div>
+       <br />
+       
+       
+       <table id="clienttable">
+       <thead>
+       <tr>
+       <th>Id</th>
+       <th>Name</th>
+       <th>State</th>
+       <th>Template Id</th>
+       </tr>
+       </thead>
+        <%
+      
+        _.each( proposals, function( proposal ){
+        %>
+           <tr>
+               <td><%= proposal.id %></td>
+               <td><%= proposal.name %></td>
+               <td>0</td>
+               <td><a href="#/proposal/design/<%= proposal.id %>">Design</a>, <a href="#/proposal/delete/<%= proposal.id %>">Delete</a></td>
+           </tr>
+        <%
+        });
+        
+        %>
+       </table>
+    <script>
+    $(document).ready( function(){
+        $("#clienttable").dataTable({
+                          
+                            "aaSorting": [],
+                            "iDisplayLength": 15,
+                            "oLanguage": {
+                                "sSearch": "",
+                                "sLengthMenu" : "Show _MENU_"
+                            },
+                            "bJQueryUI": true,
+                            "bAutoWidth": false,
+                            "sDom": '<"toolbar">f<"toolbarspace">rtip'
+                        });
+        options = {
+            title: 'Proposal List',
+            buttons: [{
+                'href': '#/proposal/design',
+                'classes': 'addbutton',
+                'text': 'New Proposal'
+            }]
+        
+        }
+        $("#pageheader").html( _.template( $("#page-header-template").html(), options ) );
+
+    })
+    </script>
+</script>

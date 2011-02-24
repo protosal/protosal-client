@@ -1,0 +1,270 @@
+<script type="text/template" id="proposal_edit_view_template">
+<div id="proposal_design_view_container">
+
+
+    <style>
+    #sortable {  margin: auto; padding: 0; width: 500px; }
+    #sortable li { cursor: pointer; margin: 5px 3px 3px 3px; padding: 0.4em; padding-left: 1.5em; font-size: 1.4em; height: 18px; }
+    #sortable li span { margin-left: -1.3em; }
+    </style>
+
+    <form id="add_proposal_form" action="proposal/ajax_edit/<%= proposaloptions.id ? proposaloptions.id : "" %>" method="post">
+        <div id="section_form_modal"></div>
+        <div class="ui-widget-header">
+            <h3 style="float: left;">Proposal Edit</h3>
+            <button type="submit" id="newproposal" style="float: right;">Save</button>
+            <a class="button back-button" style="float: right;">Back</a>
+            <div style="clear:both;"></div>
+        </div>
+        <br />
+      
+        <div style="width: 840px; margin: auto;background: #ccc;">
+            <div class="" style=" float: left;">
+                <fieldset>
+                    <table>
+                        <tr>
+                            <td> 
+                                <label for="">Name</label>
+                                <input name="name" id="" type="text" value="<%= proposaloptions.name %>" />
+                            </td>
+                            <td>
+                                <label for="">Client</label>
+                                <select name="client_id">
+                                    <% _.each( clientoptions, function( client ) {
+                                        sel = "";
+                                        if ( client.id == proposaloptions.client_id ) {
+                                            sel  ="selected";
+                                        }
+                                    %>
+                                        <option <%= sel %> value="<%= client.id %>"><%= client.name %></option>
+                                    <%
+                                        });
+                                    %>
+                                </select>
+                            </td>
+                        </tr>
+                    </table>
+                    <input name="state" id="" type="hidden" value="<%= proposaloptions.state %>" />
+                    <div style="clear:both;"></div>
+                </fieldset>
+            </div>
+        </div>
+    </form>
+
+    <div style="clear:both;"></div>
+    <hr>
+    <div class="ui-widget" style="float: right;">
+        <input type="text" id="sections" />
+        <button type="button" id="add-section">Add Section</button> 
+    </div>
+    <div style="clear:both;"></div>
+    <div style="width: 650px; margin:auto;  ">
+        <h3 style="text-align: center; margin: auto;">Table of contents</h3>
+        <ol id="sectionlist">
+        </ol>
+    </div>
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+
+  
+</div> <!-- proposal container -->
+<jst>
+    form_options['add_proposal_form'] = {
+        success: function() {
+            redirect("proposal/list");
+        }
+    }
+    form_options['add_section_form'] = {
+        success: function() {
+            $("#section_form_modal").dialog("close");
+        }
+    }
+    
+
+    
+
+    Section = Backbone.Model.extend({
+        //Create a model to hold friend atribute
+        name: null,
+        order: null,
+        initialize: function(){
+            this.bind("change:order", this.updateOrder )
+        },
+        updateOrder: function(model){
+            model.save();
+        }
+    });
+    SectionOrder = Backbone.Model.extend({
+        
+    });
+    
+    Sections = Backbone.Collection.extend({
+      //This is our Friends collection and holds our Friend models
+      model: Section,
+      url: "proposal/section/" + GLOBALS.route_id,
+      initialize: function (models, options) {
+        this.bind("refresh", this.populate);
+        this.bind("add", this.createInstance);
+        this.bind("remove", options.view.removeSectionListItem);
+        //Listen for new additions to the collection and call a view function if so
+        
+      },
+      populate: function(collection){
+            _.each(collection.models, function(model){
+                collection.createInstance(model);
+            });
+      },
+      createInstance: function( model ){
+        $("#sectionlist").append( _.template( $("#section_list_item_template").html() ,{ id: model.id, name: model.get("name") }) );
+        $( "#sectionlist" ).sortable({
+            update: proposal_backbone.sections.updateFeeValues
+        });
+        
+        $("#proposal_preview #preview_body .preview_content").append( _.template( $("#proposal_preview_section_template").html() ,{ id: model.id, name: model.get("name"), content: model.get("content") }) )
+      },
+      updateFeeValues: function(event, ui){
+        
+        sections = $("#sectionlist").sortable('toArray').toString();
+        $.ajax({
+            url: "proposal/section/" + GLOBALS.route_id,
+            type: "POST",
+            data: "_method=PUT&orders="+sections
+        });
+            
+      }
+      
+    });
+
+    ProposalBackboneView = Backbone.View.extend({
+        el: $("#proposal_design_view_container"),
+        initialize: function () {
+            this.sections = new Sections( null, { view: this, id: GLOBALS.route_id});
+            this.sections.fetch();
+            
+            $("body").append( _.template( $('#proposal_preview_container_template').jsthtml(), {} ) );
+            
+            $.ajax({
+               type: "POST",
+               url: "section/lookup",
+               dataType: "json",
+               success: function( sections ){
+                 $( "#sections" ).autocomplete({
+                    source: sections,
+                    minLength: 1,
+                    delay: 0,
+                    select: function( event, ui ) {
+                   
+                        if( proposal_backbone.sections.get( ui.item.id ) ){
+                          $.jGrowl("You have already added this",{  theme: 'apple', position: "bottom-right"});
+                          $.jGrowl("Please try again",{  theme: 'apple', position: "bottom-right"});
+                            $( "#sections" ).val("").focus();
+                            return false;
+                        }else{
+                        proposal_backbone.sections.create( {
+                            "section_id": ui.item.id,
+                            "name": ui.item.label,
+                        }, {error: function(){alert("a");} });
+                        }
+                        $( "#sections" ).val("").focus();
+                        return false;
+                    },
+                    close: function(){
+                        
+                    }
+                });
+               }
+            });
+        },
+        events: {
+            "click .delete-section" : "sectionDeleteHandler",
+            "click .edit-section" : "sectionEditHandler",
+        },
+        addSectionListItem: function (model) {
+			alert("As");
+				$("#sectionlist").append("<li></li>");// id='" + model.id + "' class='ui-state-default'><span style='float: left;' class='ui-icon ui-icon-arrowthick-2-n-s'></span><p style='width: 250px; float: left;'>" + model.get("name") + "</p><span class='delete_fee' style='float: right;'>Delete</span></li>")
+            $( "#sectionlist" ).sortable();            
+  
+        },
+        updateFeeValues: function(event, ui){
+         
+            
+        },
+        sectionEditHandler: function (event, ui){
+            section_id = $(event.currentTarget).parents("li").attr("id");
+            $.ajax({
+                url: "section/edit/" + section_id,
+                success: function( res ) {
+                
+                    res = $.evalJSON(res);
+                    sectionoptions = res.data.template_data.sectionoptions
+                         $('.jckeditor').ckeditor(function(){
+                        this.destroy();
+                    });   
+                    
+                      
+                    var template = _.template( $('#section_form_template').jsthtml(), sectionoptions )
+                    
+                    $("#section_form_modal").html(template).dialog({
+                        draggable: false,
+                        resizable: false,
+                        closeOnEscape: false,
+                        title: "New Fee",
+                        modal: true, 
+                        open: function(){ $("form").rythform(); $(".jckeditor").ckeditor(function() { /* callback code */ }, {  toolbar: [
+                            ['Bold', 'Italic', '-', 'NumberedList', 'BulletedList', '-', 'Link', 'Unlink','-','About'],['Styles','Format','Font','FontSize'],
+                            ['TextColor','BGColor'],
+                            ['Maximize', 'ShowBlocks','-','About']
+                        ]});  },
+                        hide: 'drop',
+                        width: "900px",
+                        height: 800,
+                        buttons: {
+                            "Save": function(){
+                                $("form", $(this).parents(".ui-dialog")).submit();
+                            }
+                        }
+                    });
+                }
+            });
+            
+            
+
+        },
+        sectionDeleteHandler: function (event, ui) {
+            //currentTarget is wrong, use this this.$ or some shit IMPORTANT
+            id = $(event.currentTarget).parents("li").attr("id");
+            proposal_backbone.sections.get( id ).destroy();   
+            $("#proposal_preview_section_" + id).remove();
+            $(event.currentTarget).parents("li").remove();         
+        },
+        removeSectionListItem: function(model){
+            //$("#"+model.id).remove();
+        },
+        checkEnter: function(e){
+            //if (e.keyCode == 13	&& $("#fees").val() == '') return false;
+            //if (e.keyCode != 13	|| $("#fees").val() == '') return;
+            //alert(currentVein);
+    
+            this.feemodal();
+            
+            return false;
+        },
+        feemodal: function(){
+        
+            
+        }
+        
+        
+    });
+    
+    var proposal_backbone = new ProposalBackboneView;
+    Backbone.emulateHTTP = true;
+    Backbone.emulateJSON = true;
+</jst>
+
+</script>

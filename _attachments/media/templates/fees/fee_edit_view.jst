@@ -1,0 +1,35 @@
+<script type="text/template" id="fee_edit_view_template">
+
+
+<div id="stupid">
+
+    <div class="ui-widget-header">
+        <h3 style="float: left;"><%= feeoptions.id ? "Edit" : "New" %> Fee</h3>
+        
+        <button type="submit" id="newfee" style="float: right;">Save</button>
+        <a class="button back-button" style="float: right;">Back</a>
+        <div style="clear:both;"></div>
+     
+    </div>
+    <%= fee_form_partial( feeoptions ) %>
+</div>
+
+<jst>
+
+    $(document).ready(function() {
+        $("form").rythform();   
+    });
+    $("#newfee").click( function(){
+        $("#add_fee_form").submit(); 
+    
+    });
+    form_options['add_fee_form'] = {
+        success: function() {
+
+            redirect("fee/list");
+        }
+    }
+
+</jst>
+
+</script>

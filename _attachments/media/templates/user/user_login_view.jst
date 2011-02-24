@@ -1,0 +1,52 @@
+<script type="text/template" id="user_login_view_template">
+<br />
+<br />
+<br />
+<br />
+<br />
+<div id="loginwindow" style="padding-bottom: 15px; width: 400px;margin: auto;">
+    <div class="tabs" style="overflow: hidden;" title="MGF CONSULTANTS - Ryth - Login">
+        <ul>
+            <li><a href="#tab-1">Login</a></li>
+            <li><a href="#tab-3">Forgot Password</a></li>
+        </ul>
+
+        <div id="tab-1">
+            <div id="loginform"  style=" margin: auto;">
+                <form id="login_form" action="user/ajaxlogin" class="pretty" method="post">
+                    <fieldset> 
+                        <legend></legend> 
+                        <ol style="width:260px; margin: auto;">
+                            <li><label for="username">Username</label><input class="required" minlength="3"  id="username" name="username" type="text" /></li>
+                            <li><label for="password">Password</label><input type="password" name="password" id="password" class="required" minlength="6" /></li>
+                        </ol>
+                    </fieldset>
+                    <p style="text-align: center;"> 
+                        <button id="loginbutton" type="submit" class="submit" value="Login" >Login</button
+                    </p>
+                </form>
+            </div>
+        </div>
+
+        <div id="tab-3">
+            <div class="uihighlight halfsized">Ask Ryan</div>
+        </div>
+    </div>
+</div>
+<jst>  
+    form_options['login_form'] = {
+        fatal: function() {
+            alert('OHHHHHHHHHMYYYYYYYGOOOOOOOOSHHHHHHH!');
+        },
+        success: function(data) {
+            redirect('home/dashboard');
+        },
+        fail: function(data) {
+            $("#login_form").prepend('<div style="margin-top: 5px" id="resethelp" class="thirdsized">Reset your password <a href="#">here</a>.</div>').uierror();
+            $("#login_form").prepend('<div style="margin-top: 5px" id="loginerror" class="thirdsized">Incorrect username/password</div>').uihighlight();  
+        }
+    };
+    $(".ui-widget-overlay").css("opacity","1 !important")
+    setTimeout( function (){     $("#username").focus(); }, 1000);
+</jst>
+</script>
