@@ -3,7 +3,13 @@
         "from": "/media/*",
         "to":   "/media/*"
     },
-    
+    {
+        "from": "/data/:id/:rev",
+        "to": "../../:id",
+        "query": {
+            "rev": ":rev"
+        }
+    },
     {
         "from": "/api/get/:controller/:action/:key",
         "to": "../:controller/_view/:action",

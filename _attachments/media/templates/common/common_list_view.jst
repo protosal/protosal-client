@@ -1,54 +1,9 @@
 <script type="text/template" id="common_list_view_template">
-<div id="pageheader"></div>
-<table class="list_view">
-   <thead>
-   <tr>
-        <% _.each( rows[0].value, function(val, key) { %>
-            <th><%= _(key).capitalize() %></th>
-        <% 
-        });
-        %>
-        <th style="width:119px;">Actions</th>
-   </tr>
-   </thead>
-   <tbody>
-        
-        <%
-        _.each( rows, function( row ){
-            
-        %>
-           <tr row_id="<%= row.id %>">
-                <%
-                _.each( row.value, function( col ) {
-                    class = "";
-                    if( _(col).isInt() ){
-                        class = "int";
-                    }
-                %>
-                    <td class="<%= class %>"><%= _(col).escapeHTML() %></td>
-                <% 
-                });
-                %>
-               <td><a class="wrenchbutton edit" href="#/<%= controller %>/edit/<%= row.id %>">Edit</a> <a class="button delete">Delete</a></td>
-           </tr>
-        <%
-        });
-        %>
-        </tbody>
-   </table>
-   
+<div id="common_list_view_container">
+    <div id="pageheader"></div>
+    <div id="common_list_view_table_container">Loading...</div>
+</div>
     <jst>
-        $(".list_view").dataTable({
-                          
-            "aaSorting": [],
-            "iDisplayLength": 250,
-            "oLanguage": {
-                "sSearch": "Search",
-                "sLengthMenu" : "Show _MENU_"
-            },
-            "bJQueryUI": true,
-            "sDom": 'frti',
-        });
         options = {
             'title': '<%= _(controller).capitalize() %> List',
             'buttons': [{
@@ -73,9 +28,50 @@
         $(".dataTables_filter input").focusout( function(){
             setTimeout( function (){     $(".dataTables_filter input").focus(); }, 700);
         });
-        $("#pageheader").html( _.template( $("#page_header_template").html(), options ) );
-    
+
+        ListData = Backbone.Collection.extend({
+            model: Document,
+            initialize: function (){
+                this.bind( "refresh", this.renderTable );
+                this.url = "data";
+            },
+            renderTable: function(){
+
+                $("#common_list_view_table_container").html( _.template( $("#common_list_view_table_template").jsthtml(), { rows: this.models } ) );
+                
+            },
+        });
         
+        ListView = Backbone.View.extend({
+            el: $("#common_list_view_container"),
+            initialize: function () {
+                
+                $("#pageheader").html( _.template( $("#page_header_template").html(), options ) );
+                
+                
+                var url = GLOBALS.server_base + "/api/get" + location.hash.substr(1) + "/" + GLOBALS.route_id;
+                $.ajax( url, {
+                    dataType: "json",
+                    success: function(data){
+                        listdata.refresh(data.rows);
+                    }
+                
+                });
+                
+            },
+            events: {
+                "click .delete":  "removeRow",
+            },
+            removeRow: function(event){
+                var row = $(event.currentTarget).parents("tr");
+                var id = row.attr("row_id");
+                row.remove();
+                listdata.get(id).destroy();
+                
+            }
+        });
+        var listdata = new ListData;
+        var listview = new ListView;
     </jst>
 
 </script>

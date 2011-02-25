@@ -1,0 +1,57 @@
+<script type="text/template" id="common_list_view_table_template">
+<table class="list_view">
+   <thead>
+   <tr>
+        <% _.each( rows[0].get("value"), function(val, key) { 
+            if( key[0] != "_" ){    
+                %>
+                    <th><%= _(key).capitalize() %></th>
+                <% 
+            }
+            });
+        %>
+        <th style="width:119px;">Actions</th>
+   </tr>
+   </thead>
+   <tbody>
+        
+        <%
+        _.each( rows, function( row ) {
+            
+        %>
+           <tr row_id="<%= row.id %>">
+                <%
+                _.each( row.get("value"), function( col, key ) {
+                    if( key[0] != "_" ){  
+                    class = "";
+                    if( _(col).isInt() ){
+                        class = "int";
+                    }
+                %>
+                    <td class="<%= class %>"><%= _(col).escapeHTML() %></td>
+                <% 
+                }
+                });
+                %>
+               <td><a class="wrenchbutton edit">Edit</a> <a class="button delete">Delete</a></td>
+           </tr>
+        <%
+        
+        });
+        %>
+        </tbody>
+</table>
+<jst>
+$(".list_view").dataTable({
+                  
+    "aaSorting": [],
+    "iDisplayLength": 250,
+    "oLanguage": {
+        "sSearch": "Search",
+        "sLengthMenu" : "Show _MENU_"
+    },
+    "bJQueryUI": true,
+    "sDom": 'frti',
+});
+</jst>
+</script>
