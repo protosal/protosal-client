@@ -45,7 +45,6 @@
             GLOBALS.server_base + "/media/highchart/js/modules/exporting.js",
             GLOBALS.server_base + "/media/ckeditor/ckeditor.js",
             GLOBALS.server_base + "/media/ckeditor/adapters/jquery.js",
-            GLOBALS.server_base + "/media/js/jquery.form.js",
             GLOBALS.server_base + "/media/js/underscore.js",
             GLOBALS.server_base + "/media/js/backbone.js",
             GLOBALS.server_base + "/media/js/common.js",
@@ -54,7 +53,6 @@
             GLOBALS.server_base + "/media/js/jquery.defaultvalue.js",
             GLOBALS.server_base + "/media/js/jquery.dataTables.js",
             GLOBALS.server_base + "/media/js/jquery/plugins/ryth/rythjsthtml.js",
-            GLOBALS.server_base + "/media/js/jquery/plugins/ryth/rythform.js",
             GLOBALS.server_base + "/media/js/ryth_renderer_config.js",
             GLOBALS.server_base + "/_utils/script/sha1.js",
             GLOBALS.server_base + "/_utils/script/json2.js",
@@ -64,7 +62,7 @@
 
        head.ready(function() {
            
-           var Document = Backbone.Model.extend({
+           window.Document = Backbone.Model.extend({
                 url: function(){
                     var base = "data";
                     if (this.isNew()) return base;
@@ -124,15 +122,15 @@
                     }
                     
                     var template_name = "";
-                    
+                    obj.controller = GLOBALS.controller;
+                    obj.action = GLOBALS.action;
                     if ( GLOBALS.action == "list" ) {
                         template_name = "common_list";
-                        obj.controller = GLOBALS.controller;
+                        
                         
                     } else {
                         template_name = GLOBALS.controller + "_" + GLOBALS.action
                     }
-                     console.log(obj);
                     $("#contentpane").html( _.template( $("#" + template_name + "_view_template").html(), obj));
                     
                     $("#contentpane").html( $("#contentpane").jsthtml() );

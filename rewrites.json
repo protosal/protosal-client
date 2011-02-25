@@ -10,6 +10,15 @@
             "rev": ":rev"
         }
     },
+
+    {
+        "from": "/data/:id",
+        "to": "../../:id"
+    },
+    {
+        "from": "/data",
+        "to": "../../"
+    },
     {
         "from": "/api/get/:controller/:action/:key",
         "to": "../:controller/_view/:action",

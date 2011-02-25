@@ -30,7 +30,7 @@
         });
 
         ListData = Backbone.Collection.extend({
-            model: Document,
+            model: window.Document,
             initialize: function (){
                 this.bind( "refresh", this.renderTable );
                 this.url = "data";

@@ -1,7 +1,7 @@
 <script type="text/template" id="client_form_template"> 
 
 
-<form id="add_client_form" action="client/ajax_edit/<%= id ? id : "" %>" method="post">
+<form id="add_client_form" enctype="multipart/form-data" action="data/<%= typeof id != "undefined" ? id : "" %>" method="post">
 
 <div style="width: 840px; margin: auto;background: #ccc;">
     <div class="megaform" style=" float: left;">
@@ -9,16 +9,16 @@
     <fieldset>
         <label for="">
             Name</label>
-        <input name="name" id="" type="text" value="<%= name %>" />
+        <input name="name" id="" type="text" value="<%= typeof name != "undefined" ? name : ""  %>" />
         <label for="">
             Email</label>
-        <input name="email" id="" type="text" value="<%= email %>" />
+        <input name="email" id="" type="text" value="<%= typeof email != "undefined" ? email : "" %>" />
         <label for="">
             Website</label>
-        <input name="website" id="" type="text" value="<%= website %>" />
+        <input name="website" id="" type="text" value="<%= typeof website != "undefined" ? website : ""  %>" />
         <label for="">
             Comment</label>
-        <textarea id="" rows="4" name="comment" cols="30"><%= comment %></textarea>
+        <textarea id="" rows="4" name="comment" cols="30"><%= typeof comment != "undefined" ? comment : ""  %></textarea>
     </fieldset>
      
     </form>
@@ -32,6 +32,8 @@ form_options['add_client_form'] = {
         redirect("client/list");
     }
 }
+
+$("form").rythform();
 </jst>
 
 </script>

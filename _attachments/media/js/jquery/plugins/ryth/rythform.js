@@ -15,6 +15,30 @@
  * Notes:
  *		- Good idea to name your file jquery.pluginName.js
  */
+ /*
+ * Serializes multi-dimensional form data into the JSON format
+ * Licensed under the MIT licenses.
+ * More information at: http://www.opensource.org
+ * Copyright (c) 2009 Aaron Shafovaloff - aaronshaf.wordpress.com
+ * Revision: 0.1
+ * Requires http://json.org/json2.js
+ */
+$.fn.serializeObject = function()
+{
+    var o = {};
+    var a = this.serializeArray();
+    $.each(a, function() {
+        if (o[this.name]) {
+            if (!o[this.name].push) {
+                o[this.name] = [o[this.name]];
+            }
+            o[this.name].push(this.value || '');
+        } else {
+            o[this.name] = this.value || '';
+        }
+    });
+    return o;
+};
 (function($) {
 
 	// replace 'pluginName' with the name of your plugin
@@ -134,6 +158,13 @@
         function showRequest(formData, jqForm, options) {
             // Disable submit button while form is submitting
             $("button, .submit, input[type=submit]").button( "option", "disabled", true );
+           options.adata =  $.toJSON($('form').serializeObject()) ;
+           var a = options.data =  $.toJSON($('form').serializeObject()) ;
+            console.log(a == options.data);
+            console.log(options.data);
+            console.log(options);
+            console.log(options.data);
+            console.log(this);
         } 
         
         // Default callback functions for form handler
