@@ -76,6 +76,7 @@
                   window.location = "#/home/dashboard"
                 },
               defaultRoute: function(controller, action, vid) {
+                    if( vid == null) vid = "";
                     GLOBALS.controller = controller;
                     GLOBALS.action = action;
                     GLOBALS.route_id = vid;
@@ -85,7 +86,7 @@
                     $("#" + b[1]).addClass('ui-state-active').addClass('ui-tabs-selected');
                 
                     //get URL for the ajax call
-                    url = GLOBALS.server_base + "/api/get/list" + location.hash.substr(1); 
+                    url = GLOBALS.server_base + "/api/get" + location.hash.substr(1) + "/" + GLOBALS.route_id; 
                     
                     
                     $(".jckeditor").each( function(){

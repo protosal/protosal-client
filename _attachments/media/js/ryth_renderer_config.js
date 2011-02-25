@@ -6,10 +6,10 @@ var partials = {
 var pageOptions = { 
                        
                         success: function(data){
-                        var obj = jQuery.parseJSON(data);
+                            var obj = jQuery.parseJSON(data);
                          
-                        
-                            
+                          
+                          
                             template = GLOBALS.controller + "_" + GLOBALS.action + "_view";
                             if( partials[template]){
                                
@@ -29,13 +29,10 @@ var pageOptions = {
                                 template_name = "common_list";
                                 obj.controller = GLOBALS.controller;
                                 
-                                // Hack so we can use square bracket notation in the template rather than eval()
-                                var injected_obj = { obja : data.template_data}
-                                obj = injected_obj.obja
                             } else {
                                 template_name = GLOBALS.controller + "_" + GLOBALS.action
                             }
-                           console.log(obj);
+                             console.log(obj);
                             $("#contentpane").html( _.template( $("#" + template_name + "_view_template").html(), obj));
                             
                             $("#contentpane").html( $("#contentpane").jsthtml() );

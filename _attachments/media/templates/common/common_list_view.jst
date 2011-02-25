@@ -3,7 +3,7 @@
 <table class="list_view">
    <thead>
    <tr>
-        <% _.each( obj[obj.controller + "s"][0], function(val, key) { %>
+        <% _.each( rows[0].value, function(val, key) { %>
             <th><%= _(key).capitalize() %></th>
         <% 
         });
@@ -14,11 +14,12 @@
    <tbody>
         
         <%
-        _.each( obj[obj.controller + "s"], function( row ){
+        _.each( rows, function( row ){
+            
         %>
            <tr row_id="<%= row.id %>">
                 <%
-                _.each( row, function( col ) {
+                _.each( row.value, function( col ) {
                     class = "";
                     if( _(col).isInt() ){
                         class = "int";
@@ -39,15 +40,15 @@
     <jst>
         $(".list_view").dataTable({
                           
-                            "aaSorting": [],
-                            "iDisplayLength": 250,
-                            "oLanguage": {
-                                "sSearch": "Search",
-                                "sLengthMenu" : "Show _MENU_"
-                            },
-                            "bJQueryUI": true,
-                            "sDom": 'frti',
-                        });
+            "aaSorting": [],
+            "iDisplayLength": 250,
+            "oLanguage": {
+                "sSearch": "Search",
+                "sLengthMenu" : "Show _MENU_"
+            },
+            "bJQueryUI": true,
+            "sDom": 'frti',
+        });
         options = {
             'title': '<%= _(controller).capitalize() %> List',
             'buttons': [{

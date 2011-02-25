@@ -5,11 +5,20 @@
     },
     
     {
-        "from": "/api/get/list/:controller/*",
-        "to": "_view/list"
+        "from": "/api/get/:controller/:action/:key",
+        "to": "../:controller/_view/:action",
+        "query": {
+            "key": ":key"
+        }
     },
     {
-      "from": "/",
+        "from": "/api/get/:controller/:action",
+        "to": "../:controller/_view/:action"
+    },
+    
+ 
+    {
+      "from": "",
       "to": "index.html"
     },
     {
