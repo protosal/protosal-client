@@ -54,12 +54,19 @@
             },
             events: {
                 "click .delete":  "removeRow",
+                "click .edit":  "editPage",
             },
             removeRow: function(event){
                 var row = $(event.currentTarget).parents("tr");
                 var id = row.attr("row_id");
                 row.remove();
                 listdata.get(id).destroy();
+                
+            },
+            editPage: function(event){
+                var row = $(event.currentTarget).parents("tr");
+                var id = row.attr("row_id");
+                redirect( "<%= controller %>/edit/" + id );
                 
             }
         });

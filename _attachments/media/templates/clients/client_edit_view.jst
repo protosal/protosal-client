@@ -12,7 +12,6 @@
                     'title': '<%= _(controller).capitalize() %> List',
                     'buttons': [{
                                     'text': 'Save',
-                                    'href': '#/<%= controller %>/edit',
                                     'classes': 'save'
                         },{
                                     'text': 'Back',
@@ -42,19 +41,24 @@
     
     editview = new EditView;
     $(".save").click( function(){
-		
-        var url = GLOBALS.server_base + "/data";
+        id = "";
+        type = "POST";
+        if( GLOBALS.route_id != "" ) {
+            id = "/" + GLOBALS.route_id; 
+            type = "PUT";
+        }
+        var url = GLOBALS.server_base + "/data" + id;
         formdata = $('form').serializeObject()
         $.ajax( url, {
             dataType: "json",
-            type: "POST",
+            type: type,
             contentType: "application/json",
             data: $.toJSON(formdata),
             success: function(data){
                 redirect("client/list");
             }
         });
-    
+        return false;
     });
     
 </jst>

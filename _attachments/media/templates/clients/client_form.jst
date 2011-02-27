@@ -1,8 +1,9 @@
 <script type="text/template" id="client_form_template"> 
 
 
-<form id="add_client_form" enctype="multipart/form-data" action="data/<%= typeof id != "undefined" ? id : "" %>" method="post">
- <input name="type" id="" type="hidden" value="client" />
+<form id="add_client_form" enctype="multipart/form-data" method="post">
+<input name="type" id="" type="hidden" value="client" />
+<input name="_rev" id="" type="hidden" value="<%= typeof _rev != "undefined" ? _rev : ""  %>" />
 <div style="width: 840px; margin: auto;background: #ccc;">
     <div class="megaform" style=" float: left;">
 
