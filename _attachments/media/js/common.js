@@ -7,13 +7,31 @@ function redirect( url ) {
 function refresh () {
     $(window).trigger( 'hashchange' );
 }
-
+(function($,undefined){
+  '$:nomunge'; // Used by YUI compressor.
+  
+  $.fn.serializeObject = function(){
+    var obj = {};
+    
+    $.each( this.serializeArray(), function(i,o){
+      var n = o.name,
+        v = o.value;
+        
+        obj[n] = obj[n] === undefined ? v
+          : $.isArray( obj[n] ) ? obj[n].concat( v )
+          : [ obj[n], v ];
+    });
+    
+    return obj;
+  };
+  
+})(jQuery);
 _.mixin({
     capitalize : function(string) {
         return string.charAt(0).toUpperCase() + string.substring(1).toLowerCase();
     },
     escapeHTML: function(string) {
-        return string ? string
+        return typeof string == "string" ? string
             .replace(/&/g, "&amp;")
             .replace(/</g, "&lt;")
             .replace(/>/g, "&gt;")

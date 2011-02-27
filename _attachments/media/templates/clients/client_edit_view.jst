@@ -11,14 +11,19 @@
                 options = {
                     'title': '<%= _(controller).capitalize() %> List',
                     'buttons': [{
-                                    'text': 'New <%= _(controller).capitalize() %>',
+                                    'text': 'Save',
                                     'href': '#/<%= controller %>/edit',
-                                    'classes': 'addbutton'
-                        },
+                                    'classes': 'save'
+                        },{
+                                    'text': 'Back',
+                                    'classes': 'back-button'
+                        }
                     ]
                     
                 }
-                $("#pageheader").html( _.template( $("#page_header_template").html(), options ) );
+                $("#pageheader").html( _.template( $("#page_header_template").jsthtml(), options ) );
+                
+                
                 if( GLOBALS.route_id ){
                     var url = GLOBALS.server_base + "/data/" + GLOBALS.route_id;
                     $.ajax( url, {
@@ -36,28 +41,22 @@
     });
     
     editview = new EditView;
-    $(".addbutton").click( function(){
-    
+    $(".save").click( function(){
+		
         var url = GLOBALS.server_base + "/data";
+        formdata = $('form').serializeObject()
         $.ajax( url, {
             dataType: "json",
             type: "POST",
             contentType: "application/json",
-            data: $.toJSON($('form').serializeObject()),
+            data: $.toJSON(formdata),
             success: function(data){
-                alert("asd");
+                redirect("client/list");
             }
         });
     
     });
     
-    form_options['add_client_form'] = {
-        success: function() {
-
-            redirect("client/list");
-        }
-    }
-
 </jst>
 
 </script>

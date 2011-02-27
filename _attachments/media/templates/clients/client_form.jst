@@ -2,7 +2,7 @@
 
 
 <form id="add_client_form" enctype="multipart/form-data" action="data/<%= typeof id != "undefined" ? id : "" %>" method="post">
-
+ <input name="type" id="" type="hidden" value="client" />
 <div style="width: 840px; margin: auto;background: #ccc;">
     <div class="megaform" style=" float: left;">
 
@@ -27,13 +27,7 @@
 </div>
 
 <jst>
-form_options['add_client_form'] = {
-    success: function() {
-        redirect("client/list");
-    }
-}
 
-$("form").rythform();
 </jst>
 
 </script>

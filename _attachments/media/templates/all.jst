@@ -318,6 +318,280 @@
     })
     </script>
 </script>
+<script type="text/template" id="common_list_view_template">
+<div id="common_list_view_container">
+    <div id="pageheader"></div>
+    <div id="common_list_view_table_container">Loading...</div>
+</div>
+    <jst>
+        options = {
+            'title': '<%= _(controller).capitalize() %> List',
+            'buttons': [{
+                            'text': 'New <%= _(controller).capitalize() %>',
+                            'href': '#/<%= controller %>/edit',
+                            'classes': 'addbutton'
+                },
+            ]
+            
+        }
+        
+
+        
+        setTimeout( function (){     $(".dataTables_filter input").focus(); }, 400);
+        $(".dataTables_filter input").focusout( function(){
+            setTimeout( function (){     $(".dataTables_filter input").focus(); }, 700);
+        });
+
+        ListData = Backbone.Collection.extend({
+            model: window.Document,
+            initialize: function (){
+                this.bind( "refresh", this.renderTable );
+                this.url = "data";
+            },
+            renderTable: function(){
+
+                $("#common_list_view_table_container").html( _.template( $("#common_list_view_table_template").jsthtml(), { rows: this.models } ) );
+                
+            },
+        });
+        
+        ListView = Backbone.View.extend({
+            el: $("#common_list_view_container"),
+            initialize: function () {
+                
+                $("#pageheader").html( _.template( $("#page_header_template").jsthtml(), options ) );
+                
+                
+                var url = GLOBALS.server_base + "/api/get" + location.hash.substr(1) + "/" + GLOBALS.route_id;
+                $.ajax( url, {
+                    dataType: "json",
+                    success: function(data){
+                        listdata.refresh(data.rows);
+                    }
+                
+                });
+                
+            },
+            events: {
+                "click .delete":  "removeRow",
+            },
+            removeRow: function(event){
+                var row = $(event.currentTarget).parents("tr");
+                var id = row.attr("row_id");
+                row.remove();
+                listdata.get(id).destroy();
+                
+            }
+        });
+        var listdata = new ListData;
+        var listview = new ListView;
+    </jst>
+
+</script>
+<script type="text/template" id="common_list_view_table_template">
+<table class="list_view">
+   <thead>
+   <tr>
+        <% _.each( rows[0].get("value"), function(val, key) { 
+            if( key[0] != "_" ){    
+                %>
+                    <th><%= _(key).capitalize() %></th>
+                <% 
+            }
+            });
+        %>
+        <th style="width:119px;">Actions</th>
+   </tr>
+   </thead>
+   <tbody>
+        
+        <%
+        _.each( rows, function( row ) {
+            
+        %>
+           <tr row_id="<%= row.id %>">
+                <%
+                _.each( row.get("value"), function( col, key ) {
+                    if( key[0] != "_" ){  
+                    class = "";
+                    if( _(col).isInt() ){
+                        class = "int";
+                    }
+                %>
+                    <td class="<%= class %>"><%= _(col).escapeHTML() %></td>
+                <% 
+                }
+                });
+                %>
+               <td><a class="wrenchbutton edit">Edit</a> <a class="button delete">Delete</a></td>
+           </tr>
+        <%
+        
+        });
+        %>
+        </tbody>
+</table>
+<jst>
+$(".list_view").dataTable({
+                  
+    "aaSorting": [],
+    "iDisplayLength": 250,
+    "oLanguage": {
+        "sSearch": "Search",
+        "sLengthMenu" : "Show _MENU_"
+    },
+    "bJQueryUI": true,
+    "sDom": 'frti',
+});
+</jst>
+</script>
+<script type="text/template" id="page_header_template">
+    <div class="ui-widget-header">
+        <h3 style="text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);float: left;"><%= title %></h3>
+        <% _.each( buttons, function( button ) { %>
+            <a class="button <%= button.classes %>" href="<%= button.href %>" style="float: right;"><%= button.text %></a>
+        <% }); %>           
+        <div style="clear:both;"></div>
+    </div>
+	<jst>
+		$(".ui-widget-header .button").rythbutton();
+	</jst>
+</script>
+
+<script type="text/template" id="user_login_view_template">
+<br />
+<br />
+<br />
+<br />
+<br />
+<div id="loginwindow" style="padding-bottom: 15px; width: 400px;margin: auto;">
+    <div class="tabs" style="overflow: hidden;" title="MGF CONSULTANTS - Ryth - Login">
+        <ul>
+            <li><a href="#tab-1">Login</a></li>
+            <li><a href="#tab-3">Forgot Password</a></li>
+        </ul>
+
+        <div id="tab-1">
+            <div id="loginform"  style=" margin: auto;">
+                <form id="login_form" action="user/ajaxlogin" class="pretty" method="post">
+                    <fieldset> 
+                        <legend></legend> 
+                        <ol style="width:260px; margin: auto;">
+                            <li><label for="username">Username</label><input class="required" minlength="3"  id="username" name="username" type="text" /></li>
+                            <li><label for="password">Password</label><input type="password" name="password" id="password" class="required" minlength="6" /></li>
+                        </ol>
+                    </fieldset>
+                    <p style="text-align: center;"> 
+                        <button id="loginbutton" type="submit" class="submit" value="Login" >Login</button
+                    </p>
+                </form>
+            </div>
+        </div>
+
+        <div id="tab-3">
+            <div class="uihighlight halfsized">Ask Ryan</div>
+        </div>
+    </div>
+</div>
+<jst>  
+    form_options['login_form'] = {
+        fatal: function() {
+            alert('OHHHHHHHHHMYYYYYYYGOOOOOOOOSHHHHHHH!');
+        },
+        success: function(data) {
+            redirect('home/dashboard');
+        },
+        fail: function(data) {
+            $("#login_form").prepend('<div style="margin-top: 5px" id="resethelp" class="thirdsized">Reset your password <a href="#">here</a>.</div>').uierror();
+            $("#login_form").prepend('<div style="margin-top: 5px" id="loginerror" class="thirdsized">Incorrect username/password</div>').uihighlight();  
+        }
+    };
+    $(".ui-widget-overlay").css("opacity","1 !important")
+    setTimeout( function (){     $("#username").focus(); }, 1000);
+</jst>
+</script>
+<script type="text/template" id="setting_main_view_template">
+
+
+Nothing
+</script>
+<script type="text/template" id="fee_edit_view_template">
+
+
+<div id="stupid">
+
+    <div class="ui-widget-header">
+        <h3 style="float: left;"><%= feeoptions.id ? "Edit" : "New" %> Fee</h3>
+        
+        <button type="submit" id="newfee" style="float: right;">Save</button>
+        <a class="button back-button" style="float: right;">Back</a>
+        <div style="clear:both;"></div>
+     
+    </div>
+    <%= fee_form_partial( feeoptions ) %>
+</div>
+
+<jst>
+
+    $(document).ready(function() {
+        $("form").rythform();   
+    });
+    $("#newfee").click( function(){
+        $("#add_fee_form").submit(); 
+    
+    });
+    form_options['add_fee_form'] = {
+        success: function() {
+
+            redirect("fee/list");
+        }
+    }
+
+</jst>
+
+</script>
+<script type="text/template" id="fee_form_template"> 
+        <form id="<%= formName  %>" action="fee/ajax_edit/<%= id ? id : "" %>" method="post">
+
+       <br />
+
+        <div style="">
+            <div class="megaform" style=" float: left;">
+
+            <fieldset>
+                <label for="">
+                    Name
+                </label>
+                <input name="name" id="" type="text" value="<%= name %>" />
+                <label for="">
+                    Default Price
+                </label>
+                <input name="price" id="" type="text" value="<%= price %>" />
+
+                <p id="setquantityb">set quantity</p>
+                <div id="setquantity" style="display: none;">
+                    <label for="">
+                        Default Quantity
+                    </label>
+                    <input name="quantity" id="" type="text" value="<%= quantity %>" />
+                </div>
+                <label for="">
+                    Description</label>
+                <textarea rows="4" name="description" cols="30"><%= description %></textarea>
+            </fieldset>
+            
+            </div>
+        </div>
+
+    </form>
+    <jst>
+        
+        $("#setquantityb").click( function(){
+            $("#setquantity").toggle();
+        })
+    </jst>
+
+</script>
 <script type="text/template" id="client_edit_view_template">
 <div id="client_edit_view_container">
 <div id="pageheader"></div>
@@ -331,14 +605,19 @@
                 options = {
                     'title': '<%= _(controller).capitalize() %> List',
                     'buttons': [{
-                                    'text': 'New <%= _(controller).capitalize() %>',
+                                    'text': 'Save',
                                     'href': '#/<%= controller %>/edit',
-                                    'classes': 'addbutton'
-                        },
+                                    'classes': 'save'
+                        },{
+                                    'text': 'Back',
+                                    'classes': 'back-button'
+                        }
                     ]
                     
                 }
-                $("#pageheader").html( _.template( $("#page_header_template").html(), options ) );
+                $("#pageheader").html( _.template( $("#page_header_template").jsthtml(), options ) );
+                
+                
                 if( GLOBALS.route_id ){
                     var url = GLOBALS.server_base + "/data/" + GLOBALS.route_id;
                     $.ajax( url, {
@@ -356,28 +635,22 @@
     });
     
     editview = new EditView;
-    $(".addbutton").click( function(){
-    
+    $(".save").click( function(){
+		
         var url = GLOBALS.server_base + "/data";
+        formdata = $('form').serializeObject()
         $.ajax( url, {
             dataType: "json",
             type: "POST",
             contentType: "application/json",
-            data: $.toJSON($('form').serializeObject()),
+            data: $.toJSON(formdata),
             success: function(data){
-                alert("asd");
+                redirect("client/list");
             }
         });
     
     });
     
-    form_options['add_client_form'] = {
-        success: function() {
-
-            redirect("client/list");
-        }
-    }
-
 </jst>
 
 </script>
@@ -385,7 +658,7 @@
 
 
 <form id="add_client_form" enctype="multipart/form-data" action="data/<%= typeof id != "undefined" ? id : "" %>" method="post">
-
+ <input name="type" id="" type="hidden" value="client" />
 <div style="width: 840px; margin: auto;background: #ccc;">
     <div class="megaform" style=" float: left;">
 
@@ -410,280 +683,9 @@
 </div>
 
 <jst>
-form_options['add_client_form'] = {
-    success: function() {
-        redirect("client/list");
-    }
-}
 
-$("form").rythform();
 </jst>
 
-</script>
-<script type="text/template" id="section_form_template">
-<div id="section_form_container">
-    <form id="add_section_form" action="section/ajax_edit/<%= id ? id : "" %>" method="post">
-
-    <br />
-
-    <div style="width: 840px; margin: auto;background: #ccc;">
-        <div class="megaform" style=" float: left;">
-
-        <fieldset>
-            <label for="">
-                Name</label>
-            <input name="name" id="" type="text" value="<%= name %>" />
-
-            <label for="">
-                Comment</label>
-            <textarea class="jckeditor" rows="4" name="content" cols="30"><%= content %></textarea>
-
-
-
-
-
-        <br />
-        <br />
-
-    <h3>Add Fees</h3>
-
-    <div class="ui-widget">
-
-        <input type="text" id="fees" /><button type="button" id="add-fee">Addd</button> 
-    </div>
-
-
-            
-         
-
-
-        <div id="fee_form_modal"></div>
-        
-        <br />
-        <br />
-        <br />
-        <input type="text" name="feelist" id="feelist" value="" />
-        <h3>Fees</h3>
-        <ul id="sortablefees"></ul>
-        
-        </fieldset>
-        </form>
-        </div>
-    </div>
-</div>
-    <jst>
-        form_options['add_fee_form'] = {
-            success: function(data) {
-                $("#fee_form_modal").dialog("close");
-                
-               section_backbone.fees.add( {
-                    "id": data.id,
-                    "name": data.name,
-                    "price": data.price,
-                } );
-            }
-        }
-        Fee = Backbone.Model.extend({
-            //Create a model to hold friend atribute
-            name: null
-        });
-        
-        Fees = Backbone.Collection.extend({
-          //This is our Friends collection and holds our Friend models
-          initialize: function (models, options) {
-            this.bind("add", options.view.addFee);
-            this.bind("remove", options.view.removeFee);
-            //Listen for new additions to the collection and call a view function if so
-            
-          }
-        });
-
-        SectionBackboneView = Backbone.View.extend({
-            el: $("#section_form_container"),
-            initialize: function () {
-                 
-                this.fees = new Fees( null, { view: this });
-                blue = this.fees;
-                $.ajax({
-                   type: "POST",
-                   url: "fee/lookup",
-                   dataType: "json",
-                   success: function( fees ){
-                  
-                    <% if( sectionfee_arr.length > 0 ) { %>
-                   _.each(<%= sectionfee_arr %>, function(num){ blue.add(num); });
-                   <% } %>
-                     $( "#fees" ).autocomplete({
-                        source: fees,
-                        minLength: 1,
-                        delay: 0,
-                        select: function( event, ui ) {
-                       
-                            if( section_backbone.fees.get( ui.item.id ) ){
-                              $.jGrowl("You have already added this",{  theme: 'apple', position: "bottom-right"});
-                              $.jGrowl("Please try again",{  theme: 'apple', position: "bottom-right"});
-                                $( "#fees" ).val("").focus();
-                                return false;
-                            }else{
-                            section_backbone.fees.add( {
-                                "id": ui.item.id,
-                                "name": ui.item.label,
-                                "price": ui.item.price,
-                            } );
-                            }
-                            $( "#fees" ).val("").focus();
-                            return false;
-                        },
-                        close: function(){
-                            
-                        }
-                    });
-                   }
-                });
-            },
-            events: {
-                "click #add-fee":  "feemodal",
-                "keypress #fees":  "checkEnter",
-            },
-            addFee: function (model) {
-                
-                // $("#feetable tr:last").after("<tr>" + "<td>" + model.id + "</td>" + "<td>" + model.get("name") + "</td>" + "<td>" + model.get("price") + "</td>" + "<td><a href='' class='delete_fee'>Delete</a></td>" + "</tr>")
-                $("#sortablefees").append("<li id='" + model.id + "' class='ui-state-default'><span style='float: left;' class='ui-icon ui-icon-arrowthick-2-n-s'></span><p style='width: 250px; float: left;'>" + model.get("name") + "</p><span class='delete_fee' style='float: right;'>Delete</span></li>")
-                $( "#sortablefees" ).sortable({
-                    update: section_backbone.updateFeeValues
-                });
-
-                section_backbone.updateFeeValues();
-            },
-            updateFeeValues: function(event, ui){
-                        
-                sections = $("#sortablefees").sortable('toArray').toString();
-                $("#feelist").val( sections );
-                
-            },
-            removeFee: function () {
-                
-                section_backbone.updateFeeValues();
-                
-            },
-            checkEnter: function(e){
-                if (e.keyCode == 13	&& $("#fees").val() == '') return false;
-                if (e.keyCode != 13	|| $("#fees").val() == '') return;
-                //alert(currentVein);
-        
-                this.feemodal();
-                
-                return false;
-            },
-            feemodal: function(){
-            
-                var feeoptions = {
-                    "id": "",
-                    "name": escapeHtml($("#fees").val()),
-                    "price": "",
-                    "quantity": "",
-                    "description": "",
-                    "editing": "false",
-                    "formName" : "add_fee_form",
-                }
-
-                var template = _.template( $('#fee_form_template').jsthtml(), feeoptions )
-                $("#fee_form_modal").html(template).dialog({
-                    draggable: false,
-                    resizable: false,
-                    closeOnEscape: false,
-                    title: "New Fee",
-                    modal: true, 
-                    open: function(){ $("form").rythform();     },
-                    hide: 'drop',
-                    width: "550px",
-                    buttons: {
-                        "Save": function(){
-                            $("form", $(this).parents(".ui-dialog")).submit();
-                        }
-                    }
-                });
-                
-                
-            }
-            
-            
-        });
-        
-        var section_backbone = new SectionBackboneView;
-        
-        
-        $(".delete_fee").live("click", function() {
-            $(this).parents("li").remove();
-            
-            appview.fees.remove( appview.fees.get(  $(this).parents("li").attr("id") ) );
-            //appview.fees.get().remove();
-            
-            return false;
-        });
-    </jst>
-</script>
-<script  type="text/template" id="section_edit_view_template">
-
-
-
-    <style>
-        #sortablefees { list-style-type: none; margin: 0; padding: 0; width: 60%; }
-        #sortablefees li { cursor: pointer; margin: 0 3px 3px 3px; padding: 0.4em; padding-left: 1.5em; font-size: 1.4em; height: 18px; }
-        #sortablefees li span { margin-left: -1.3em; }
-    </style>
-
-    <div id="stupid2">
-        <div class="ui-widget-header">
-            <h3 style="float: left;"><%= sectionoptions.id ? "Edit" : "New" %> Section</h3>
-            
-            <button type="submit" id="newsection" style="float: right;">Save</button>
-            <a class="button back-button" style="float: right;">Back</a>
-            <div style="clear:both;"></div>
-         
-        </div>
-        
-    <%= section_form_partial( sectionoptions ) %>
-        </div>
-       
-        
-   <jst>
-        form_options['add_section_form'] = {
-            success: function( data ) {
-
-                redirect("section/list");
-            }
-        }
-        $("#newsection").click( function(){
-            $("#add_section_form").submit(); 
-        });
-        
-        $(function() {
-       
-            function log( message ) {
-                $( "<div/>" ).text( message ).prependTo( "#log" );
-                $( "#log" ).attr( "scrollTop", 0 );
-            }
-            
-           // var sectionoptions = <%= sectionoptions %>
-             
-           // var template = _.template( $('#section-form-template').html(), sectionoptions)
-           
-            //$("#stupid2").append( _template(  );
-          
-           // $("form").rythform();   
-            
-            
-        });
-        </jst>
-</script>
-<script type="text/template" id="section_list_item_template" >
-    <li id="<%= id %>">
-        <span class="section_name" style="width: 250px;"><%= name %></span>
-        <a class="delete-section" style="float: right;">Delete</a>
-        <a class="edit-section" style="float: right;">Edit</a>
-        <span style="width: 20px; float: left;  cursor: pointer;" class="ui-icon ui-icon-arrow-4-diag"></span>
-    </li>
 </script>
 <script type="text/template" id="home_dashboard_view_template">
     <style>
@@ -869,64 +871,6 @@ $("form").rythform();
 </jst>
     
 </script>
-<script type="text/template" id="proposal_preview_container_template">
-    <style>
-    .proposal_preview {
-        min-height: 600px;
-    }
-    .preview_content {
-        padding: 20px;
-    }
-    .preview_section_container div{
-        padding-left: 20px;
-    }
-    </style>
-    <div class="container proposal_preview" id="proposal_preview" style="margin-top: 100px;">
-        <div id="preview_header" style="padding-top: 10px;">
-        
-            <div style="height: 30px; background: #99ccff;"></div>
-            <div class="preview_content">
-                <h2>Razorcuts</h2>
-            </div>
-            
-        </div>
-        <div id="preview_body"> 
-            <div class="preview_content">
-            </div>
-        </div>
-        <div id="preview_footer"> 
-        
-        </div>
-        
-    </div>
-    <br />
-    <br />
-    <br />
-    <br />
-    <br />
-    <br />
-    <br />
-    <br />
-    <br />
-    <br />
-    <br />
-    <br />
-    <br />
-    <br />
-    <br />
-    <br />
-    <br />
-    <br />
-    <br />
-    <br />
-    <br />
-    <br />
-    <br />
-    <br />
-    <br />
-    <br />
-    <br />
-</script>    
 <script type="text/template" id="proposal_edit_view_template">
 <div id="proposal_design_view_container">
 
@@ -1205,280 +1149,326 @@ $("form").rythform();
     </div>
 
 </script>    
-<script type="text/template" id="setting_main_view_template">
-
-
-Nothing
-</script>
-<script type="text/template" id="page_header_template">
-    <div class="ui-widget-header">
-        <h3 style="text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);float: left;"><%= title %></h3>
-        <% _.each( buttons, function( button ) { %>
-            <a class="button <%= button.classes %>" href="<%= button.href %>" style="float: right;"><%= button.text %></a>
-        <% }); %>           
-        <div style="clear:both;"></div>
+<script type="text/template" id="proposal_preview_container_template">
+    <style>
+    .proposal_preview {
+        min-height: 600px;
+    }
+    .preview_content {
+        padding: 20px;
+    }
+    .preview_section_container div{
+        padding-left: 20px;
+    }
+    </style>
+    <div class="container proposal_preview" id="proposal_preview" style="margin-top: 100px;">
+        <div id="preview_header" style="padding-top: 10px;">
+        
+            <div style="height: 30px; background: #99ccff;"></div>
+            <div class="preview_content">
+                <h2>Razorcuts</h2>
+            </div>
+            
+        </div>
+        <div id="preview_body"> 
+            <div class="preview_content">
+            </div>
+        </div>
+        <div id="preview_footer"> 
+        
+        </div>
+        
     </div>
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+</script>    
+<script  type="text/template" id="section_edit_view_template">
+
+
+
+    <style>
+        #sortablefees { list-style-type: none; margin: 0; padding: 0; width: 60%; }
+        #sortablefees li { cursor: pointer; margin: 0 3px 3px 3px; padding: 0.4em; padding-left: 1.5em; font-size: 1.4em; height: 18px; }
+        #sortablefees li span { margin-left: -1.3em; }
+    </style>
+
+    <div id="stupid2">
+        <div class="ui-widget-header">
+            <h3 style="float: left;"><%= sectionoptions.id ? "Edit" : "New" %> Section</h3>
+            
+            <button type="submit" id="newsection" style="float: right;">Save</button>
+            <a class="button back-button" style="float: right;">Back</a>
+            <div style="clear:both;"></div>
+         
+        </div>
+        
+    <%= section_form_partial( sectionoptions ) %>
+        </div>
+       
+        
+   <jst>
+        form_options['add_section_form'] = {
+            success: function( data ) {
+
+                redirect("section/list");
+            }
+        }
+        $("#newsection").click( function(){
+            $("#add_section_form").submit(); 
+        });
+        
+        $(function() {
+       
+            function log( message ) {
+                $( "<div/>" ).text( message ).prependTo( "#log" );
+                $( "#log" ).attr( "scrollTop", 0 );
+            }
+            
+           // var sectionoptions = <%= sectionoptions %>
+             
+           // var template = _.template( $('#section-form-template').html(), sectionoptions)
+           
+            //$("#stupid2").append( _template(  );
+          
+           // $("form").rythform();   
+            
+            
+        });
+        </jst>
 </script>
-<script type="text/template" id="common_list_view_template">
-<div id="common_list_view_container">
-    <div id="pageheader"></div>
-    <div id="common_list_view_table_container">Loading...</div>
+<script type="text/template" id="section_list_item_template" >
+    <li id="<%= id %>">
+        <span class="section_name" style="width: 250px;"><%= name %></span>
+        <a class="delete-section" style="float: right;">Delete</a>
+        <a class="edit-section" style="float: right;">Edit</a>
+        <span style="width: 20px; float: left;  cursor: pointer;" class="ui-icon ui-icon-arrow-4-diag"></span>
+    </li>
+</script>
+<script type="text/template" id="section_form_template">
+<div id="section_form_container">
+    <form id="add_section_form" action="section/ajax_edit/<%= id ? id : "" %>" method="post">
+
+    <br />
+
+    <div style="width: 840px; margin: auto;background: #ccc;">
+        <div class="megaform" style=" float: left;">
+
+        <fieldset>
+            <label for="">
+                Name</label>
+            <input name="name" id="" type="text" value="<%= name %>" />
+
+            <label for="">
+                Comment</label>
+            <textarea class="jckeditor" rows="4" name="content" cols="30"><%= content %></textarea>
+
+
+
+
+
+        <br />
+        <br />
+
+    <h3>Add Fees</h3>
+
+    <div class="ui-widget">
+
+        <input type="text" id="fees" /><button type="button" id="add-fee">Addd</button> 
+    </div>
+
+
+            
+         
+
+
+        <div id="fee_form_modal"></div>
+        
+        <br />
+        <br />
+        <br />
+        <input type="text" name="feelist" id="feelist" value="" />
+        <h3>Fees</h3>
+        <ul id="sortablefees"></ul>
+        
+        </fieldset>
+        </form>
+        </div>
+    </div>
 </div>
     <jst>
-        options = {
-            'title': '<%= _(controller).capitalize() %> List',
-            'buttons': [{
-                            'text': 'New <%= _(controller).capitalize() %>',
-                            'href': '#/<%= controller %>/edit',
-                            'classes': 'addbutton'
-                },
-            ]
-            
+        form_options['add_fee_form'] = {
+            success: function(data) {
+                $("#fee_form_modal").dialog("close");
+                
+               section_backbone.fees.add( {
+                    "id": data.id,
+                    "name": data.name,
+                    "price": data.price,
+                } );
+            }
         }
-        
-        $(".list_view .delete").click( function(){
-            var record_row = $(this).parents("tr");
-            $.ajax("<%= controller %>/delete/" + record_row.attr("row_id"), {
-                success: function() {
-                    record_row.remove();
-                }
-            });
-        })
-        
-        setTimeout( function (){     $(".dataTables_filter input").focus(); }, 400);
-        $(".dataTables_filter input").focusout( function(){
-            setTimeout( function (){     $(".dataTables_filter input").focus(); }, 700);
-        });
-
-        ListData = Backbone.Collection.extend({
-            model: window.Document,
-            initialize: function (){
-                this.bind( "refresh", this.renderTable );
-                this.url = "data";
-            },
-            renderTable: function(){
-
-                $("#common_list_view_table_container").html( _.template( $("#common_list_view_table_template").jsthtml(), { rows: this.models } ) );
-                
-            },
+        Fee = Backbone.Model.extend({
+            //Create a model to hold friend atribute
+            name: null
         });
         
-        ListView = Backbone.View.extend({
-            el: $("#common_list_view_container"),
+        Fees = Backbone.Collection.extend({
+          //This is our Friends collection and holds our Friend models
+          initialize: function (models, options) {
+            this.bind("add", options.view.addFee);
+            this.bind("remove", options.view.removeFee);
+            //Listen for new additions to the collection and call a view function if so
+            
+          }
+        });
+
+        SectionBackboneView = Backbone.View.extend({
+            el: $("#section_form_container"),
             initialize: function () {
-                
-                $("#pageheader").html( _.template( $("#page_header_template").html(), options ) );
-                
-                
-                var url = GLOBALS.server_base + "/api/get" + location.hash.substr(1) + "/" + GLOBALS.route_id;
-                $.ajax( url, {
-                    dataType: "json",
-                    success: function(data){
-                        listdata.refresh(data.rows);
-                    }
-                
+                 
+                this.fees = new Fees( null, { view: this });
+                blue = this.fees;
+                $.ajax({
+                   type: "POST",
+                   url: "fee/lookup",
+                   dataType: "json",
+                   success: function( fees ){
+                  
+                    <% if( sectionfee_arr.length > 0 ) { %>
+                   _.each(<%= sectionfee_arr %>, function(num){ blue.add(num); });
+                   <% } %>
+                     $( "#fees" ).autocomplete({
+                        source: fees,
+                        minLength: 1,
+                        delay: 0,
+                        select: function( event, ui ) {
+                       
+                            if( section_backbone.fees.get( ui.item.id ) ){
+                              $.jGrowl("You have already added this",{  theme: 'apple', position: "bottom-right"});
+                              $.jGrowl("Please try again",{  theme: 'apple', position: "bottom-right"});
+                                $( "#fees" ).val("").focus();
+                                return false;
+                            }else{
+                            section_backbone.fees.add( {
+                                "id": ui.item.id,
+                                "name": ui.item.label,
+                                "price": ui.item.price,
+                            } );
+                            }
+                            $( "#fees" ).val("").focus();
+                            return false;
+                        },
+                        close: function(){
+                            
+                        }
+                    });
+                   }
                 });
-                
             },
             events: {
-                "click .delete":  "removeRow",
+                "click #add-fee":  "feemodal",
+                "keypress #fees":  "checkEnter",
             },
-            removeRow: function(event){
-                var row = $(event.currentTarget).parents("tr");
-                var id = row.attr("row_id");
-                row.remove();
-                listdata.get(id).destroy();
+            addFee: function (model) {
+                
+                // $("#feetable tr:last").after("<tr>" + "<td>" + model.id + "</td>" + "<td>" + model.get("name") + "</td>" + "<td>" + model.get("price") + "</td>" + "<td><a href='' class='delete_fee'>Delete</a></td>" + "</tr>")
+                $("#sortablefees").append("<li id='" + model.id + "' class='ui-state-default'><span style='float: left;' class='ui-icon ui-icon-arrowthick-2-n-s'></span><p style='width: 250px; float: left;'>" + model.get("name") + "</p><span class='delete_fee' style='float: right;'>Delete</span></li>")
+                $( "#sortablefees" ).sortable({
+                    update: section_backbone.updateFeeValues
+                });
+
+                section_backbone.updateFeeValues();
+            },
+            updateFeeValues: function(event, ui){
+                        
+                sections = $("#sortablefees").sortable('toArray').toString();
+                $("#feelist").val( sections );
+                
+            },
+            removeFee: function () {
+                
+                section_backbone.updateFeeValues();
+                
+            },
+            checkEnter: function(e){
+                if (e.keyCode == 13	&& $("#fees").val() == '') return false;
+                if (e.keyCode != 13	|| $("#fees").val() == '') return;
+                //alert(currentVein);
+        
+                this.feemodal();
+                
+                return false;
+            },
+            feemodal: function(){
+            
+                var feeoptions = {
+                    "id": "",
+                    "name": escapeHtml($("#fees").val()),
+                    "price": "",
+                    "quantity": "",
+                    "description": "",
+                    "editing": "false",
+                    "formName" : "add_fee_form",
+                }
+
+                var template = _.template( $('#fee_form_template').jsthtml(), feeoptions )
+                $("#fee_form_modal").html(template).dialog({
+                    draggable: false,
+                    resizable: false,
+                    closeOnEscape: false,
+                    title: "New Fee",
+                    modal: true, 
+                    open: function(){ $("form").rythform();     },
+                    hide: 'drop',
+                    width: "550px",
+                    buttons: {
+                        "Save": function(){
+                            $("form", $(this).parents(".ui-dialog")).submit();
+                        }
+                    }
+                });
+                
                 
             }
-        });
-        var listdata = new ListData;
-        var listview = new ListView;
-    </jst>
-
-</script>
-<script type="text/template" id="common_list_view_table_template">
-<table class="list_view">
-   <thead>
-   <tr>
-        <% _.each( rows[0].get("value"), function(val, key) { 
-            if( key[0] != "_" ){    
-                %>
-                    <th><%= _(key).capitalize() %></th>
-                <% 
-            }
-            });
-        %>
-        <th style="width:119px;">Actions</th>
-   </tr>
-   </thead>
-   <tbody>
-        
-        <%
-        _.each( rows, function( row ) {
             
-        %>
-           <tr row_id="<%= row.id %>">
-                <%
-                _.each( row.get("value"), function( col, key ) {
-                    if( key[0] != "_" ){  
-                    class = "";
-                    if( _(col).isInt() ){
-                        class = "int";
-                    }
-                %>
-                    <td class="<%= class %>"><%= _(col).escapeHTML() %></td>
-                <% 
-                }
-                });
-                %>
-               <td><a class="wrenchbutton edit">Edit</a> <a class="button delete">Delete</a></td>
-           </tr>
-        <%
-        
-        });
-        %>
-        </tbody>
-</table>
-<jst>
-$(".list_view").dataTable({
-                  
-    "aaSorting": [],
-    "iDisplayLength": 250,
-    "oLanguage": {
-        "sSearch": "Search",
-        "sLengthMenu" : "Show _MENU_"
-    },
-    "bJQueryUI": true,
-    "sDom": 'frti',
-});
-</jst>
-</script>
-<script type="text/template" id="fee_edit_view_template">
-
-
-<div id="stupid">
-
-    <div class="ui-widget-header">
-        <h3 style="float: left;"><%= feeoptions.id ? "Edit" : "New" %> Fee</h3>
-        
-        <button type="submit" id="newfee" style="float: right;">Save</button>
-        <a class="button back-button" style="float: right;">Back</a>
-        <div style="clear:both;"></div>
-     
-    </div>
-    <%= fee_form_partial( feeoptions ) %>
-</div>
-
-<jst>
-
-    $(document).ready(function() {
-        $("form").rythform();   
-    });
-    $("#newfee").click( function(){
-        $("#add_fee_form").submit(); 
-    
-    });
-    form_options['add_fee_form'] = {
-        success: function() {
-
-            redirect("fee/list");
-        }
-    }
-
-</jst>
-
-</script>
-<script type="text/template" id="fee_form_template"> 
-        <form id="<%= formName  %>" action="fee/ajax_edit/<%= id ? id : "" %>" method="post">
-
-       <br />
-
-        <div style="">
-            <div class="megaform" style=" float: left;">
-
-            <fieldset>
-                <label for="">
-                    Name
-                </label>
-                <input name="name" id="" type="text" value="<%= name %>" />
-                <label for="">
-                    Default Price
-                </label>
-                <input name="price" id="" type="text" value="<%= price %>" />
-
-                <p id="setquantityb">set quantity</p>
-                <div id="setquantity" style="display: none;">
-                    <label for="">
-                        Default Quantity
-                    </label>
-                    <input name="quantity" id="" type="text" value="<%= quantity %>" />
-                </div>
-                <label for="">
-                    Description</label>
-                <textarea rows="4" name="description" cols="30"><%= description %></textarea>
-            </fieldset>
             
-            </div>
-        </div>
-
-    </form>
-    <jst>
+        });
         
-        $("#setquantityb").click( function(){
-            $("#setquantity").toggle();
-        })
+        var section_backbone = new SectionBackboneView;
+        
+        
+        $(".delete_fee").live("click", function() {
+            $(this).parents("li").remove();
+            
+            appview.fees.remove( appview.fees.get(  $(this).parents("li").attr("id") ) );
+            //appview.fees.get().remove();
+            
+            return false;
+        });
     </jst>
-
-</script>
-<script type="text/template" id="user_login_view_template">
-<br />
-<br />
-<br />
-<br />
-<br />
-<div id="loginwindow" style="padding-bottom: 15px; width: 400px;margin: auto;">
-    <div class="tabs" style="overflow: hidden;" title="MGF CONSULTANTS - Ryth - Login">
-        <ul>
-            <li><a href="#tab-1">Login</a></li>
-            <li><a href="#tab-3">Forgot Password</a></li>
-        </ul>
-
-        <div id="tab-1">
-            <div id="loginform"  style=" margin: auto;">
-                <form id="login_form" action="user/ajaxlogin" class="pretty" method="post">
-                    <fieldset> 
-                        <legend></legend> 
-                        <ol style="width:260px; margin: auto;">
-                            <li><label for="username">Username</label><input class="required" minlength="3"  id="username" name="username" type="text" /></li>
-                            <li><label for="password">Password</label><input type="password" name="password" id="password" class="required" minlength="6" /></li>
-                        </ol>
-                    </fieldset>
-                    <p style="text-align: center;"> 
-                        <button id="loginbutton" type="submit" class="submit" value="Login" >Login</button
-                    </p>
-                </form>
-            </div>
-        </div>
-
-        <div id="tab-3">
-            <div class="uihighlight halfsized">Ask Ryan</div>
-        </div>
-    </div>
-</div>
-<jst>  
-    form_options['login_form'] = {
-        fatal: function() {
-            alert('OHHHHHHHHHMYYYYYYYGOOOOOOOOSHHHHHHH!');
-        },
-        success: function(data) {
-            redirect('home/dashboard');
-        },
-        fail: function(data) {
-            $("#login_form").prepend('<div style="margin-top: 5px" id="resethelp" class="thirdsized">Reset your password <a href="#">here</a>.</div>').uierror();
-            $("#login_form").prepend('<div style="margin-top: 5px" id="loginerror" class="thirdsized">Incorrect username/password</div>').uihighlight();  
-        }
-    };
-    $(".ui-widget-overlay").css("opacity","1 !important")
-    setTimeout( function (){     $("#username").focus(); }, 1000);
-</jst>
 </script>
