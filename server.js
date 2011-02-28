@@ -45,16 +45,19 @@ app.get('/list/:controller', function(req, res) {
     var couchdb = http.createClient(80, 'ryth.cloudant.com', true);
     var request = couchdb.request(req.method, cloudanturl, {
         'Host': 'ryth.cloudant.com',
-        'Content-Type': 'application/json',
         'Authorization': 'Basic ' + rCommon.base64_encode('ryth:abCD--12')
         
     });
 
     request.end();
     request.on('response', function (response) {
+        response.setEncoding('utf8');
+        rows = ""
         response.on('data', function (data) {
-            res.header('Content-Type', 'application/json');
-            console.log(data);
+            rows += data;
+        });
+        response.on('end', function (){
+           res.send(rows); 
         });
     });
 });
