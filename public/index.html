@@ -13,8 +13,8 @@
             "route_id": null,
             "controller": null,
             "action": null,
-            "server_base": "http://app.protosal.com",
-            "couch_server": "http://aaa.protosal.com",
+            "server_base": "http://localhost:3000",
+            "couch_server": "http://localhost:3000",
         };
         
         if(window.location.pathname != "/") window.location = "/"; //handles 404 errors
@@ -34,8 +34,8 @@
             "/media/css/style.css",
             "/media/css/demo_page.css",
             "/media/css/demo_table.css",
-            "/media/css/jgrowl.css",
-            "/media/css/jquery-ui/aristo/css/Aristo/jquery-ui-1.8.7.custom.css"
+            "/media/css/jgrowl.css"
+            //"/media/css/jquery-ui/aristo/css/Aristo/jquery-ui-1.8.7.custom.css"
         );
         
         head.js( 
@@ -54,10 +54,10 @@
             GLOBALS.server_base + "/media/js/jquery.dataTables.js",
             GLOBALS.server_base + "/media/js/jquery/plugins/ryth/rythjsthtml.js",
             GLOBALS.server_base + "/media/js/ryth_renderer_config.js",
-            GLOBALS.server_base + "/media/js/jquery/plugins/ryth/rythbutton.js",
-            GLOBALS.server_base + "/_utils/script/sha1.js",
-            GLOBALS.server_base + "/_utils/script/json2.js",
-            GLOBALS.server_base + "/_utils/script/jquery.couch.js"
+            GLOBALS.server_base + "/media/js/jquery/plugins/ryth/rythbutton.js"
+            //GLOBALS.server_base + "/_utils/script/sha1.js",
+            //GLOBALS.server_base + "/_utils/script/json2.js",
+            //GLOBALS.server_base + "/_utils/script/jquery.couch.js"
         );
 
 

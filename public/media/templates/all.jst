@@ -1191,7 +1191,8 @@ _rev = ""
                         id = "/" + GLOBALS.route_id; 
                         type = "PUT";
                     }
-                    var url = GLOBALS.server_base + "/data" + id;
+                    var url = GLOBALS.couch_server + "/data" + id;
+                    alert(url);
                     formdata = $('form').serializeObject();
                     formdata.type = "<%=  controller %>";
                     
@@ -1301,7 +1302,7 @@ _rev = ""
                 $("#pageheader").html( _.template( $("#page_header_template").jsthtml(), options ) );
                 
                 
-                var url = GLOBALS.server_base + "/api/get" + location.hash.substr(1) + "/" + GLOBALS.route_id;
+                var url = GLOBALS.server_base + "/list/" + GLOBALS.controller;
                 $.ajax( url, {
                     dataType: "json",
                     success: function(data){

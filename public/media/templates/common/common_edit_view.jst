@@ -31,7 +31,8 @@ _rev = ""
                         id = "/" + GLOBALS.route_id; 
                         type = "PUT";
                     }
-                    var url = GLOBALS.server_base + "/data" + id;
+                    var url = GLOBALS.couch_server + "/data" + id;
+                    alert(url);
                     formdata = $('form').serializeObject();
                     formdata.type = "<%=  controller %>";
                     
