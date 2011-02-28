@@ -1,0 +1,83 @@
+<script type="text/template" id="common_edit_view_template">
+
+<div id="<%=controller %>_edit_view_container">
+<div id="pageheader"></div>
+<div id="formc"></div>
+</div>
+<jst>
+_rev = ""
+    EditView = Backbone.View.extend({
+            el: $("#<%=controller %>_edit_view_container"),
+
+            initialize: function () {
+                options = {
+                    'title': '<%= _(controller).capitalize() %> List',
+                    'buttons': [{
+                                    'text': 'Save',
+                                    'classes': 'save'
+                        },{
+                                    'text': 'Back',
+                                    'classes': 'back-button'
+                        }
+                    ]
+                    
+                }
+                $("#pageheader").html( _.template( $("#page_header_template").jsthtml(), options ) );
+                
+                var clickHandler =  function(){
+                    id = "";
+                    type = "POST";
+                    if( GLOBALS.route_id != "" ) {
+                        id = "/" + GLOBALS.route_id; 
+                        type = "PUT";
+                    }
+                    var url = GLOBALS.server_base + "/data" + id;
+                    formdata = $('form').serializeObject();
+                    formdata.type = "<%=  controller %>";
+                    
+                    if(  _rev != "" )
+                        formdata._rev = _rev;
+                        
+                    $.ajaxPrefilter(function( options ) {
+                        //options.url = GLOBALS.server_base + "/api/get/" + options.url;
+                    });
+                    
+                    $.ajax( url, {
+                        dataType: "json",
+                        type: type,
+                        contentType: "application/json",
+                        data: $.toJSON(formdata),
+                        success: function(data){
+                            redirect("<%=  controller %>/list");
+                        }
+                    });
+                    return false;
+                };  
+                
+                if( GLOBALS.route_id ){
+                    var url = GLOBALS.server_base + "/data/" + GLOBALS.route_id;
+                    $.ajax( url, {
+                        dataType: "json",
+                        success: function(data){
+                            $("#formc").append( _.template( $("#<%= controller %>_form_template").jsthtml(), data ) );
+                            if (typeof data._rev != "undefined")
+                                _rev = data._rev;  
+                            $(".save").click( clickHandler );
+                        }
+                    });
+                } else {
+                    $("#formc").append( _.template( $("#<%=controller %>_form_template").jsthtml(), {} ) );
+                    $(".save").click( clickHandler );
+                }
+                
+        
+                
+                
+            },
+
+    });
+    editview = new EditView;
+
+</jst>
+
+</script>

@@ -94,26 +94,18 @@
                     GLOBALS.route_id = vid;
 
                     $('.maintabs li').removeClass('ui-state-active').removeClass('ui-tabs-selected'); //Make all tabs inactive
-                    b = location.hash.split("/");
-                    $("#" + b[1]).addClass('ui-state-active').addClass('ui-tabs-selected');
+                    $("#" + GLOBALS.controller).addClass('ui-state-active').addClass('ui-tabs-selected');
                 
                     //get URL for the ajax call
                     url = GLOBALS.server_base + "/api/get" + location.hash.substr(1) + "/" + GLOBALS.route_id; 
-                    var partials = {
-                        "section_edit_view": [ "section_form" ],
-                        "fee_edit_view": [ "fee_form" ],
-                        "client_edit_view": [ "client_form" ]
-                    }
                     
+                    //We know the page is about to change so lets clean up any jckeditors hanging around before the dom changes and jckeditors internal reference is updated
                     $(".jckeditor").each( function(){
                         $(this).ckeditor(function(){ // a hack to make jck editor work on page refresh
                             this.destroy();
                         });
                     });
-                    //$("#contentpane").fadeOut(150, function(){ // just some ui effects 
-                     //   $("#contentpane").fadeIn(150)
-                    //})
-                    //$("#contentpane").html($("#loadingbarpage").html() ); // Set the content pane HTML to an Ajax loading bar
+                    
                     var obj = {};
                     template = GLOBALS.controller + "_" + GLOBALS.action + "_view";
                     if( partials[template]){
@@ -133,8 +125,8 @@
                     obj.action = GLOBALS.action;
                     if ( GLOBALS.action == "list" ) {
                         template_name = "common_list";
-                        
-                        
+                    } else if( GLOBALS.action == "edit" ) {
+                        template_name = "common_edit";
                     } else {
                         template_name = GLOBALS.controller + "_" + GLOBALS.action
                     }
@@ -142,6 +134,9 @@
                     
                     $("#contentpane").html( $("#contentpane").jsthtml() );
                     //$.ajax( url, pageOptions );
+                    
+                    
+
                 
               }, //end of DEFAULT ROUTE
 
@@ -169,7 +164,7 @@
             
              
         });
-        
+  
     </script>
     </head>
 

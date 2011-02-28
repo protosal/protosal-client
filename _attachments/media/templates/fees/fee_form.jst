@@ -1,6 +1,5 @@
 <script type="text/template" id="fee_form_template"> 
-        <form id="<%= formName  %>" action="fee/ajax_edit/<%= id ? id : "" %>" method="post">
-
+    <form id="add_fee_form" enctype="multipart/form-data" method="post">
        <br />
 
         <div style="">
@@ -10,33 +9,34 @@
                 <label for="">
                     Name
                 </label>
-                <input name="name" id="" type="text" value="<%= name %>" />
+                <input name="name" id="" type="text" value="<%= typeof name != "undefined" ? name : "" %>" />
                 <label for="">
                     Default Price
                 </label>
-                <input name="price" id="" type="text" value="<%= price %>" />
+                <input name="price" id="" type="text" value="<%= typeof price != "undefined" ? price : "" %>" />
 
                 <p id="setquantityb">set quantity</p>
                 <div id="setquantity" style="display: none;">
                     <label for="">
                         Default Quantity
                     </label>
-                    <input name="quantity" id="" type="text" value="<%= quantity %>" />
+                    <input name="quantity" id="" type="text" value="<%= typeof quantity != "undefined" ? quantity : "" %>" />
                 </div>
                 <label for="">
                     Description</label>
-                <textarea rows="4" name="description" cols="30"><%= description %></textarea>
+                <textarea rows="4" name="description" cols="30"><%= typeof description != "undefined" ? description : "" %></textarea>
             </fieldset>
             
             </div>
         </div>
 
     </form>
-    <jst>
-        
-        $("#setquantityb").click( function(){
-            $("#setquantity").toggle();
-        })
-    </jst>
+
+<jst>
+    $("#setquantityb").click( function(){
+        $("#setquantity").toggle();
+    });
+</jst>
 
 </script>
+

@@ -1,34 +1,50 @@
 <script type="text/template" id="fee_edit_view_template">
 
-
-<div id="stupid">
-
-    <div class="ui-widget-header">
-        <h3 style="float: left;"><%= feeoptions.id ? "Edit" : "New" %> Fee</h3>
-        
-        <button type="submit" id="newfee" style="float: right;">Save</button>
-        <a class="button back-button" style="float: right;">Back</a>
-        <div style="clear:both;"></div>
-     
-    </div>
-    <%= fee_form_partial( feeoptions ) %>
+<div id="<%=controller %>_edit_view_container">
+<div id="pageheader"></div>
+<div id="formc"></div>
 </div>
-
 <jst>
+    EditView = Backbone.View.extend({
+            el: $("#<%=controller %>_edit_view_container"),
 
-    $(document).ready(function() {
-        $("form").rythform();   
+            initialize: function () {
+                options = {
+                    'title': '<%= _(controller).capitalize() %> List',
+                    'buttons': [{
+                                    'text': 'Save',
+                                    'classes': 'save'
+                        },{
+                                    'text': 'Back',
+                                    'classes': 'back-button'
+                        }
+                    ]
+                    
+                }
+                $("#pageheader").html( _.template( $("#page_header_template").jsthtml(), options ) );
+                
+                
+                if( GLOBALS.route_id ){
+                    var url = GLOBALS.server_base + "/data/" + GLOBALS.route_id;
+                    $.ajax( url, {
+                        dataType: "json",
+                        success: function(data){
+                            $("#formc").append( _.template( $("#<%=controller %>_form_template").jsthtml(), data ) );
+                        }
+                    
+                    });
+                } else {
+                    $("#formc").append( _.template( $("#<%=controller %>_form_template").jsthtml(), {} ) );
+                }
+            },
+
     });
-    $("#newfee").click( function(){
-        $("#add_fee_form").submit(); 
+
+    editview = new EditView;
+
+
     
-    });
-    form_options['add_fee_form'] = {
-        success: function() {
 
-            redirect("fee/list");
-        }
-    }
 
 </jst>
 

@@ -1,6 +1,6 @@
 <script type="text/template" id="section_form_template">
 <div id="section_form_container">
-    <form id="add_section_form" action="section/ajax_edit/<%= id ? id : "" %>" method="post">
+    <form id="add_section_form">
 
     <br />
 
@@ -10,11 +10,11 @@
         <fieldset>
             <label for="">
                 Name</label>
-            <input name="name" id="" type="text" value="<%= name %>" />
+            <input name="name" id="" type="text" value="<%= typeof name != "undefined" ? name : "" %>" />
 
             <label for="">
                 Comment</label>
-            <textarea class="jckeditor" rows="4" name="content" cols="30"><%= content %></textarea>
+            <textarea class="jckeditor" rows="4" name="description" cols="30"><%= typeof description != "undefined" ? description : "" %></textarea>
 
 
 
@@ -50,17 +50,16 @@
     </div>
 </div>
     <jst>
-        form_options['add_fee_form'] = {
-            success: function(data) {
-                $("#fee_form_modal").dialog("close");
-                
-               section_backbone.fees.add( {
-                    "id": data.id,
-                    "name": data.name,
-                    "price": data.price,
-                } );
-            }
-        }
+
+        $(".jckeditor").each( function(){
+        $(this).ckeditor(function() {}, {  
+            toolbar: [
+                ['Bold', 'Italic', '-', 'NumberedList', 'BulletedList', '-', 'Link', 'Unlink','-','About'],['Styles','Format','Font','FontSize'],
+                ['TextColor','BGColor'],
+                ['Maximize', 'ShowBlocks','-','About']
+            ]
+        });
+        });
         Fee = Backbone.Model.extend({
             //Create a model to hold friend atribute
             name: null
@@ -80,58 +79,14 @@
             el: $("#section_form_container"),
             initialize: function () {
                  
-                this.fees = new Fees( null, { view: this });
-                blue = this.fees;
-                $.ajax({
-                   type: "POST",
-                   url: "fee/lookup",
-                   dataType: "json",
-                   success: function( fees ){
-                  
-                    <% if( sectionfee_arr.length > 0 ) { %>
-                   _.each(<%= sectionfee_arr %>, function(num){ blue.add(num); });
-                   <% } %>
-                     $( "#fees" ).autocomplete({
-                        source: fees,
-                        minLength: 1,
-                        delay: 0,
-                        select: function( event, ui ) {
-                       
-                            if( section_backbone.fees.get( ui.item.id ) ){
-                              $.jGrowl("You have already added this",{  theme: 'apple', position: "bottom-right"});
-                              $.jGrowl("Please try again",{  theme: 'apple', position: "bottom-right"});
-                                $( "#fees" ).val("").focus();
-                                return false;
-                            }else{
-                            section_backbone.fees.add( {
-                                "id": ui.item.id,
-                                "name": ui.item.label,
-                                "price": ui.item.price,
-                            } );
-                            }
-                            $( "#fees" ).val("").focus();
-                            return false;
-                        },
-                        close: function(){
-                            
-                        }
-                    });
-                   }
-                });
+               
             },
             events: {
                 "click #add-fee":  "feemodal",
                 "keypress #fees":  "checkEnter",
             },
             addFee: function (model) {
-                
-                // $("#feetable tr:last").after("<tr>" + "<td>" + model.id + "</td>" + "<td>" + model.get("name") + "</td>" + "<td>" + model.get("price") + "</td>" + "<td><a href='' class='delete_fee'>Delete</a></td>" + "</tr>")
-                $("#sortablefees").append("<li id='" + model.id + "' class='ui-state-default'><span style='float: left;' class='ui-icon ui-icon-arrowthick-2-n-s'></span><p style='width: 250px; float: left;'>" + model.get("name") + "</p><span class='delete_fee' style='float: right;'>Delete</span></li>")
-                $( "#sortablefees" ).sortable({
-                    update: section_backbone.updateFeeValues
-                });
-
-                section_backbone.updateFeeValues();
+               
             },
             updateFeeValues: function(event, ui){
                         
