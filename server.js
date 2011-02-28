@@ -39,6 +39,26 @@ fs.writeFile('./tom.loga', sys.inspect(req) );
         });
     });
 });
+app.post('/data', function(req, res) {
+    console.log("add new shit nigger");
+fs.writeFile('./tom.loga', sys.inspect(req) );
+    var couchdb = http.createClient(80, 'ryth.cloudant.com', true);
+    var request = couchdb.request(req.method, '/app', {
+        'Host': 'ryth.cloudant.com',
+        'Authorization': 'Basic ' + rCommon.base64_encode('ryth:abCD--12'),
+        'Content-Type': 'application/json'
+    });
+    console.log(req.rawBody);
+    request.write( req.rawBody );
+    request.end();
+    request.on('response', function (response) {
+        response.on('data', function (data) {
+            res.header('Content-Type', 'application/json');
+            
+            res.send(data);
+        });
+    });
+});
 app.get('/list/:controller', function(req, res) {
     var cloudanturl = '/app/_design/' + req.params.controller + "/_view/list";
     console.log(cloudanturl);

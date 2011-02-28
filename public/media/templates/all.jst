@@ -664,7 +664,7 @@
 </script>
 <script type="text/template" id="section_form_template">
 <div id="section_form_container">
-    <form id="add_section_form">
+    <form id="add_section_form"  enctype="multipart/form-data" >
 
     <br />
 
@@ -882,9 +882,9 @@
         <% }); %>           
         <div style="clear:both;"></div>
     </div>
-	<jst>
-		$(".ui-widget-header .button").rythbutton();
-	</jst>
+    <jst>
+        $(".ui-widget-header .button").rythbutton();
+    </jst>
 </script>
 
 <script type="text/template" id="common_list_view_template">
@@ -1057,8 +1057,8 @@ _rev = ""
                         id = "/" + GLOBALS.route_id; 
                         type = "PUT";
                     }
-                    var url = GLOBALS.couch_server + "/data" + id;
                     alert(url);
+                    var url = GLOBALS.couch_server + "/data" + id;
                     formdata = $('form').serializeObject();
                     formdata.type = "<%=  controller %>";
                     
@@ -1480,10 +1480,9 @@ Nothing
         
     }
     
-    $("#pageheader").html( _.template( $("#page_header_template").html(), options ) );
+    $("#pageheader").html( _.template( $("#page_header_template").jsthtml(), options ) );
 });
 </jst>
-    
 </script>
 <script type="text/template" id="user_login_view_template">
 <br />
