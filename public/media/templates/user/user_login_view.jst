@@ -8,6 +8,7 @@
     <div class="tabs" style="overflow: hidden;" title="MGF CONSULTANTS - Ryth - Login">
         <ul>
             <li><a href="#tab-1">Login</a></li>
+            <li><a href="#tab-2">Register</a></li>
             <li><a href="#tab-3">Forgot Password</a></li>
         </ul>
 
@@ -28,21 +29,27 @@
             </div>
         </div>
         <div id="tab-2">
-            <div id="loginform"  style=" margin: auto;">
-                <form>
-                    <fieldset> 
-                        <legend></legend> 
-                        <ol style="width:260px; margin: auto;">
-                            <li><label for="username">Username</label><input class="required" minlength="3"  value="mya" id="username" name="username" type="text" /></li>
-                            <li><label for="password">Password</label><input type="password" name="password" id="password" value="123" class="required" minlength="6" /></li>
-                        </ol>
-                    </fieldset>
-                    <p style="text-align: center;"> 
-                        <button id="loginbutton" type="submit" class="submit" value="Login" >Login</button
-                    </p>
-                </form>
-            </div>
+            <div id="registerform"  style=" margin: auto;">
+        
+        
+       
+       <form id="registrationform"  class="pretty" method="post">
+        <p>Register a username.</p>
+           <fieldset> 
+        <legend></legend> 
+           <ol>
+               <li><label for="email">Email</label><input id="email" name="email" type="text" /></li>
+            <li><label for="password">Password</label><input type="password" name="password" /></li>
+        </ol>
+        </fieldset>
+       <p> <input id="registerbutton" type="submit" class="submit" value="Register" /></p>
+
+       </form>
+
+     
         </div>
+    
+    </div>
 
         <div id="tab-3">
             <div class="uihighlight halfsized">Ask Ryan</div>
@@ -57,11 +64,12 @@
             $(".tabs").tabs();
         },
         events: {
-            "click .submit": "requestLogin"
+            "click #loginbutton": "requestLogin",
+            "click #registerbutton": "requestRegister",
         },
         requestLogin: function() {
             console.log("hi");
-            formdata = $("form").serializeObject();
+            formdata = $("#loginform").serializeObject();
             console.log(formdata);
             
             $.ajax({
@@ -77,6 +85,21 @@
                 }
             });
             
+            return false;
+        },
+        requestRegister: function() {
+         formdata = $("#registrationform").serializeObject();
+            console.log(formdata);
+            $.ajax({
+                url: "user/register",
+                dataType: "json",
+                type: "POST",
+                data: $.toJSON(formdata),
+                contentType: "application/json",
+                success: function(data){
+                    console.log(data)
+                }
+            });
             return false;
         }
     });

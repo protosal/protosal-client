@@ -1493,6 +1493,7 @@ $(".list_view").dataTable({
     <div class="tabs" style="overflow: hidden;" title="MGF CONSULTANTS - Ryth - Login">
         <ul>
             <li><a href="#tab-1">Login</a></li>
+            <li><a href="#tab-2">Register</a></li>
             <li><a href="#tab-3">Forgot Password</a></li>
         </ul>
 
@@ -1512,6 +1513,28 @@ $(".list_view").dataTable({
                 </form>
             </div>
         </div>
+        <div id="tab-2">
+            <div id="registerform"  style=" margin: auto;">
+        
+        
+       
+       <form id="registrationform"  class="pretty" method="post">
+        <p>Register a username.</p>
+           <fieldset> 
+        <legend></legend> 
+           <ol>
+               <li><label for="email">Email</label><input id="email" name="email" type="text" /></li>
+            <li><label for="password">Password</label><input type="password" name="password" /></li>
+        </ol>
+        </fieldset>
+       <p> <input id="registerbutton" type="submit" class="submit" value="Register" /></p>
+
+       </form>
+
+     
+        </div>
+    
+    </div>
 
         <div id="tab-3">
             <div class="uihighlight halfsized">Ask Ryan</div>
@@ -1526,11 +1549,12 @@ $(".list_view").dataTable({
             $(".tabs").tabs();
         },
         events: {
-            "click .submit": "requestLogin"
+            "click #loginbutton": "requestLogin",
+            "click #registerbutton": "requestRegister",
         },
         requestLogin: function() {
             console.log("hi");
-            formdata = $("form").serializeObject();
+            formdata = $("#loginform").serializeObject();
             console.log(formdata);
             
             $.ajax({
@@ -1546,6 +1570,21 @@ $(".list_view").dataTable({
                 }
             });
             
+            return false;
+        },
+        requestRegister: function() {
+         formdata = $("#registrationform").serializeObject();
+            console.log(formdata);
+            $.ajax({
+                url: "user/register",
+                dataType: "json",
+                type: "POST",
+                data: $.toJSON(formdata),
+                contentType: "application/json",
+                success: function(data){
+                    console.log(data)
+                }
+            });
             return false;
         }
     });
