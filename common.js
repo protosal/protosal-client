@@ -18,7 +18,6 @@ exports.authCheck = function (req, res, next) {
             redirect: "user/login"
         }
         res.send( JSON.stringify( redirect ) );
-       res.end();
       return;
     }
 

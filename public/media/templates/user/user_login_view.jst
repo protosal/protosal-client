@@ -27,6 +27,22 @@
                 </form>
             </div>
         </div>
+        <div id="tab-2">
+            <div id="loginform"  style=" margin: auto;">
+                <form>
+                    <fieldset> 
+                        <legend></legend> 
+                        <ol style="width:260px; margin: auto;">
+                            <li><label for="username">Username</label><input class="required" minlength="3"  value="mya" id="username" name="username" type="text" /></li>
+                            <li><label for="password">Password</label><input type="password" name="password" id="password" value="123" class="required" minlength="6" /></li>
+                        </ol>
+                    </fieldset>
+                    <p style="text-align: center;"> 
+                        <button id="loginbutton" type="submit" class="submit" value="Login" >Login</button
+                    </p>
+                </form>
+            </div>
+        </div>
 
         <div id="tab-3">
             <div class="uihighlight halfsized">Ask Ryan</div>
@@ -38,6 +54,7 @@
         el: $("#loginwindow"),
         initialize: function(){
             console.log("hey anold");
+            $(".tabs").tabs();
         },
         events: {
             "click .submit": "requestLogin"

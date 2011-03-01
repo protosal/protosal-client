@@ -1523,6 +1523,7 @@ $(".list_view").dataTable({
         el: $("#loginwindow"),
         initialize: function(){
             console.log("hey anold");
+            $(".tabs").tabs();
         },
         events: {
             "click .submit": "requestLogin"
