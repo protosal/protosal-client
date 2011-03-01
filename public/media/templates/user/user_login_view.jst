@@ -13,7 +13,7 @@
 
         <div id="tab-1">
             <div id="loginform"  style=" margin: auto;">
-                <form id="login_form" action="user/ajaxlogin" class="pretty" method="post">
+                <form>
                     <fieldset> 
                         <legend></legend> 
                         <ol style="width:260px; margin: auto;">
@@ -34,19 +34,42 @@
     </div>
 </div>
 <jst>  
-    form_options['login_form'] = {
-        fatal: function() {
-            alert('OHHHHHHHHHMYYYYYYYGOOOOOOOOSHHHHHHH!');
+    LoginView = Backbone.View.extend({
+        el: $("#loginwindow"),
+        initialize: function(){
+            console.log("hey anold");
         },
-        success: function(data) {
-            redirect('home/dashboard');
+        events: {
+            "click .submit": "requestLogin"
         },
-        fail: function(data) {
-            $("#login_form").prepend('<div style="margin-top: 5px" id="resethelp" class="thirdsized">Reset your password <a href="#">here</a>.</div>').uierror();
-            $("#login_form").prepend('<div style="margin-top: 5px" id="loginerror" class="thirdsized">Incorrect username/password</div>').uihighlight();  
+        requestLogin: function() {
+            console.log("hi");
+            formdata = $("form").serializeObject();
+            console.log(formdata);
+            
+            $.ajax({
+                url: "user/login",
+                dataType: "json",
+                type: "POST",
+                data: $.toJSON(formdata),
+                contentType: "application/json",
+                success: function(data){
+                    redirect( data.redirect );
+                    console.log("whoop round 2");
+                    console.log(data);
+                }
+            });
+            
+            return false;
         }
-    };
-    $(".ui-widget-overlay").css("opacity","1 !important")
-    setTimeout( function (){     $("#username").focus(); }, 1000);
+    });
+    
+    var loginview = new LoginView;
+    
+       //  $("#login_form").prepend('<div style="margin-top: 5px" id="resethelp" class="thirdsized">Reset your password <a href="#">here</a>.</div>').uierror();
+          //  $("#login_form").prepend('<div style="margin-top: 5px" id="loginerror" class="thirdsized">Incorrect username/password</div>').uihighlight();  
+
+    //$(".ui-widget-overlay").css("opacity","1 !important")
+    //setTimeout( function (){     $("#username").focus(); }, 1000);
 </jst>
 </script>

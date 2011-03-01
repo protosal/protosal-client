@@ -153,7 +153,12 @@
                         $("body").append(response);
                         
                          $.ajaxPrefilter(function( options ) {
-                            //options.url = GLOBALS.server_base + "/api/get/" + options.url;
+                          
+                           options.error = function(data){
+                                if( typeof $.parseJSON( data.responseText ).redirect != "undefined" ) {
+                                    redirect( $.parseJSON( data.responseText ).redirect );
+                                }
+                           }
                         });
                        
                        protosal_controller = new ProtosalController;
@@ -181,7 +186,7 @@
                     <li id="fee" class="ui-state-default ui-corner-top"><a href="#/fee/list">Fees</a></li>
                     <li id="client" class="ui-state-default ui-corner-top"><a href="#/client/list">Clients</a></li>
                     <li id="setting" class="ui-state-default ui-corner-top"><a href="#/setting/main">Settings</a></li>
-                    <div style="float: right; margin-right: 24px; margin-top: 10px;">help | <a href="#/user/logout">logout</a></div>
+                    <div style="float: right; margin-right: 24px; margin-top: 10px;">help | <a href="/logout">logout</a></div>
                 </ul>
             </div> <!-- #layout -->
 
