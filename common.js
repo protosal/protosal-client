@@ -2,6 +2,13 @@ var Base64 = require('base64');
 var Buffer = require('buffer').Buffer;
 var urlpaser = require('url');
 var http = require('http');
+require('joose');
+require('joosex-namespace-depended');
+require('hash');
+
+exports.credentials = "ryth:abCD--12";
+var default_salt = "1";
+
 
 exports.base64_encode = function(enc_string) {
     return Base64.encode( new Buffer(enc_string) );
@@ -31,7 +38,32 @@ exports.authCheck = function (req, res, next) {
     // ########
     // Auth - Replace this simple if with you Database or File or Whatever...
     // If Database, you need a Async callback...
-    if ( url.pathname == "/user/login" ) {
+    if( url.pathname == "/user/register" ) {
+        var couchdb = http.createClient(5984, 'localhost', true);
+        var request = couchdb.request("POST", '/_users', {
+            'Host': 'localhost',
+            'Content-Type': 'application/json',
+            'Authorization': 'Basic ' + exports.base64_encode(exports.credentials)
+        });
+        
+        var newUser = {
+            _id: "org.couchdb.user:" + req.body.email,
+            name: req.body.email,
+            password_sha: Hash.sha1(req.body.password + default_salt),
+            salt: default_salt,
+            type: "user",
+            roles: []
+        }
+        
+        request.end( JSON.stringify(newUser) );
+        request.on('response', function (response) {
+            response.on('data', function (data) {
+                res.header('Content-Type', 'application/json');
+                res.send(data);
+            });
+        });
+        
+    } else if ( url.pathname == "/user/login" ) {
         var couchdb = http.createClient(5984, 'localhost', true);
         var request = couchdb.request("GET", '/_users', {
             'Host': 'localhost',

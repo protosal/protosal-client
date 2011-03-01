@@ -9,8 +9,6 @@ var sys = require('sys');
 var app = express.createServer();
 var connect = require('connect');
 
-var credentials = "ryth:abCD--12";
-
 app.configure(function() {
   
   app.use(express.bodyDecoder());
@@ -35,7 +33,7 @@ fs.writeFile('./tom.loga', sys.inspect(req) );
     var couchdb = http.createClient(5984, 'localhost', true);
     var request = couchdb.request(req.method, '/app/' + req.params.id + (req.params.rev ? "?rev=" + req.params.rev : ""), {
         'Host': 'localhost',
-        'Authorization': 'Basic ' + rCommon.base64_encode(credentials)
+        'Authorization': 'Basic ' + rCommon.base64_encode(rCommon.credentials)
     });
     req.body.author = req.session.username;
     console.log(JSON.stringify(req.body));
@@ -55,7 +53,7 @@ fs.writeFile('./tom.loga', sys.inspect(req) );
     var couchdb = http.createClient(5984, 'localhost', true);
     var request = couchdb.request(req.method, '/app', {
         'Host': 'localhost',
-        'Authorization': 'Basic ' + rCommon.base64_encode(credentials),
+        'Authorization': 'Basic ' + rCommon.base64_encode(rCommon.credentials),
         'Content-Type': 'application/json'
     });
     req.body.author = req.session.username;
@@ -79,7 +77,7 @@ app.get('/list/:controller', function(req, res) {
     var couchdb = http.createClient(5984, 'localhost', true);
     var request = couchdb.request(req.method, cloudanturl, {
         'Host': 'localhost',
-        'Authorization': 'Basic ' + rCommon.base64_encode(credentials)
+        'Authorization': 'Basic ' + rCommon.base64_encode(rCommon.credentials)
         
     });
 
@@ -100,7 +98,7 @@ app.get('/data/:id/:rev?', function(req, res) {
     var couchdb = http.createClient(5984, 'localhost', true);
     var request = couchdb.request(req.method, '/app/' + req.params.id + (req.params.rev ? "?rev=" + req.params.rev : ""), {
         'Host': 'localhost',
-        'Authorization': 'Basic ' + rCommon.base64_encode(credentials)
+        'Authorization': 'Basic ' + rCommon.base64_encode(rCommon.credentials)
     });
 
     request.end();
@@ -130,7 +128,7 @@ app.delete('/data/:id/:rev?', function(req, res) {
     var couchdb = http.createClient(5984, 'localhost', true);
     var request = couchdb.request(req.method, '/app/' + req.params.id + (req.params.rev ? "?rev=" + req.params.rev : ""), {
         'Host': 'localhost',
-        'Authorization': 'Basic ' + rCommon.base64_encode(credentials)
+        'Authorization': 'Basic ' + rCommon.base64_encode(rCommon.credentials)
     });
 
     request.end();
