@@ -14,7 +14,7 @@ app.configure(function() {
   app.use(express.bodyDecoder());
 
   app.use(express.methodOverride());
-  app.use(express.logger());
+  //app.use(express.logger());
   app.use(express.gzip());
   app.use(express.conditionalGet());
   app.use(express.cache());
@@ -126,21 +126,38 @@ app.get('/data/:id/:rev?', function(req, res) {
 app.delete('/data/:id/:rev?', function(req, res) {
 
     var couchdb = http.createClient(5984, 'localhost', true);
-    var request = couchdb.request(req.method, '/app/' + req.params.id + (req.params.rev ? "?rev=" + req.params.rev : ""), {
+    var authorcheck = couchdb.request("GET", '/app/' + req.params.id + (req.params.rev ? "?rev=" + req.params.rev : ""), {
         'Host': 'localhost',
-        'Authorization': 'Basic ' + rCommon.base64_encode('ryth:123')
+        'Authorization': 'Basic ' + rCommon.base64_encode(rCommon.credentials)
     });
-    req.body.author = req.session.username
-    console.log( JSON.stringify(req.body) );    
-    request.write( JSON.stringify(req.body) );    
-    request.end();
-    request.on('response', function (response) {
+    console.log("url-"+ '/app/' + req.params.id );
+    authorcheck.end();
+    authorcheck.on('response', function (response) {
+        response.setEncoding('utf8');
         response.on('data', function (data) {
-            res.header('Content-Type', 'application/json');
+            console.log(data);
+            author = JSON.parse(data).author;
+            console.log("checking the " + author );
+            if( req.session.username == author ) {
+                var deleterequest = couchdb.request("DELETE", '/app/' + req.params.id + (req.params.rev ? "?rev=" + req.params.rev : ""), {
+                    'Host': 'localhost',
+                    'Authorization': 'Basic ' + rCommon.base64_encode('ryth:abCD--12')
+                });
+                deleterequest.end();
+                deleterequest.on('response', function (responsea) {
+                    responsea.on('data', function (data) {
+                        res.header('Content-Type', 'application/json');
+                        res.send(data);
+                    })
+                })
             
-            res.send(data);
+            }
+            
         });
     });
+    
+  
+    
 });
 
 app.listen(3000);

@@ -2,9 +2,8 @@ var Base64 = require('base64');
 var Buffer = require('buffer').Buffer;
 var urlpaser = require('url');
 var http = require('http');
-require('joose');
-require('joosex-namespace-depended');
-require('hash');
+var Hash = require('./sha1');
+
 
 exports.credentials = "ryth:abCD--12";
 var default_salt = "1";
@@ -49,7 +48,7 @@ exports.authCheck = function (req, res, next) {
         var newUser = {
             _id: "org.couchdb.user:" + req.body.email,
             name: req.body.email,
-            password_sha: Hash.sha1(req.body.password + default_salt),
+            password_sha: Hash.hex_sha1(req.body.password + default_salt),
             salt: default_salt,
             type: "user",
             roles: []
