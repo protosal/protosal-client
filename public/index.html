@@ -69,10 +69,10 @@
                     if (this.isNew()) return base;
                     rev = '';
                     if( typeof this.get("value")._rev != "undefined" ) {
-						rev = "/" + this.get("value")._rev;
-					} else {
-						rev = '';
-					}
+                        rev = "/" + this.get("value")._rev;
+                    } else {
+                        rev = '';
+                    }
                     return base + (base.charAt(base.length - 1) == '/' ? '' : '/') + this.id + rev;
                 }
             });
@@ -82,8 +82,19 @@
               routes: {
                 "/:controller/:action":                 "defaultRoute",
                 "/:controller/:action/:vid":                 "defaultRoute",
+                "/logout":                 "logout",
                 "":                                     "landingPage",
               },
+                logout: function(){
+                
+                    $.ajax({
+                        url: "/logout",
+                        dataType: "json",
+                        success: function(data){
+                            redirect(data.redirect);
+                        }
+                    });
+                },
                 landingPage: function(){
                   window.location = "#/home/dashboard"
                 },
@@ -186,7 +197,7 @@
                     <li id="fee" class="ui-state-default ui-corner-top"><a href="#/fee/list">Fees</a></li>
                     <li id="client" class="ui-state-default ui-corner-top"><a href="#/client/list">Clients</a></li>
                     <li id="setting" class="ui-state-default ui-corner-top"><a href="#/setting/main">Settings</a></li>
-                    <div style="float: right; margin-right: 24px; margin-top: 10px;">help | <a href="/logout">logout</a></div>
+                    <div style="float: right; margin-right: 24px; margin-top: 10px;">help | <a href="#/logout">logout</a></div>
                 </ul>
             </div> <!-- #layout -->
 

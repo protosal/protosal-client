@@ -13,8 +13,13 @@ exports.authCheck = function (req, res, next) {
     // ####
     // Logout
     if ( url.pathname == "/logout" ) {
-      req.session.destroy();
-      res.redirect("/");
+       req.session.destroy();
+        redirect = {
+            redirect: "user/login"
+        }
+        res.send( JSON.stringify( redirect ) );
+       res.end();
+      return;
     }
 
     // ####
@@ -28,13 +33,13 @@ exports.authCheck = function (req, res, next) {
     // Auth - Replace this simple if with you Database or File or Whatever...
     // If Database, you need a Async callback...
     if ( url.pathname == "/user/login" ) {
-        var couchdb = http.createClient(80, 'ryth.cloudant.com', true);
+        var couchdb = http.createClient(5984, 'localhost', true);
         var request = couchdb.request("GET", '/_users', {
-            'Host': 'ryth.cloudant.com',
+            'Host': 'localhost',
             'Content-Type': 'application/json',
             'Authorization': 'Basic ' + exports.base64_encode(req.body.username + ":"+ req.body.password)
         });
-
+        console.log(req.body.username + ":"+ req.body.password);
         request.end();
         request.on('response', function (response) {
             response.setEncoding('utf8');
@@ -50,7 +55,7 @@ exports.authCheck = function (req, res, next) {
                     res.end( JSON.stringify( redirect ) );
                   return;
                 } 
-                
+                console.log(data);
                 res.writeHead(401);
                 console.log("Wrong password or some shit");
                 redirect = {

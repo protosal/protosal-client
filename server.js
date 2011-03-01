@@ -9,6 +9,8 @@ var sys = require('sys');
 var app = express.createServer();
 var connect = require('connect');
 
+var credentials = "ryth:abCD--12";
+
 app.configure(function() {
   
   app.use(express.bodyDecoder());
@@ -30,13 +32,14 @@ app.configure(function() {
 
 app.put('/data/:id/:rev?', function(req, res) {
 fs.writeFile('./tom.loga', sys.inspect(req) );
-    var couchdb = http.createClient(80, 'ryth.cloudant.com', true);
+    var couchdb = http.createClient(5984, 'localhost', true);
     var request = couchdb.request(req.method, '/app/' + req.params.id + (req.params.rev ? "?rev=" + req.params.rev : ""), {
-        'Host': 'ryth.cloudant.com',
-        'Authorization': 'Basic ' + rCommon.base64_encode('ryth:abCD--12')
+        'Host': 'localhost',
+        'Authorization': 'Basic ' + rCommon.base64_encode(credentials)
     });
-    console.log(req.rawBody);
-    request.write( req.rawBody );
+    req.body.author = req.session.username;
+    console.log(JSON.stringify(req.body));
+    request.write( JSON.stringify(req.body) );
     request.end();
     request.on('response', function (response) {
         response.on('data', function (data) {
@@ -49,14 +52,16 @@ fs.writeFile('./tom.loga', sys.inspect(req) );
 app.post('/data', function(req, res) {
     console.log("add new shit nigger");
 fs.writeFile('./tom.loga', sys.inspect(req) );
-    var couchdb = http.createClient(80, 'ryth.cloudant.com', true);
+    var couchdb = http.createClient(5984, 'localhost', true);
     var request = couchdb.request(req.method, '/app', {
-        'Host': 'ryth.cloudant.com',
-        'Authorization': 'Basic ' + rCommon.base64_encode('ryth:abCD--12'),
+        'Host': 'localhost',
+        'Authorization': 'Basic ' + rCommon.base64_encode(credentials),
         'Content-Type': 'application/json'
     });
-    console.log(req.rawBody);
-    request.write( req.rawBody );
+    req.body.author = req.session.username;
+    
+    console.log( JSON.stringify(req.body) );
+    request.write( JSON.stringify(req.body) );
     request.end();
     request.on('response', function (response) {
         response.on('data', function (data) {
@@ -66,13 +71,15 @@ fs.writeFile('./tom.loga', sys.inspect(req) );
         });
     });
 });
+
 app.get('/list/:controller', function(req, res) {
-    var cloudanturl = '/app/_design/' + req.params.controller + "/_view/list";
-    //console.log(cloudanturl);
-    var couchdb = http.createClient(80, 'ryth.cloudant.com', true);
+    console.log(req.session.username);
+    var cloudanturl = '/app/_design/' + req.params.controller + "/_view/list?key=\"" + req.session.username + "\"";
+    console.log(cloudanturl);
+    var couchdb = http.createClient(5984, 'localhost', true);
     var request = couchdb.request(req.method, cloudanturl, {
-        'Host': 'ryth.cloudant.com',
-        'Authorization': 'Basic ' + rCommon.base64_encode('ryth:abCD--12')
+        'Host': 'localhost',
+        'Authorization': 'Basic ' + rCommon.base64_encode(credentials)
         
     });
 
@@ -90,28 +97,40 @@ app.get('/list/:controller', function(req, res) {
 });
 app.get('/data/:id/:rev?', function(req, res) {
 
-    var couchdb = http.createClient(80, 'ryth.cloudant.com', true);
+    var couchdb = http.createClient(5984, 'localhost', true);
     var request = couchdb.request(req.method, '/app/' + req.params.id + (req.params.rev ? "?rev=" + req.params.rev : ""), {
-        'Host': 'ryth.cloudant.com',
-        'Authorization': 'Basic ' + rCommon.base64_encode('ryth:abCD--12')
+        'Host': 'localhost',
+        'Authorization': 'Basic ' + rCommon.base64_encode(credentials)
     });
 
     request.end();
     request.on('response', function (response) {
+        response.setEncoding('utf8');
         response.on('data', function (data) {
-            res.header('Content-Type', 'application/json');
-            
-            res.send(data);
+            var parsed_data = JSON.parse(data);
+            if( parsed_data.author == req.session.username ) {
+                res.header('Content-Type', 'application/json');
+                
+                res.send(data);
+            } else {
+                res.writeHead(401);
+                console.log("DAMMIT HACKER!");
+                redirect = {
+                    redirect: "/"
+                }
+                res.end( JSON.stringify( redirect ) );
+                return;
+            }
         });
     });
 });
 
 app.delete('/data/:id/:rev?', function(req, res) {
 
-    var couchdb = http.createClient(80, 'ryth.cloudant.com', true);
+    var couchdb = http.createClient(5984, 'localhost', true);
     var request = couchdb.request(req.method, '/app/' + req.params.id + (req.params.rev ? "?rev=" + req.params.rev : ""), {
-        'Host': 'ryth.cloudant.com',
-        'Authorization': 'Basic ' + rCommon.base64_encode('ryth:abCD--12')
+        'Host': 'localhost',
+        'Authorization': 'Basic ' + rCommon.base64_encode(credentials)
     });
 
     request.end();
