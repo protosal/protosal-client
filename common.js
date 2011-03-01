@@ -80,6 +80,8 @@ exports.authCheck = function (req, res, next) {
                 if( typeof data.error == "undefined" ) {
                     req.session.auth = true;
                     req.session.username = req.body.username
+                    req.session.password = req.body.password
+                    req.session.creds = exports.base64_encode(req.body.username + ":"+ req.body.password)
                     redirect = {
                         redirect: "home/dashboard"
                     }

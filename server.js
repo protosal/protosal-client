@@ -128,9 +128,11 @@ app.delete('/data/:id/:rev?', function(req, res) {
     var couchdb = http.createClient(5984, 'localhost', true);
     var request = couchdb.request(req.method, '/app/' + req.params.id + (req.params.rev ? "?rev=" + req.params.rev : ""), {
         'Host': 'localhost',
-        'Authorization': 'Basic ' + rCommon.base64_encode(rCommon.credentials)
+        'Authorization': 'Basic ' + rCommon.base64_encode('ryth:123')
     });
-
+    req.body.author = req.session.username
+    console.log( JSON.stringify(req.body) );    
+    request.write( JSON.stringify(req.body) );    
     request.end();
     request.on('response', function (response) {
         response.on('data', function (data) {
