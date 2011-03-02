@@ -347,9 +347,16 @@
 
 
 </script>
+<style>
+ <style>
+        #sortablefees { list-style-type: none; margin: 0; padding: 0; width: 60%; }
+        #sortablefees li { cursor: pointer; margin: 0 3px 3px 3px; padding: 0.4em; padding-left: 1.5em; font-size: 1.4em; height: 18px; }
+        #sortablefees li span { margin-left: -1.3em; }
+    </style>
+</style>
 <script type="text/template" id="section_form_template">
 <div id="section_form_container">
-    <form id="add_section_form"  enctype="multipart/form-data" >
+    <form id="add_section_form"  class="edit_section_form" enctype="multipart/form-data" >
 
     <br />
 
@@ -389,7 +396,7 @@
         <br />
         <br />
         <br />
-        <input type="text" name="feelist" id="feelist" value="" />
+        <input type="hidden" name="feelist" id="feelist" value="" />
         <h3>Fees</h3>
         <ul id="sortablefees"></ul>
         
@@ -428,49 +435,115 @@
             el: $("#section_form_container"),
             initialize: function () {
                 this.fees = new Fees( null, { view: this });
-                console.log("asd");
+               
+                console.log("lets get all the section fees that we have already added");
+                    $.ajax({
+                        url: "related/sectionfee/" + GLOBALS.route_id,
+                        type: "GET",
+                        dataType: "json",
+                        success: function(data){
+                            console.log(data);
+                            keys = _.map(data.rows, function( row ){
+                            
+                                return row.value.fee_id;
+                            });
+                            obj = {
+                                "keys": keys
+                            }
+                            $.ajax({
+                                url: "list_by_id/fee/",
+                                type: "POST",
+                                contentType: "application/json",
+                                dataType: "json",
+                                data: $.toJSON( obj ),
+                                success: function(data){
+                                    console.log("Got the related data");
+                                        var feelist = "<%= typeof feelist != "undefined" ? feelist : "" %>".split(",");
+                                        
+                                        var sorted = _.sortBy( data.rows, function( row ) { return feelist.indexOf(row.value._id); } );
+                                        
+                                        //var sorted = _.map(feelist, function(fee){ return _.map( data.rows, function( feeid ) { fee == data.rows.value.fee_id }) );
+                                    _.each( sorted, function( model ) {
+                                        
+                                        
+                                        
+                                        model = model.value;
+                                         section_backbone.fees.add( {
+                                            "id": model._id,
+                                            "name": model.name,
+                                            "price": model.price,
+                                            "rev": model._rev,
+                                        } );
+                                    
+                                    })
+                                   
+                                }
+                            });
+                            
+                            
+                        
+                        }
+                    
+                    });
                 $.ajax({
                    type: "GET",
-                   url: "list/fee",
+                   url: "list_by_author/fee",
                    dataType: "json",
                    success: function( fees ){
                     
                     fees = fees.rows;
                     fees = _.map( fees, function( row ){
                         return {
-                            "id" : row.value.id,
+                            "id" : row.value._id,
                             "label" : row.value.name,
                             "value" : row.value.name,
+                            "rev" : row.value._rev,
                         };
                     });
-                    console.log(fees);
-                    /*
-                     if( sectionfee_arr.length > 0 ) { 
-                   _.each(sectionfee_arr , function(num){ blue.add(num); });
-                    } 
-                    */
+                    
                     
                      $( "#fees" ).autocomplete({
                         source: fees,
                         minLength: 1,
                         delay: 0,
                         select: function( event, ui ) {
-                            /*
+                            console.log(ui);
                             if( section_backbone.fees.get( ui.item.id ) ){
                               $.jGrowl("You have already added this",{  theme: 'apple', position: "bottom-right"});
                               $.jGrowl("Please try again",{  theme: 'apple', position: "bottom-right"});
                                 $( "#fees" ).val("").focus();
                                 return false;
                             }else{
-                            section_backbone.fees.add( {
-                                "id": ui.item.id,
-                                "name": ui.item.label,
-                                "price": ui.item.price,
-                            } );
+                                
+                                obj = {
+                                    section_id: GLOBALS.route_id,
+                                    fee_id: ui.item.id,
+                                    type: "sectionfee"
+                                }
+                                $.ajax({
+                                type: "POST",
+                                url: "/data",
+                                data: $.toJSON(obj),
+                                dataType: "json",
+                                contentType: "application/json",
+                                success: function( model ){
+                                    
+                                    console.log("Relationship added, add it to the backbone collection");
+                                    section_backbone.fees.add( {
+                                        "id": ui.item.id,
+                                        "name": ui.item.label,
+                                        "price": ui.item.price,
+                                        "price": ui.item.price,
+                                        "rev": model.rev,
+                                    } );
+                                
+                                }
+                                })
+                                
                             }
                             $( "#fees" ).val("").focus();
                             return false;
-                            */
+                            
                         },
                         close: function(){
                             
@@ -485,7 +558,12 @@
                 "keypress #fees":  "checkEnter",
             },
             addFee: function (model) {
-               
+                console.log(model);
+                $("#sortablefees").append("<li id='" + model.id + "' class='ui-state-default'><span style='float: left;' class='ui-icon ui-icon-arrowthick-2-n-s'></span><p style='width: 250px; float: left;'>" + model.get("name") + "</p><span class='delete_fee' style='float: right;'>Delete</span></li>")
+                $( "#sortablefees" ).sortable({
+                    update: section_backbone.updateFeeValues
+                });
+                section_backbone.updateFeeValues();
             },
             updateFeeValues: function(event, ui){
                         
@@ -493,14 +571,33 @@
                 $("#feelist").val( sections );
                 
             },
-            removeFee: function () {
+            removeFee: function ( id ) {
                 
-                section_backbone.updateFeeValues();
-                
+                //section_backbone.updateFeeValues();
+                console.log(this.fees.get( id ));
+                console.log("nomepha");
+                this.fees.url = "delete/sectionfee/get_section";
+                 $.ajax({
+                                type: "DELETE",
+                                url: "delete/sectionfee/" + GLOBALS.route_id + "/" + id,
+                                data: $.toJSON(obj),
+                                dataType: "json",
+                                contentType: "application/json",
+                                success: function( data ){
+                                    
+                                    console.log(data);
+                                  
+                                
+                                }
+                                })
+                 
+           
+            //appview.fees.get().remove();
+            
             },
             checkEnter: function(e){
-                if (e.keyCode == 13	&& $("#fees").val() == '') return false;
-                if (e.keyCode != 13	|| $("#fees").val() == '') return;
+                if (e.keyCode == 13 && $("#fees").val() == '') return false;
+                if (e.keyCode != 13 || $("#fees").val() == '') return;
                 //alert(currentVein);
         
                 this.feemodal();
@@ -511,7 +608,7 @@
             
                 var feeoptions = {
                     "id": "",
-                    "name": escapeHtml($("#fees").val()),
+                    "name": _.escapeHTML( $("#fees").val() ),
                     "price": "",
                     "quantity": "",
                     "description": "",
@@ -520,20 +617,28 @@
                 }
 
                 var template = _.template( $('#fee_form_template').jsthtml(), feeoptions )
-                $("#fee_form_modal").html(template).dialog({
+                options = {
+                    'title': 'List',
+                    'buttons': [{
+                                    'text': 'Save',
+                                    'classes': 'save'
+                        },{
+                                    'text': 'Back',
+                                    'classes': 'back-button'
+                        }
+                    ]
+                    
+                }
+                $("#fee_form_modal").html( _.template( $("#page_header_template").jsthtml(), options ) );
+                $("#fee_form_modal").append(template).dialog({
                     draggable: false,
                     resizable: false,
                     closeOnEscape: false,
                     title: "New Fee",
+                    open: function(){ $(".save").click(  window.saveclickHandler ); },
                     modal: true, 
-                    open: function(){ $("form").rythform();     },
                     hide: 'drop',
                     width: "550px",
-                    buttons: {
-                        "Save": function(){
-                            $("form", $(this).parents(".ui-dialog")).submit();
-                        }
-                    }
                 });
                 
                 
@@ -546,16 +651,14 @@
         
         
         $(".delete_fee").live("click", function() {
-            $(this).parents("li").remove();
-            
-            appview.fees.remove( appview.fees.get(  $(this).parents("li").attr("id") ) );
-            //appview.fees.get().remove();
-            
+            var id = $(this).parents("li").attr("id")
+            section_backbone.removeFee(id);
+             $(this).parents("li").remove();
             return false;
         });
     </jst>
 </script>
-<script  type="text/template" id="section_edit_view_template">
+<script  type="text/template" id="section_edait_view_template">
 
 
 
@@ -1157,7 +1260,8 @@ _rev = ""
                     'title': '<%= _(controller).capitalize() %> List',
                     'buttons': [{
                                     'text': 'Save',
-                                    'classes': 'save'
+                                    'classes': 'save',
+                                    'controller': '<%= controller %>'
                         },{
                                     'text': 'Back',
                                     'classes': 'back-button'
@@ -1167,50 +1271,24 @@ _rev = ""
                 }
                 $("#pageheader").html( _.template( $("#page_header_template").jsthtml(), options ) );
                 
-                var clickHandler =  function(){
-                    id = "";
-                    type = "POST";
-                    if( GLOBALS.route_id != "" ) {
-                        id = "/" + GLOBALS.route_id; 
-                        type = "PUT";
-                    }
-                    var url = GLOBALS.couch_server + "/data" + id;
-                    formdata = $('form').serializeObject();
-                    formdata.type = "<%=  controller %>";
-                    
-                    if(  _rev != "" )
-                        formdata._rev = _rev;
-                        
-                    $.ajaxPrefilter(function( options ) {
-                        //options.url = GLOBALS.server_base + "/api/get/" + options.url;
-                    });
-                    
-                    $.ajax( url, {
-                        dataType: "json",
-                        type: type,
-                        contentType: "application/json",
-                        data: $.toJSON(formdata),
-                        success: function(data){
-                            redirect("<%=  controller %>/list");
-                        }
-                    });
-                    return false;
-                };  
-                
+
+                console.log("ASDAS");
                 if( GLOBALS.route_id ){
                     var url = GLOBALS.server_base + "/data/" + GLOBALS.route_id;
+                    console.log(url);
                     $.ajax( url, {
                         dataType: "json",
                         success: function(data){
+                            console.log(data);
                             $("#formc").append( _.template( $("#<%= controller %>_form_template").jsthtml(), data ) );
                             if (typeof data._rev != "undefined")
+                        $(".save").click(  {"boo":"asd"}, window.saveclickHandler );
                                 _rev = data._rev;  
-                            $(".save").click( clickHandler );
                         }
                     });
                 } else {
                     $("#formc").append( _.template( $("#<%=controller %>_form_template").jsthtml(), {} ) );
-                    $(".save").click( clickHandler );
+                    $(".save").click(  {success:function(){ alert("hey") }}, window.saveclickHandler );
                 }
                 
         
@@ -1220,7 +1298,7 @@ _rev = ""
 
     });
     editview = new EditView;
-
+        
 </jst>
 
 </script>
@@ -1228,7 +1306,7 @@ _rev = ""
     <div class="ui-widget-header">
         <h3 style="text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);float: left;"><%= title %></h3>
         <% _.each( buttons, function( button ) { %>
-            <a class="button <%= button.classes %>" href="<%= button.href %>" style="float: right;"><%= button.text %></a>
+            <a class="button <%= button.classes %>" controller="<%= button.controller%>" href="<%= button.href %>" style="float: right;"><%= button.text %></a>
         <% }); %>           
         <div style="clear:both;"></div>
     </div>
@@ -1284,7 +1362,7 @@ _rev = ""
                 $("#pageheader").html( _.template( $("#page_header_template").jsthtml(), options ) );
                 
                 
-                var url = GLOBALS.server_base + "/list/" + GLOBALS.controller;
+                var url = GLOBALS.server_base + "/list_by_author/" + GLOBALS.controller;
                 $.ajax( url, {
                     dataType: "json",
                     success: function(data){
@@ -1405,7 +1483,7 @@ $(".list_view").dataTable({
             
             </div>
         </div>
-
+    
     </form>
 
 <jst>

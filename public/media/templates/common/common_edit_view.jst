@@ -14,7 +14,8 @@ _rev = ""
                     'title': '<%= _(controller).capitalize() %> List',
                     'buttons': [{
                                     'text': 'Save',
-                                    'classes': 'save'
+                                    'classes': 'save',
+                                    'controller': '<%= controller %>'
                         },{
                                     'text': 'Back',
                                     'classes': 'back-button'
@@ -24,50 +25,24 @@ _rev = ""
                 }
                 $("#pageheader").html( _.template( $("#page_header_template").jsthtml(), options ) );
                 
-                var clickHandler =  function(){
-                    id = "";
-                    type = "POST";
-                    if( GLOBALS.route_id != "" ) {
-                        id = "/" + GLOBALS.route_id; 
-                        type = "PUT";
-                    }
-                    var url = GLOBALS.couch_server + "/data" + id;
-                    formdata = $('form').serializeObject();
-                    formdata.type = "<%=  controller %>";
-                    
-                    if(  _rev != "" )
-                        formdata._rev = _rev;
-                        
-                    $.ajaxPrefilter(function( options ) {
-                        //options.url = GLOBALS.server_base + "/api/get/" + options.url;
-                    });
-                    
-                    $.ajax( url, {
-                        dataType: "json",
-                        type: type,
-                        contentType: "application/json",
-                        data: $.toJSON(formdata),
-                        success: function(data){
-                            redirect("<%=  controller %>/list");
-                        }
-                    });
-                    return false;
-                };  
-                
+
+                console.log("ASDAS");
                 if( GLOBALS.route_id ){
                     var url = GLOBALS.server_base + "/data/" + GLOBALS.route_id;
+                    console.log(url);
                     $.ajax( url, {
                         dataType: "json",
                         success: function(data){
+                            console.log(data);
                             $("#formc").append( _.template( $("#<%= controller %>_form_template").jsthtml(), data ) );
                             if (typeof data._rev != "undefined")
+                        $(".save").click(  {"boo":"asd"}, window.saveclickHandler );
                                 _rev = data._rev;  
-                            $(".save").click( clickHandler );
                         }
                     });
                 } else {
                     $("#formc").append( _.template( $("#<%=controller %>_form_template").jsthtml(), {} ) );
-                    $(".save").click( clickHandler );
+                    $(".save").click(  {success:function(){ alert("hey") }}, window.saveclickHandler );
                 }
                 
         
@@ -77,7 +52,7 @@ _rev = ""
 
     });
     editview = new EditView;
-
+        
 </jst>
 
 </script>

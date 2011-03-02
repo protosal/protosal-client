@@ -57,7 +57,7 @@ fs.writeFile('./tom.loga', sys.inspect(req) );
         'Content-Type': 'application/json'
     });
     req.body.author = req.session.username;
-    
+    console.log(req.body);
     console.log( JSON.stringify(req.body) );
     request.write( JSON.stringify(req.body) );
     request.end();
@@ -69,18 +69,16 @@ fs.writeFile('./tom.loga', sys.inspect(req) );
         });
     });
 });
-
-app.get('/list/:controller', function(req, res) {
-    console.log(req.session.username);
-    var cloudanturl = '/app/_design/' + req.params.controller + "/_view/list?key=\"" + req.session.username + "\"";
+app.get('/related/:view/:id', function( req, res ){
+    console.log("server has got this shit lets try find some relationships");
+    var cloudanturl = '/app/_design/' + req.params.view + "/_view/listfees?key=\"" + req.params.id + "\"";
     console.log(cloudanturl);
     var couchdb = http.createClient(5984, 'localhost', true);
     var request = couchdb.request(req.method, cloudanturl, {
         'Host': 'localhost',
         'Authorization': 'Basic ' + rCommon.base64_encode(rCommon.credentials)
         
-    });
-
+    });   
     request.end();
     request.on('response', function (response) {
         response.setEncoding('utf8');
@@ -93,6 +91,8 @@ app.get('/list/:controller', function(req, res) {
         });
     });
 });
+
+
 app.get('/data/:id/:rev?', function(req, res) {
 
     var couchdb = http.createClient(5984, 'localhost', true);
@@ -159,5 +159,97 @@ app.delete('/data/:id/:rev?', function(req, res) {
   
     
 });
+
+app.delete('/delete/:controller/:id/:rev', function(req, res) {
+    console.log(req.session.username);
+    var cloudanturl = '/app/_design/' + req.params.controller + "/_view/list?key=[\""+ req.params.id + "\",\""+ req.params.rev+"\"]";
+    console.log(cloudanturl);
+    var couchdb = http.createClient(5984, 'localhost', true);
+    var request = couchdb.request("GET", cloudanturl, {
+        'Host': 'localhost',
+        'Authorization': 'Basic ' + rCommon.base64_encode(rCommon.credentials),
+        'Content-Type': 'application/json'
+    });
+    
+    request.end(req.rawBody);
+    request.on('response', function (response) {
+        response.setEncoding('utf8');
+        rowsa = ""
+        response.on('data', function (data) {
+            rowsa += data;
+        });
+        response.on('end', function (){
+            console.log(rowsa);
+            relationshipid = (JSON.parse(rowsa).rows[0].id);
+            relationshiprev = (JSON.parse(rowsa).rows[0].value._rev);
+            var url = '/app/' +relationshipid+"?rev=" + relationshiprev;
+        var requestdelete = couchdb.request("DELETE", url, {
+        'Host': 'localhost',
+        'Authorization': 'Basic ' + rCommon.base64_encode(rCommon.credentials),
+        'Content-Type': 'application/json'
+    });
+    
+                    requestdelete.end();
+                requestdelete.on('response', function (responsea) {
+                    responsea.on('data', function (data) {
+                        res.header('Content-Type', 'application/json');
+                        res.send(data);
+                    })
+                })
+    
+    
+    
+    
+        });
+    });
+});
+
+app.get('/:list_type/:controller', function(req, res) {
+    console.log(req.session.username);
+    var cloudanturl = '/app/_design/' + req.params.controller + "/_view/" + req.params.list_type + "?key=\"" + req.session.username + "\"";
+    console.log(cloudanturl);
+    var couchdb = http.createClient(5984, 'localhost', true);
+    var request = couchdb.request(req.method, cloudanturl, {
+        'Host': 'localhost',
+        'Authorization': 'Basic ' + rCommon.base64_encode(rCommon.credentials)
+        
+    });
+
+    request.end();
+    request.on('response', function (response) {
+        response.setEncoding('utf8');
+        rows = ""
+        response.on('data', function (data) {
+            rows += data;
+        });
+        response.on('end', function (){
+           res.send(rows); 
+        });
+    });
+});
+app.post('/:list_type/:controller', function(req, res) {
+    console.log(req.session.username);
+    var cloudanturl = '/app/_design/' + req.params.controller + "/_view/" + req.params.list_type;
+    console.log(cloudanturl);
+    var couchdb = http.createClient(5984, 'localhost', true);
+    var request = couchdb.request(req.method, cloudanturl, {
+        'Host': 'localhost',
+        'Authorization': 'Basic ' + rCommon.base64_encode(rCommon.credentials),
+        'Content-Type': 'application/json'
+    });
+    
+    request.end(req.rawBody);
+    request.on('response', function (response) {
+        response.setEncoding('utf8');
+        rows = ""
+        response.on('data', function (data) {
+            rows += data;
+        });
+        response.on('end', function (){
+           res.send(rows); 
+        });
+    });
+});
+
 
 app.listen(3000);
