@@ -65,25 +65,26 @@
             window.saveclickHandler =  function(event){
             
          
-                    id = "";
-                    type = "POST";
-                    if( GLOBALS.route_id != "" ) {
-                        id = "/" + GLOBALS.route_id; 
-                        type = "PUT";
-                    }
-                    var url = GLOBALS.couch_server + "/data" + id;
+
                     savebutton = event.currentTarget;
                     savebuttoncontroller = $(savebutton).attr("controller");
+                  
                     $('form').each( function(){
                         if( $(savebutton).attr("class").indexOf(savebuttoncontroller) ){
                             alert(savebuttoncontroller);
-                            formdata = $(savebutton).serializeObject();
+                            formdata = $(this).serializeObject();
                         }
                     
                     });
                        
-                    formdata.type = GLOBALS.controller;
-                    
+                    formdata.type = savebuttoncontroller;
+                    id = "";
+                    type = "POST";
+                    if( GLOBALS.route_id != "" && savebuttoncontroller == GLOBALS.controller ) {
+                        id = "/" + GLOBALS.route_id; 
+                        type = "PUT";
+                    }
+                    var url = GLOBALS.couch_server + "/data" + id;
                     if(  _rev != "" )
                         formdata._rev = _rev;
                         

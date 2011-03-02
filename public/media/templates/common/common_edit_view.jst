@@ -36,13 +36,21 @@ _rev = ""
                             console.log(data);
                             $("#formc").append( _.template( $("#<%= controller %>_form_template").jsthtml(), data ) );
                             if (typeof data._rev != "undefined")
-                        $(".save").click(  {"boo":"asd"}, window.saveclickHandler );
+                        $(".save").click(  {
+                        success:function(){
+                            redirect(GLOBALS.controller +"/list");
+                        }
+                        }, window.saveclickHandler );
                                 _rev = data._rev;  
                         }
                     });
                 } else {
                     $("#formc").append( _.template( $("#<%=controller %>_form_template").jsthtml(), {} ) );
-                    $(".save").click(  {success:function(){ alert("hey") }}, window.saveclickHandler );
+                    $(".save").click(  {
+                    success:function(){
+                            redirect(GLOBALS.controller +"/list");
+                        }
+                        }, window.saveclickHandler );
                 }
                 
         
