@@ -78,7 +78,57 @@
         SectionBackboneView = Backbone.View.extend({
             el: $("#section_form_container"),
             initialize: function () {
-                 
+                this.fees = new Fees( null, { view: this });
+                console.log("asd");
+                $.ajax({
+                   type: "GET",
+                   url: "list/fee",
+                   dataType: "json",
+                   success: function( fees ){
+                    
+                    fees = fees.rows;
+                    fees = _.map( fees, function( row ){
+                        return {
+                            "id" : row.value.id,
+                            "label" : row.value.name,
+                            "value" : row.value.name,
+                        };
+                    });
+                    console.log(fees);
+                    /*
+                     if( sectionfee_arr.length > 0 ) { 
+                   _.each(sectionfee_arr , function(num){ blue.add(num); });
+                    } 
+                    */
+                    
+                     $( "#fees" ).autocomplete({
+                        source: fees,
+                        minLength: 1,
+                        delay: 0,
+                        select: function( event, ui ) {
+                            /*
+                            if( section_backbone.fees.get( ui.item.id ) ){
+                              $.jGrowl("You have already added this",{  theme: 'apple', position: "bottom-right"});
+                              $.jGrowl("Please try again",{  theme: 'apple', position: "bottom-right"});
+                                $( "#fees" ).val("").focus();
+                                return false;
+                            }else{
+                            section_backbone.fees.add( {
+                                "id": ui.item.id,
+                                "name": ui.item.label,
+                                "price": ui.item.price,
+                            } );
+                            }
+                            $( "#fees" ).val("").focus();
+                            return false;
+                            */
+                        },
+                        close: function(){
+                            
+                        }
+                    });
+                   }
+                });
                
             },
             events: {
