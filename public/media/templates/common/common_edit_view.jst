@@ -37,7 +37,7 @@ _rev = ""
                             $("#formc").append( _.template( $("#<%= controller %>_form_template").jsthtml(), data ) );
                             if (typeof data._rev != "undefined")
                         $(".save").click(  {
-                        success:function(){
+                        success:function(data){
                             redirect(GLOBALS.controller +"/list");
                         }
                         }, window.saveclickHandler );
@@ -47,7 +47,7 @@ _rev = ""
                 } else {
                     $("#formc").append( _.template( $("#<%=controller %>_form_template").jsthtml(), {} ) );
                     $(".save").click(  {
-                    success:function(){
+                    success:function(data){
                             redirect(GLOBALS.controller +"/list");
                         }
                         }, window.saveclickHandler );

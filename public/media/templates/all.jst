@@ -749,6 +749,19 @@
         SectionBackboneView = Backbone.View.extend({
             el: $("#section_form_container"),
             initialize: function () {
+            if( GLOBALS.route_id == "" ){
+                formdata = $(".edit_section_form").serializeObject();
+                formdata.type = "section";
+                   $.ajax( "data", {
+                        dataType: "json",
+                        type: "POST",
+                        contentType: "application/json",
+                        data: $.toJSON(formdata),
+                        success: function(data){
+                            redirect("section/edit/"+data.id);
+                        }
+                    });
+            } else {
                 this.fees = new Fees( null, { view: this });
                
                 console.log("lets get all the section fees that we have already added");
@@ -757,45 +770,50 @@
                         type: "GET",
                         dataType: "json",
                         success: function(data){
-                            console.log(data);
-                            keys = _.map(data.rows, function( row ){
-                            
-                                return row.value.fee_id;
-                            });
-                            obj = {
-                                "keys": keys
-                            }
-                            $.ajax({
-                                url: "list_by_id/fee/",
-                                type: "POST",
-                                contentType: "application/json",
-                                dataType: "json",
-                                data: $.toJSON( obj ),
-                                success: function(data){
-                                    console.log("Got the related data");
-                                        var feelist = "<%= typeof feelist != "undefined" ? feelist : "" %>".split(",");
-                                        
-                                        var sorted = _.sortBy( data.rows, function( row ) { return feelist.indexOf(row.value._id); } );
-                                        console.log(sorted);
-                                        //var sorted = _.map(feelist, function(fee){ return _.map( data.rows, function( feeid ) { fee == data.rows.value.fee_id }) );
-                                    _.each( sorted, function( model ) {
-                                        
-                                        
-                                        
-                                        model = model.value;
-                                         section_backbone.fees.add( {
-                                            "id": model._id,
-                                            "name": model.name,
-                                            "price": model.price,
-                                            "rev": model._rev,
-                                        } );
-                                    
-                                    })
-                                   
+                            if( !data.error ){
+                            if( data.rows.length > 0 ){
+                                keys = _.map(data.rows, function( row ){
+                                
+                                    return row.value.fee_id;
+                                });
+                                obj = {
+                                    "keys": keys
                                 }
-                            });
-                            
-                            
+                                $.ajax({
+                                    url: "list_by_id/fee/",
+                                    type: "POST",
+                                    contentType: "application/json",
+                                    dataType: "json",
+                                    data: $.toJSON( obj ),
+                                    success: function(data){
+                                        console.log("Got the related data");
+                                            var feelist = "<%= typeof feelist != "undefined" ? feelist : "" %>".split(",");
+                                            
+                                            var sorted = _.sortBy( data.rows, function( row ) { return feelist.indexOf(row.value._id); } );
+                                            console.log(sorted);
+                                            //var sorted = _.map(feelist, function(fee){ return _.map( data.rows, function( feeid ) { fee == data.rows.value.fee_id }) );
+                                        _.each( sorted, function( model ) {
+                                            
+                                            
+                                            
+                                            model = model.value;
+                                             section_backbone.fees.add( {
+                                                "id": model._id,
+                                                "name": model.name,
+                                                "price": model.price,
+                                                "rev": model._rev,
+                                            } );
+                                        
+                                        })
+                                       
+                                    }
+                                });
+                            } else {
+                                console.log(" no fees" );
+                            }
+                            } else {
+                             console.log("we got an error");
+                            }
                         
                         }
                     
@@ -866,7 +884,7 @@
                     });
                    }
                 });
-               
+               }
             },
             events: {
                 "click #add-fee":  "feemodal",
@@ -952,8 +970,14 @@
                     resizable: false,
                     closeOnEscape: false,
                     title: "New Fee",
-                    open: function(){  $(".modalsave").click(  {success: function(){
-                        alert("saved fee");
+                    open: function(){  $(".modalsave").click(  {success: function(data){
+                          $("#fee_form_modal").dialog("close");
+                        console.log(data);
+                       section_backbone.fees.add( {
+                            "id": data.id,
+                            "name": data.name,
+                            "price": data.price,
+                        } );
                     }
                     },window.saveclickHandler ); },
                     modal: true, 
@@ -1221,7 +1245,7 @@ _rev = ""
                             $("#formc").append( _.template( $("#<%= controller %>_form_template").jsthtml(), data ) );
                             if (typeof data._rev != "undefined")
                         $(".save").click(  {
-                        success:function(){
+                        success:function(data){
                             redirect(GLOBALS.controller +"/list");
                         }
                         }, window.saveclickHandler );
@@ -1231,7 +1255,7 @@ _rev = ""
                 } else {
                     $("#formc").append( _.template( $("#<%=controller %>_form_template").jsthtml(), {} ) );
                     $(".save").click(  {
-                    success:function(){
+                    success:function(data){
                             redirect(GLOBALS.controller +"/list");
                         }
                         }, window.saveclickHandler );
@@ -1278,7 +1302,7 @@ _rev = ""
 
 </script>
 <script type="text/template" id="fee_form_template"> 
-    <form id="add_fee_form" enctype="multipart/form-data" method="post">
+    <form id="add_fee_form" class="add_fee_form" enctype="multipart/form-data" method="post">
        <br />
 
         <div style="">

@@ -64,29 +64,33 @@
        head.ready(function() {
             window.saveclickHandler =  function(event){
             
-         
+                    formdata = null;
 
                     savebutton = event.currentTarget;
                     savebuttoncontroller = $(savebutton).attr("controller");
-                  
-                    $('form').each( function(){
-                        if( $(savebutton).attr("class").indexOf(savebuttoncontroller) ){
-                            alert(savebuttoncontroller);
-                            formdata = $(this).serializeObject();
+                    console.log(savebutton);
+                    console.log("forms");
+                    $.each( $("form"), function(index, theform){
+                        
+                        if( $(theform).attr("class").indexOf(savebuttoncontroller) > 0  ){
+                            console.log($(theform).attr("class").indexOf(savebuttoncontroller));
+                            formdata = $(theform).serializeObject();
                         }
                     
                     });
-                       
+                    
                     formdata.type = savebuttoncontroller;
+                    console.log(formdata);
                     id = "";
                     type = "POST";
                     if( GLOBALS.route_id != "" && savebuttoncontroller == GLOBALS.controller ) {
                         id = "/" + GLOBALS.route_id; 
                         type = "PUT";
+                        if(  _rev != "" )
+                            formdata._rev = _rev;
                     }
                     var url = GLOBALS.couch_server + "/data" + id;
-                    if(  _rev != "" )
-                        formdata._rev = _rev;
+                   
                         
                     $.ajaxPrefilter(function( options ) {
                         //options.url = GLOBALS.server_base + "/api/get/" + options.url;
@@ -98,7 +102,8 @@
                         contentType: "application/json",
                         data: $.toJSON(formdata),
                         success: function(data){
-                            event.data.success();
+                            _.extend( data, formdata );
+                            event.data.success(data);
                         }
                     });
                     
