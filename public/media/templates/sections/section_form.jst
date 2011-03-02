@@ -198,6 +198,7 @@
                                 success: function( model ){
                                     
                                     console.log("Relationship added, add it to the backbone collection");
+                                    
                                     section_backbone.fees.add( {
                                         "id": ui.item.id,
                                         "name": ui.item.label,
@@ -307,13 +308,36 @@
                     closeOnEscape: false,
                     title: "New Fee",
                     open: function(){  $(".modalsave").click(  {success: function(data){
-                          $("#fee_form_modal").dialog("close");
-                        console.log(data);
-                       section_backbone.fees.add( {
-                            "id": data.id,
-                            "name": data.name,
-                            "price": data.price,
-                        } );
+                      
+                       $("#fee_form_modal").dialog("close"); //close the modal
+                       
+                                obj = {
+                                    section_id: GLOBALS.route_id,
+                                    fee_id: data.id,
+                                    type: "sectionfee"
+                                }
+                                //set the relationship object
+                                
+                                $.ajax({
+                                type: "POST",
+                                url: "/data",
+                                data: $.toJSON(obj),
+                                dataType: "json",
+                                contentType: "application/json",
+                                success: function( model ){
+                                    
+                                    console.log("Relationship added, add it to the backbone collection");
+                                    
+                                    //on success add to backbone collection which will update the view
+                                    section_backbone.fees.add( {
+                                        "id": data.id,
+                                        "name": data.name,
+                                        "price": data.price,
+                                        "rev": model.rev,
+                                    } );
+                                
+                                }
+                                })
                     }
                     },window.saveclickHandler ); },
                     modal: true, 

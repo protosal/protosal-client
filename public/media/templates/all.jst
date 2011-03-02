@@ -318,6 +318,644 @@
     })
     </script>
 </script>
+<script type="text/template" id="client_form_template"> 
+
+
+<form id="add_client_form" enctype="multipart/form-data" method="post">
+<div style="width: 840px; margin: auto;background: #ccc;">
+    <div class="megaform" style=" float: left;">
+
+    <fieldset>
+        <label for="">
+            Name</label>
+        <input name="name" id="" type="text" value="<%= typeof name != "undefined" ? name : ""  %>" />
+        <label for="">
+            Email</label>
+        <input name="email" id="" type="text" value="<%= typeof email != "undefined" ? email : "" %>" />
+        <label for="">
+            Website</label>
+        <input name="website" id="" type="text" value="<%= typeof website != "undefined" ? website : ""  %>" />
+        <label for="">
+            Comment</label>
+        <textarea id="" rows="4" name="comment" cols="30"><%= typeof comment != "undefined" ? comment : ""  %></textarea>
+    </fieldset>
+     
+    </form>
+    </div>
+  
+</div>
+
+
+</script>
+<style>
+ <style>
+        #sortablefees { list-style-type: none; margin: 0; padding: 0; width: 60%; }
+        #sortablefees li { cursor: pointer; margin: 0 3px 3px 3px; padding: 0.4em; padding-left: 1.5em; font-size: 1.4em; height: 18px; }
+        #sortablefees li span { margin-left: -1.3em; }
+    </style>
+</style>
+<script type="text/template" id="section_form_template">
+<div id="section_form_container">
+    <form id="add_section_form"  class="edit_section_form" enctype="multipart/form-data" >
+
+    <br />
+
+    <div style="width: 840px; margin: auto;background: #ccc;">
+        <div class="megaform" style=" float: left;">
+
+        <fieldset>
+            <label for="">
+                Name</label>
+            <input name="name" id="" type="text" value="<%= typeof name != "undefined" ? name : "" %>" />
+
+            <label for="">
+                Comment</label>
+            <textarea class="jckeditor" rows="4" name="description" cols="30"><%= typeof description != "undefined" ? description : "" %></textarea>
+
+
+
+
+
+        <br />
+        <br />
+
+    <h3>Add Fees</h3>
+
+    <div class="ui-widget">
+
+        <input type="text" id="fees" /><button type="button" id="add-fee">Addd</button> 
+    </div>
+
+
+            
+         
+
+
+        <div id="fee_form_modal"></div>
+        
+        <br />
+        <br />
+        <br />
+        <input type="hidden" name="feelist" id="feelist" value="" />
+        <h3>Fees</h3>
+        <ul id="sortablefees"></ul>
+        
+        </fieldset>
+        </form>
+        </div>
+    </div>
+</div>
+    <jst>
+
+        $(".jckeditor").each( function(){
+        $(this).ckeditor(function() {}, {  
+            toolbar: [
+                ['Bold', 'Italic', '-', 'NumberedList', 'BulletedList', '-', 'Link', 'Unlink','-','About'],['Styles','Format','Font','FontSize'],
+                ['TextColor','BGColor'],
+                ['Maximize', 'ShowBlocks','-','About']
+            ]
+        });
+        });
+        Fee = Backbone.Model.extend({
+            //Create a model to hold friend atribute
+            name: null
+        });
+        
+        Fees = Backbone.Collection.extend({
+          //This is our Friends collection and holds our Friend models
+          initialize: function (models, options) {
+            this.bind("add", options.view.addFee);
+            this.bind("remove", options.view.removeFee);
+            //Listen for new additions to the collection and call a view function if so
+            
+          }
+        });
+        //Make relationships !TODO
+        SectionBackboneView = Backbone.View.extend({
+            el: $("#section_form_container"),
+            initialize: function () {
+            if( GLOBALS.route_id == "" ){
+                formdata = $(".edit_section_form").serializeObject();
+                formdata.type = "section";
+                   $.ajax( "data", {
+                        dataType: "json",
+                        type: "POST",
+                        contentType: "application/json",
+                        data: $.toJSON(formdata),
+                        success: function(data){
+                            redirect("section/edit/"+data.id);
+                        }
+                    });
+            } else {
+                this.fees = new Fees( null, { view: this });
+               
+                console.log("lets get all the section fees that we have already added");
+                    $.ajax({
+                        url: "related/sectionfee/" + GLOBALS.route_id,
+                        type: "GET",
+                        dataType: "json",
+                        success: function(data){
+                            if( !data.error ){
+                            if( data.rows.length > 0 ){
+                                keys = _.map(data.rows, function( row ){
+                                
+                                    return row.value.fee_id;
+                                });
+                                obj = {
+                                    "keys": keys
+                                }
+                                $.ajax({
+                                    url: "list_by_id/fee/",
+                                    type: "POST",
+                                    contentType: "application/json",
+                                    dataType: "json",
+                                    data: $.toJSON( obj ),
+                                    success: function(data){
+                                        console.log("Got the related data");
+                                            var feelist = "<%= typeof feelist != "undefined" ? feelist : "" %>".split(",");
+                                            
+                                            var sorted = _.sortBy( data.rows, function( row ) { return feelist.indexOf(row.value._id); } );
+                                            console.log(sorted);
+                                            //var sorted = _.map(feelist, function(fee){ return _.map( data.rows, function( feeid ) { fee == data.rows.value.fee_id }) );
+                                        _.each( sorted, function( model ) {
+                                            
+                                            
+                                            
+                                            model = model.value;
+                                             section_backbone.fees.add( {
+                                                "id": model._id,
+                                                "name": model.name,
+                                                "price": model.price,
+                                                "rev": model._rev,
+                                            } );
+                                        
+                                        })
+                                       
+                                    }
+                                });
+                            } else {
+                                console.log(" no fees" );
+                            }
+                            } else {
+                             console.log("we got an error");
+                            }
+                        
+                        }
+                    
+                    });
+                $.ajax({
+                   type: "GET",
+                   url: "list_by_author/fee",
+                   dataType: "json",
+                   success: function( fees ){
+                    
+                    fees = fees.rows;
+                    fees = _.map( fees, function( row ){
+                        return {
+                            "id" : row.value._id,
+                            "label" : row.value.name,
+                            "value" : row.value.name,
+                            "rev" : row.value._rev,
+                        };
+                    });
+                    
+                    
+                     $( "#fees" ).autocomplete({
+                        source: fees,
+                        minLength: 1,
+                        delay: 0,
+                        select: function( event, ui ) {
+                            console.log(ui);
+                            if( section_backbone.fees.get( ui.item.id ) ){
+                              $.jGrowl("You have already added this",{  theme: 'apple', position: "bottom-right"});
+                              $.jGrowl("Please try again",{  theme: 'apple', position: "bottom-right"});
+                                $( "#fees" ).val("").focus();
+                                return false;
+                            }else{
+                                
+                                obj = {
+                                    section_id: GLOBALS.route_id,
+                                    fee_id: ui.item.id,
+                                    type: "sectionfee"
+                                }
+                                $.ajax({
+                                type: "POST",
+                                url: "/data",
+                                data: $.toJSON(obj),
+                                dataType: "json",
+                                contentType: "application/json",
+                                success: function( model ){
+                                    
+                                    console.log("Relationship added, add it to the backbone collection");
+                                    
+                                    section_backbone.fees.add( {
+                                        "id": ui.item.id,
+                                        "name": ui.item.label,
+                                        "price": ui.item.price,
+                                        "price": ui.item.price,
+                                        "rev": model.rev,
+                                    } );
+                                
+                                }
+                                })
+                                
+                            }
+                            $( "#fees" ).val("").focus();
+                            return false;
+                            
+                        },
+                        close: function(){
+                            
+                        }
+                    });
+                   }
+                });
+               }
+            },
+            events: {
+                "click #add-fee":  "feemodal",
+                "keypress #fees":  "checkEnter",
+            },
+            addFee: function (model) {
+                console.log(model);
+                $("#sortablefees").append("<li id='" + model.id + "' class='ui-state-default'><span style='float: left;' class='ui-icon ui-icon-arrowthick-2-n-s'></span><p style='width: 250px; float: left;'>" + model.get("name") + "</p><span class='delete_fee' style='float: right;'>Delete</span></li>")
+                $( "#sortablefees" ).sortable({
+                    update: section_backbone.updateFeeValues
+                });
+                section_backbone.updateFeeValues();
+            },
+            updateFeeValues: function(event, ui){
+                        
+                sections = $("#sortablefees").sortable('toArray').toString();
+                console.log(sections);
+                $("#feelist").val( sections );
+                
+            },
+            removeFee: function ( id ) {
+                
+                //section_backbone.updateFeeValues();
+                console.log(this.fees.get( id ));
+                console.log("nomepha");
+                this.fees.url = "delete/sectionfee/get_section";
+                 $.ajax({
+                                type: "DELETE",
+                                url: "delete/sectionfee/" + GLOBALS.route_id + "/" + id,
+                                data: $.toJSON(obj),
+                                dataType: "json",
+                                contentType: "application/json",
+                                success: function( data ){
+                                    
+                                    console.log(data);
+                                  
+                                
+                                }
+                                })
+                 
+           
+            //appview.fees.get().remove();
+            
+            },
+            checkEnter: function(e){
+                if (e.keyCode == 13 && $("#fees").val() == '') return false;
+                if (e.keyCode != 13 || $("#fees").val() == '') return;
+                //alert(currentVein);
+        
+                this.feemodal();
+                
+                return false;
+            },
+            feemodal: function(){
+            
+                var feeoptions = {
+                    "id": "",
+                    "name": _.escapeHTML( $("#fees").val() ),
+                    "price": "",
+                    "quantity": "",
+                    "description": "",
+                    "editing": "false",
+                    "formName" : "add_fee_form",
+                }
+
+                var template = _.template( $('#fee_form_template').jsthtml(), feeoptions )
+                options = {
+                    'title': 'List',
+                    'buttons': [{
+                                    'text': 'Save',
+                                    'classes': 'modalsave',
+                                    'controller': 'fee'
+                        },{
+                                    'text': 'Back',
+                                    'classes': 'back-button'
+                        }
+                    ]
+                    
+                }
+                $("#fee_form_modal").html( _.template( $("#page_header_template").jsthtml(), options ) );
+                $("#fee_form_modal").append(template).dialog({
+                    draggable: false,
+                    resizable: false,
+                    closeOnEscape: false,
+                    title: "New Fee",
+                    open: function(){  $(".modalsave").click(  {success: function(data){
+                      
+                       $("#fee_form_modal").dialog("close"); //close the modal
+                       
+                                obj = {
+                                    section_id: GLOBALS.route_id,
+                                    fee_id: data.id,
+                                    type: "sectionfee"
+                                }
+                                //set the relationship object
+                                
+                                $.ajax({
+                                type: "POST",
+                                url: "/data",
+                                data: $.toJSON(obj),
+                                dataType: "json",
+                                contentType: "application/json",
+                                success: function( model ){
+                                    
+                                    console.log("Relationship added, add it to the backbone collection");
+                                    
+                                    //on success add to backbone collection which will update the view
+                                    section_backbone.fees.add( {
+                                        "id": data.id,
+                                        "name": data.name,
+                                        "price": data.price,
+                                        "rev": model.rev,
+                                    } );
+                                
+                                }
+                                })
+                    }
+                    },window.saveclickHandler ); },
+                    modal: true, 
+                    hide: 'drop',
+                    width: "550px",
+                });
+                
+                
+            }
+            
+            
+        });
+        
+        var section_backbone = new SectionBackboneView;
+        
+        
+        $(".delete_fee").live("click", function() {
+            var id = $(this).parents("li").attr("id")
+            section_backbone.removeFee(id);
+             $(this).parents("li").remove();
+            return false;
+        });
+    </jst>
+</script>
+<script  type="text/template" id="section_edait_view_template">
+
+
+
+    <style>
+        #sortablefees { list-style-type: none; margin: 0; padding: 0; width: 60%; }
+        #sortablefees li { cursor: pointer; margin: 0 3px 3px 3px; padding: 0.4em; padding-left: 1.5em; font-size: 1.4em; height: 18px; }
+        #sortablefees li span { margin-left: -1.3em; }
+    </style>
+
+    <div id="stupid2">
+        <div class="ui-widget-header">
+            <h3 style="float: left;"><%= sectionoptions.id ? "Edit" : "New" %> Section</h3>
+            
+            <button type="submit" id="newsection" style="float: right;">Save</button>
+            <a class="button back-button" style="float: right;">Back</a>
+            <div style="clear:both;"></div>
+         
+        </div>
+        
+    <%= section_form_partial( sectionoptions ) %>
+        </div>
+       
+        
+   <jst>
+        form_options['add_section_form'] = {
+            success: function( data ) {
+
+                redirect("section/list");
+            }
+        }
+        $("#newsection").click( function(){
+            $("#add_section_form").submit(); 
+        });
+        
+        $(function() {
+       
+            function log( message ) {
+                $( "<div/>" ).text( message ).prependTo( "#log" );
+                $( "#log" ).attr( "scrollTop", 0 );
+            }
+            
+           // var sectionoptions = <%= sectionoptions %>
+             
+           // var template = _.template( $('#section-form-template').html(), sectionoptions)
+           
+            //$("#stupid2").append( _template(  );
+          
+           // $("form").rythform();   
+            
+            
+        });
+        </jst>
+</script>
+<script type="text/template" id="section_list_item_template" >
+    <li id="<%= id %>">
+        <span class="section_name" style="width: 250px;"><%= name %></span>
+        <a class="delete-section" style="float: right;">Delete</a>
+        <a class="edit-section" style="float: right;">Edit</a>
+        <span style="width: 20px; float: left;  cursor: pointer;" class="ui-icon ui-icon-arrow-4-diag"></span>
+    </li>
+</script>
+<script type="text/template" id="home_dashboard_view_template">
+    <style>
+        .demo { width: 950px; margin: auto; }
+        .column { width: 400px; float: left; padding-bottom: 100px; }
+        .wide { width: 550px;  }
+        .portlet { margin: 0 1em 1em 0; }
+        .portlet-header { margin: 0.3em; padding-bottom: 4px; padding-left: 0.2em; }
+        .portlet-header .ui-icon { float: right; }
+        .portlet-content { padding: 0.4em; }
+        .ui-sortable-placeholder { border: 1px dotted black; visibility: visible !important; height: 50px !important; }
+        .ui-sortable-placeholder * { visibility: hidden; }
+        
+        #drafts {
+            list-style: none;
+        }
+        #drafts li {
+            margin-top: 5px;
+            width: 300px;
+            float: left;
+            display: block;
+        }
+        #drafts p {
+            float: left;
+            padding: 4px;
+        }
+    </style>
+
+   
+    
+    <div id="pageheader"></div>
+    
+
+   
+<br />
+<div class="demo">
+<div class="column">
+    <div class="portlet">
+        <div class="portlet-header">Drafts</div>
+        <div class="portlet-content">
+        <ul id="drafts">
+        <li><div class="corners" style="float: left;background: #99cc33; padding: 4px; width: 50px;text-align: center;">
+            Sent
+            </div><p>Proposal #2 for Client #3</p></li>
+        <li><div class="corners" style="float: left;background: #ff3333; padding: 4px; width: 50px;text-align: center;">
+            Declined</div><p>Proposal #3 for Client #6</p></li>
+        </ul>
+            
+        </div>
+    </div>
+    
+    <div class="portlet">
+        <div class="portlet-header">Recent Proposals</div>
+        <div class="portlet-content"></div>
+    </div>
+    <div class="portlet">
+        <div class="portlet-header">Company News</div>
+        <div class="portlet-content">19/1/2011 - Happy New year <br />This year we hope to bring in some new software.  Hopefully it will be beneficial</div>
+    </div>  
+</div>
+
+
+<div class="column wide">
+    <div class="portlet">
+        <div class="portlet-header">Statistics</div>
+        <div class="portlet-content">
+        <div id="graph" style="width: 520px; height: 400px; margin: 0 auto"></div> 
+        </div>
+    </div>
+
+
+
+
+</div>
+
+
+
+</div><!-- End demo -->
+
+<jst> 
+    var chart;
+    $(document).ready(function() {
+        chart = new Highcharts.Chart({
+            chart: {
+                renderTo: 'graph',
+                defaultSeriesType: 'line',
+                marginRight: 130,
+                marginBottom: 25
+            },
+            title: {
+                text: 'Monthly Average Temperature',
+                x: -20 //center
+            },
+            subtitle: {
+                text: 'Source: WorldClimate.com',
+                x: -20
+            },
+            xAxis: {
+                categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
+                    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+            },
+            yAxis: {
+                title: {
+                    text: 'Temperature (°C)'
+                },
+                plotLines: [{
+                    value: 0,
+                    width: 1,
+                    color: '#808080'
+                }]
+            },
+            tooltip: {
+                formatter: function() {
+                        return '<b>'+ this.series.name +'</b><br/>'+
+                        this.x +': '+ this.y +'°C';
+                }
+            },
+            legend: {
+                layout: 'vertical',
+                align: 'right',
+                verticalAlign: 'top',
+                x: -10,
+                y: 100,
+                borderWidth: 0
+            },
+            series: [{
+                name: 'Tokyo',
+                data: [7.0, 6.9, 9.5, 14.5, 18.2, 21.5, 25.2, 26.5, 23.3, 18.3, 13.9, 9.6]
+            }, {
+                name: 'New York',
+                data: [-0.2, 0.8, 5.7, 11.3, 17.0, 22.0, 24.8, 24.1, 20.1, 14.1, 8.6, 2.5]
+            }, {
+                name: 'Berlin',
+                data: [-0.9, 0.6, 3.5, 8.4, 13.5, 17.0, 18.6, 17.9, 14.3, 9.0, 3.9, 1.0]
+            }, {
+                name: 'London',
+                data: [3.9, 4.2, 5.7, 8.5, 11.9, 15.2, 17.0, 16.6, 14.2, 10.3, 6.6, 4.8]
+            }]
+        });
+        
+        
+    });
+
+    $(function() {
+    $( ".column" ).sortable({
+        connectWith: ".column"
+    });
+
+    $( ".portlet" ).addClass( "ui-widget ui-widget-content ui-helper-clearfix ui-corner-all" )
+        .find( ".portlet-header" )
+            .addClass( "ui-widget-header ui-corner-all" )
+            .prepend( '<span class="ui-icon ui-icon-minusthick"></span>')
+            .end()
+        .find( ".portlet-content" );
+
+    $( ".portlet-header .ui-icon" ).click(function() {
+        $( this ).toggleClass( "ui-icon-minusthick" ).toggleClass( "ui-icon-plusthick" );
+        $( this ).parents( ".portlet:first" ).find( ".portlet-content" ).toggle();
+    });
+
+    $( ".column" ).disableSelection();
+
+
+
+
+    options = {
+        'title': 'Dashboard',
+        'buttons': [{
+                        'text': 'New Proposal',
+                        'href': '#/proposal/edit',
+                        'classes': 'addbutton'
+            },{
+                        'text': 'New Client',
+                        'href': '#/client/edit',
+                        'classes': 'addbutton'
+            },
+        ]
+        
+    }
+    
+    $("#pageheader").html( _.template( $("#page_header_template").jsthtml(), options ) );
+});
+</jst>
+</script>
 <script type="text/template" id="proposal_preview_container_template">
     <style>
     .proposal_preview {
@@ -654,309 +1292,29 @@
     </div>
 
 </script>    
-<script type="text/template" id="section_list_item_template" >
-    <li id="<%= id %>">
-        <span class="section_name" style="width: 250px;"><%= name %></span>
-        <a class="delete-section" style="float: right;">Delete</a>
-        <a class="edit-section" style="float: right;">Edit</a>
-        <span style="width: 20px; float: left;  cursor: pointer;" class="ui-icon ui-icon-arrow-4-diag"></span>
-    </li>
+<script type="text/template" id="setting_main_view_template">
+
+
+Nothing
 </script>
-<style>
- <style>
-        #sortablefees { list-style-type: none; margin: 0; padding: 0; width: 60%; }
-        #sortablefees li { cursor: pointer; margin: 0 3px 3px 3px; padding: 0.4em; padding-left: 1.5em; font-size: 1.4em; height: 18px; }
-        #sortablefees li span { margin-left: -1.3em; }
-    </style>
-</style>
-<script type="text/template" id="section_form_template">
-<div id="section_form_container">
-    <form id="add_section_form"  class="edit_section_form" enctype="multipart/form-data" >
+<script type="text/template" id="common_edit_view_template">
 
-    <br />
-
-    <div style="width: 840px; margin: auto;background: #ccc;">
-        <div class="megaform" style=" float: left;">
-
-        <fieldset>
-            <label for="">
-                Name</label>
-            <input name="name" id="" type="text" value="<%= typeof name != "undefined" ? name : "" %>" />
-
-            <label for="">
-                Comment</label>
-            <textarea class="jckeditor" rows="4" name="description" cols="30"><%= typeof description != "undefined" ? description : "" %></textarea>
-
-
-
-
-
-        <br />
-        <br />
-
-    <h3>Add Fees</h3>
-
-    <div class="ui-widget">
-
-        <input type="text" id="fees" /><button type="button" id="add-fee">Addd</button> 
-    </div>
-
-
-            
-         
-
-
-        <div id="fee_form_modal"></div>
-        
-        <br />
-        <br />
-        <br />
-        <input type="hidden" name="feelist" id="feelist" value="" />
-        <h3>Fees</h3>
-        <ul id="sortablefees"></ul>
-        
-        </fieldset>
-        </form>
-        </div>
-    </div>
+<div id="<%=controller %>_edit_view_container">
+<div id="pageheader"></div>
+<div id="formc"></div>
 </div>
-    <jst>
+<jst>
+_rev = ""
+    EditView = Backbone.View.extend({
+            el: $("#<%=controller %>_edit_view_container"),
 
-        $(".jckeditor").each( function(){
-        $(this).ckeditor(function() {}, {  
-            toolbar: [
-                ['Bold', 'Italic', '-', 'NumberedList', 'BulletedList', '-', 'Link', 'Unlink','-','About'],['Styles','Format','Font','FontSize'],
-                ['TextColor','BGColor'],
-                ['Maximize', 'ShowBlocks','-','About']
-            ]
-        });
-        });
-        Fee = Backbone.Model.extend({
-            //Create a model to hold friend atribute
-            name: null
-        });
-        
-        Fees = Backbone.Collection.extend({
-          //This is our Friends collection and holds our Friend models
-          initialize: function (models, options) {
-            this.bind("add", options.view.addFee);
-            this.bind("remove", options.view.removeFee);
-            //Listen for new additions to the collection and call a view function if so
-            
-          }
-        });
-
-        SectionBackboneView = Backbone.View.extend({
-            el: $("#section_form_container"),
             initialize: function () {
-            if( GLOBALS.route_id == "" ){
-                formdata = $(".edit_section_form").serializeObject();
-                formdata.type = "section";
-                   $.ajax( "data", {
-                        dataType: "json",
-                        type: "POST",
-                        contentType: "application/json",
-                        data: $.toJSON(formdata),
-                        success: function(data){
-                            redirect("section/edit/"+data.id);
-                        }
-                    });
-            } else {
-                this.fees = new Fees( null, { view: this });
-               
-                console.log("lets get all the section fees that we have already added");
-                    $.ajax({
-                        url: "related/sectionfee/" + GLOBALS.route_id,
-                        type: "GET",
-                        dataType: "json",
-                        success: function(data){
-                            if( !data.error ){
-                            if( data.rows.length > 0 ){
-                                keys = _.map(data.rows, function( row ){
-                                
-                                    return row.value.fee_id;
-                                });
-                                obj = {
-                                    "keys": keys
-                                }
-                                $.ajax({
-                                    url: "list_by_id/fee/",
-                                    type: "POST",
-                                    contentType: "application/json",
-                                    dataType: "json",
-                                    data: $.toJSON( obj ),
-                                    success: function(data){
-                                        console.log("Got the related data");
-                                            var feelist = "<%= typeof feelist != "undefined" ? feelist : "" %>".split(",");
-                                            
-                                            var sorted = _.sortBy( data.rows, function( row ) { return feelist.indexOf(row.value._id); } );
-                                            console.log(sorted);
-                                            //var sorted = _.map(feelist, function(fee){ return _.map( data.rows, function( feeid ) { fee == data.rows.value.fee_id }) );
-                                        _.each( sorted, function( model ) {
-                                            
-                                            
-                                            
-                                            model = model.value;
-                                             section_backbone.fees.add( {
-                                                "id": model._id,
-                                                "name": model.name,
-                                                "price": model.price,
-                                                "rev": model._rev,
-                                            } );
-                                        
-                                        })
-                                       
-                                    }
-                                });
-                            } else {
-                                console.log(" no fees" );
-                            }
-                            } else {
-                             console.log("we got an error");
-                            }
-                        
-                        }
-                    
-                    });
-                $.ajax({
-                   type: "GET",
-                   url: "list_by_author/fee",
-                   dataType: "json",
-                   success: function( fees ){
-                    
-                    fees = fees.rows;
-                    fees = _.map( fees, function( row ){
-                        return {
-                            "id" : row.value._id,
-                            "label" : row.value.name,
-                            "value" : row.value.name,
-                            "rev" : row.value._rev,
-                        };
-                    });
-                    
-                    
-                     $( "#fees" ).autocomplete({
-                        source: fees,
-                        minLength: 1,
-                        delay: 0,
-                        select: function( event, ui ) {
-                            console.log(ui);
-                            if( section_backbone.fees.get( ui.item.id ) ){
-                              $.jGrowl("You have already added this",{  theme: 'apple', position: "bottom-right"});
-                              $.jGrowl("Please try again",{  theme: 'apple', position: "bottom-right"});
-                                $( "#fees" ).val("").focus();
-                                return false;
-                            }else{
-                                
-                                obj = {
-                                    section_id: GLOBALS.route_id,
-                                    fee_id: ui.item.id,
-                                    type: "sectionfee"
-                                }
-                                $.ajax({
-                                type: "POST",
-                                url: "/data",
-                                data: $.toJSON(obj),
-                                dataType: "json",
-                                contentType: "application/json",
-                                success: function( model ){
-                                    
-                                    console.log("Relationship added, add it to the backbone collection");
-                                    section_backbone.fees.add( {
-                                        "id": ui.item.id,
-                                        "name": ui.item.label,
-                                        "price": ui.item.price,
-                                        "price": ui.item.price,
-                                        "rev": model.rev,
-                                    } );
-                                
-                                }
-                                })
-                                
-                            }
-                            $( "#fees" ).val("").focus();
-                            return false;
-                            
-                        },
-                        close: function(){
-                            
-                        }
-                    });
-                   }
-                });
-               }
-            },
-            events: {
-                "click #add-fee":  "feemodal",
-                "keypress #fees":  "checkEnter",
-            },
-            addFee: function (model) {
-                console.log(model);
-                $("#sortablefees").append("<li id='" + model.id + "' class='ui-state-default'><span style='float: left;' class='ui-icon ui-icon-arrowthick-2-n-s'></span><p style='width: 250px; float: left;'>" + model.get("name") + "</p><span class='delete_fee' style='float: right;'>Delete</span></li>")
-                $( "#sortablefees" ).sortable({
-                    update: section_backbone.updateFeeValues
-                });
-                section_backbone.updateFeeValues();
-            },
-            updateFeeValues: function(event, ui){
-                        
-                sections = $("#sortablefees").sortable('toArray').toString();
-                console.log(sections);
-                $("#feelist").val( sections );
-                
-            },
-            removeFee: function ( id ) {
-                
-                //section_backbone.updateFeeValues();
-                console.log(this.fees.get( id ));
-                console.log("nomepha");
-                this.fees.url = "delete/sectionfee/get_section";
-                 $.ajax({
-                                type: "DELETE",
-                                url: "delete/sectionfee/" + GLOBALS.route_id + "/" + id,
-                                data: $.toJSON(obj),
-                                dataType: "json",
-                                contentType: "application/json",
-                                success: function( data ){
-                                    
-                                    console.log(data);
-                                  
-                                
-                                }
-                                })
-                 
-           
-            //appview.fees.get().remove();
-            
-            },
-            checkEnter: function(e){
-                if (e.keyCode == 13 && $("#fees").val() == '') return false;
-                if (e.keyCode != 13 || $("#fees").val() == '') return;
-                //alert(currentVein);
-        
-                this.feemodal();
-                
-                return false;
-            },
-            feemodal: function(){
-            
-                var feeoptions = {
-                    "id": "",
-                    "name": _.escapeHTML( $("#fees").val() ),
-                    "price": "",
-                    "quantity": "",
-                    "description": "",
-                    "editing": "false",
-                    "formName" : "add_fee_form",
-                }
-
-                var template = _.template( $('#fee_form_template').jsthtml(), feeoptions )
                 options = {
-                    'title': 'List',
+                    'title': '<%= _(controller).capitalize() %> List',
                     'buttons': [{
                                     'text': 'Save',
-                                    'classes': 'modalsave',
-                                    'controller': 'fee'
+                                    'classes': 'save',
+                                    'controller': '<%= controller %>'
                         },{
                                     'text': 'Back',
                                     'classes': 'back-button'
@@ -964,97 +1322,46 @@
                     ]
                     
                 }
-                $("#fee_form_modal").html( _.template( $("#page_header_template").jsthtml(), options ) );
-                $("#fee_form_modal").append(template).dialog({
-                    draggable: false,
-                    resizable: false,
-                    closeOnEscape: false,
-                    title: "New Fee",
-                    open: function(){  $(".modalsave").click(  {success: function(data){
-                          $("#fee_form_modal").dialog("close");
-                        console.log(data);
-                       section_backbone.fees.add( {
-                            "id": data.id,
-                            "name": data.name,
-                            "price": data.price,
-                        } );
-                    }
-                    },window.saveclickHandler ); },
-                    modal: true, 
-                    hide: 'drop',
-                    width: "550px",
-                });
+                $("#pageheader").html( _.template( $("#page_header_template").jsthtml(), options ) );
+                
+
+                console.log("ASDAS");
+                if( GLOBALS.route_id ){
+                    var url = GLOBALS.server_base + "/data/" + GLOBALS.route_id;
+                    console.log(url);
+                    $.ajax( url, {
+                        dataType: "json",
+                        success: function(data){
+                            console.log(data);
+                            $("#formc").append( _.template( $("#<%= controller %>_form_template").jsthtml(), data ) );
+                            if (typeof data._rev != "undefined")
+                        $(".save").click(  {
+                        success:function(data){
+                            redirect(GLOBALS.controller +"/list");
+                        }
+                        }, window.saveclickHandler );
+                                _rev = data._rev;  
+                        }
+                    });
+                } else {
+                    $("#formc").append( _.template( $("#<%=controller %>_form_template").jsthtml(), {} ) );
+                    $(".save").click(  {
+                    success:function(data){
+                            redirect(GLOBALS.controller +"/list");
+                        }
+                        }, window.saveclickHandler );
+                }
+                
+        
                 
                 
-            }
-            
-            
-        });
-        
-        var section_backbone = new SectionBackboneView;
-        
-        
-        $(".delete_fee").live("click", function() {
-            var id = $(this).parents("li").attr("id")
-            section_backbone.removeFee(id);
-             $(this).parents("li").remove();
-            return false;
-        });
-    </jst>
-</script>
-<script  type="text/template" id="section_edait_view_template">
+            },
 
-
-
-    <style>
-        #sortablefees { list-style-type: none; margin: 0; padding: 0; width: 60%; }
-        #sortablefees li { cursor: pointer; margin: 0 3px 3px 3px; padding: 0.4em; padding-left: 1.5em; font-size: 1.4em; height: 18px; }
-        #sortablefees li span { margin-left: -1.3em; }
-    </style>
-
-    <div id="stupid2">
-        <div class="ui-widget-header">
-            <h3 style="float: left;"><%= sectionoptions.id ? "Edit" : "New" %> Section</h3>
-            
-            <button type="submit" id="newsection" style="float: right;">Save</button>
-            <a class="button back-button" style="float: right;">Back</a>
-            <div style="clear:both;"></div>
-         
-        </div>
+    });
+    editview = new EditView;
         
-    <%= section_form_partial( sectionoptions ) %>
-        </div>
-       
-        
-   <jst>
-        form_options['add_section_form'] = {
-            success: function( data ) {
+</jst>
 
-                redirect("section/list");
-            }
-        }
-        $("#newsection").click( function(){
-            $("#add_section_form").submit(); 
-        });
-        
-        $(function() {
-       
-            function log( message ) {
-                $( "<div/>" ).text( message ).prependTo( "#log" );
-                $( "#log" ).attr( "scrollTop", 0 );
-            }
-            
-           // var sectionoptions = <%= sectionoptions %>
-             
-           // var template = _.template( $('#section-form-template').html(), sectionoptions)
-           
-            //$("#stupid2").append( _template(  );
-          
-           // $("form").rythform();   
-            
-            
-        });
-        </jst>
 </script>
 <script type="text/template" id="page_header_template">
     <div class="ui-widget-header">
@@ -1206,101 +1513,6 @@ $(".list_view").dataTable({
 });
 </jst>
 </script>
-<script type="text/template" id="common_edit_view_template">
-
-<div id="<%=controller %>_edit_view_container">
-<div id="pageheader"></div>
-<div id="formc"></div>
-</div>
-<jst>
-_rev = ""
-    EditView = Backbone.View.extend({
-            el: $("#<%=controller %>_edit_view_container"),
-
-            initialize: function () {
-                options = {
-                    'title': '<%= _(controller).capitalize() %> List',
-                    'buttons': [{
-                                    'text': 'Save',
-                                    'classes': 'save',
-                                    'controller': '<%= controller %>'
-                        },{
-                                    'text': 'Back',
-                                    'classes': 'back-button'
-                        }
-                    ]
-                    
-                }
-                $("#pageheader").html( _.template( $("#page_header_template").jsthtml(), options ) );
-                
-
-                console.log("ASDAS");
-                if( GLOBALS.route_id ){
-                    var url = GLOBALS.server_base + "/data/" + GLOBALS.route_id;
-                    console.log(url);
-                    $.ajax( url, {
-                        dataType: "json",
-                        success: function(data){
-                            console.log(data);
-                            $("#formc").append( _.template( $("#<%= controller %>_form_template").jsthtml(), data ) );
-                            if (typeof data._rev != "undefined")
-                        $(".save").click(  {
-                        success:function(data){
-                            redirect(GLOBALS.controller +"/list");
-                        }
-                        }, window.saveclickHandler );
-                                _rev = data._rev;  
-                        }
-                    });
-                } else {
-                    $("#formc").append( _.template( $("#<%=controller %>_form_template").jsthtml(), {} ) );
-                    $(".save").click(  {
-                    success:function(data){
-                            redirect(GLOBALS.controller +"/list");
-                        }
-                        }, window.saveclickHandler );
-                }
-                
-        
-                
-                
-            },
-
-    });
-    editview = new EditView;
-        
-</jst>
-
-</script>
-<script type="text/template" id="client_form_template"> 
-
-
-<form id="add_client_form" enctype="multipart/form-data" method="post">
-<div style="width: 840px; margin: auto;background: #ccc;">
-    <div class="megaform" style=" float: left;">
-
-    <fieldset>
-        <label for="">
-            Name</label>
-        <input name="name" id="" type="text" value="<%= typeof name != "undefined" ? name : ""  %>" />
-        <label for="">
-            Email</label>
-        <input name="email" id="" type="text" value="<%= typeof email != "undefined" ? email : "" %>" />
-        <label for="">
-            Website</label>
-        <input name="website" id="" type="text" value="<%= typeof website != "undefined" ? website : ""  %>" />
-        <label for="">
-            Comment</label>
-        <textarea id="" rows="4" name="comment" cols="30"><%= typeof comment != "undefined" ? comment : ""  %></textarea>
-    </fieldset>
-     
-    </form>
-    </div>
-  
-</div>
-
-
-</script>
 <script type="text/template" id="fee_form_template"> 
     <form id="add_fee_form" class="add_fee_form" enctype="multipart/form-data" method="post">
        <br />
@@ -1343,194 +1555,6 @@ _rev = ""
 
 </script>
 
-<script type="text/template" id="setting_main_view_template">
-
-
-Nothing
-</script>
-<script type="text/template" id="home_dashboard_view_template">
-    <style>
-        .demo { width: 950px; margin: auto; }
-        .column { width: 400px; float: left; padding-bottom: 100px; }
-        .wide { width: 550px;  }
-        .portlet { margin: 0 1em 1em 0; }
-        .portlet-header { margin: 0.3em; padding-bottom: 4px; padding-left: 0.2em; }
-        .portlet-header .ui-icon { float: right; }
-        .portlet-content { padding: 0.4em; }
-        .ui-sortable-placeholder { border: 1px dotted black; visibility: visible !important; height: 50px !important; }
-        .ui-sortable-placeholder * { visibility: hidden; }
-        
-        #drafts {
-            list-style: none;
-        }
-        #drafts li {
-            margin-top: 5px;
-            width: 300px;
-            float: left;
-            display: block;
-        }
-        #drafts p {
-            float: left;
-            padding: 4px;
-        }
-    </style>
-
-   
-    
-    <div id="pageheader"></div>
-    
-
-   
-<br />
-<div class="demo">
-<div class="column">
-    <div class="portlet">
-        <div class="portlet-header">Drafts</div>
-        <div class="portlet-content">
-        <ul id="drafts">
-        <li><div class="corners" style="float: left;background: #99cc33; padding: 4px; width: 50px;text-align: center;">
-            Sent
-            </div><p>Proposal #2 for Client #3</p></li>
-        <li><div class="corners" style="float: left;background: #ff3333; padding: 4px; width: 50px;text-align: center;">
-            Declined</div><p>Proposal #3 for Client #6</p></li>
-        </ul>
-            
-        </div>
-    </div>
-    
-    <div class="portlet">
-        <div class="portlet-header">Recent Proposals</div>
-        <div class="portlet-content"></div>
-    </div>
-    <div class="portlet">
-        <div class="portlet-header">Company News</div>
-        <div class="portlet-content">19/1/2011 - Happy New year <br />This year we hope to bring in some new software.  Hopefully it will be beneficial</div>
-    </div>  
-</div>
-
-
-<div class="column wide">
-    <div class="portlet">
-        <div class="portlet-header">Statistics</div>
-        <div class="portlet-content">
-        <div id="graph" style="width: 520px; height: 400px; margin: 0 auto"></div> 
-        </div>
-    </div>
-
-
-
-
-</div>
-
-
-
-</div><!-- End demo -->
-
-<jst> 
-    var chart;
-    $(document).ready(function() {
-        chart = new Highcharts.Chart({
-            chart: {
-                renderTo: 'graph',
-                defaultSeriesType: 'line',
-                marginRight: 130,
-                marginBottom: 25
-            },
-            title: {
-                text: 'Monthly Average Temperature',
-                x: -20 //center
-            },
-            subtitle: {
-                text: 'Source: WorldClimate.com',
-                x: -20
-            },
-            xAxis: {
-                categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
-                    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-            },
-            yAxis: {
-                title: {
-                    text: 'Temperature (°C)'
-                },
-                plotLines: [{
-                    value: 0,
-                    width: 1,
-                    color: '#808080'
-                }]
-            },
-            tooltip: {
-                formatter: function() {
-                        return '<b>'+ this.series.name +'</b><br/>'+
-                        this.x +': '+ this.y +'°C';
-                }
-            },
-            legend: {
-                layout: 'vertical',
-                align: 'right',
-                verticalAlign: 'top',
-                x: -10,
-                y: 100,
-                borderWidth: 0
-            },
-            series: [{
-                name: 'Tokyo',
-                data: [7.0, 6.9, 9.5, 14.5, 18.2, 21.5, 25.2, 26.5, 23.3, 18.3, 13.9, 9.6]
-            }, {
-                name: 'New York',
-                data: [-0.2, 0.8, 5.7, 11.3, 17.0, 22.0, 24.8, 24.1, 20.1, 14.1, 8.6, 2.5]
-            }, {
-                name: 'Berlin',
-                data: [-0.9, 0.6, 3.5, 8.4, 13.5, 17.0, 18.6, 17.9, 14.3, 9.0, 3.9, 1.0]
-            }, {
-                name: 'London',
-                data: [3.9, 4.2, 5.7, 8.5, 11.9, 15.2, 17.0, 16.6, 14.2, 10.3, 6.6, 4.8]
-            }]
-        });
-        
-        
-    });
-
-    $(function() {
-    $( ".column" ).sortable({
-        connectWith: ".column"
-    });
-
-    $( ".portlet" ).addClass( "ui-widget ui-widget-content ui-helper-clearfix ui-corner-all" )
-        .find( ".portlet-header" )
-            .addClass( "ui-widget-header ui-corner-all" )
-            .prepend( '<span class="ui-icon ui-icon-minusthick"></span>')
-            .end()
-        .find( ".portlet-content" );
-
-    $( ".portlet-header .ui-icon" ).click(function() {
-        $( this ).toggleClass( "ui-icon-minusthick" ).toggleClass( "ui-icon-plusthick" );
-        $( this ).parents( ".portlet:first" ).find( ".portlet-content" ).toggle();
-    });
-
-    $( ".column" ).disableSelection();
-
-
-
-
-    options = {
-        'title': 'Dashboard',
-        'buttons': [{
-                        'text': 'New Proposal',
-                        'href': '#/proposal/edit',
-                        'classes': 'addbutton'
-            },{
-                        'text': 'New Client',
-                        'href': '#/client/edit',
-                        'classes': 'addbutton'
-            },
-        ]
-        
-    }
-    
-    $("#pageheader").html( _.template( $("#page_header_template").jsthtml(), options ) );
-});
-</jst>
-</script>
 <script type="text/template" id="user_login_view_template">
 <br />
 <br />
