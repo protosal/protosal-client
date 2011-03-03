@@ -107,17 +107,7 @@
                     
                     var obj = {};
                     template = GLOBALS.controller + "_" + GLOBALS.action + "_view";
-                    if( partials[template]){
-                       
-                        _.each( partials[template], function( partial ) {
-                             partialname = partials[template] + "_partial";
-                             obj[partialname] =
-                                _.template( $("#" + partial    + "_template" ).jsthtml() );
-                                
-                           
-                        })
-                        
-                    }
+
                     
                     var template_name = "";
                     obj.controller = GLOBALS.controller;

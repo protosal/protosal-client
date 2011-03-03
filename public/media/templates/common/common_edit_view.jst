@@ -1,8 +1,11 @@
 <script type="text/template" id="common_edit_view_template">
 
-<% typeof success == "undefined" ? success = function() { alert("NO SUCCESS FUNCTION IMPLEMENTED"); } : success = success; %>
+<% typeof success == "undefined" ? success = function() { redirect(GLOBALS.controller + "/list"); } : success = success; %>
+<% typeof documentid == "undefined" ? current_doc_id = GLOBALS.route_id : current_doc_id = documentid; %>
 
-<div id="<%=controller %>_edit_view_container">
+
+
+<div id="<%= controller %>_edit_view_container">
 <div id="pageheader"></div>
 <div id="formc"></div>
 </div>
@@ -30,8 +33,7 @@ _rev = ""
                 
                 //If  a route id is present load the data for that document
                 //If this template receives a document id user that instead
-                id = "<%= typeof documentid != "undefined" ? documentid : GLOBALS.route_id %>";
-                
+                id = "<%= current_doc_id %>";
                 if( id ){
                     var url = GLOBALS.server_base + "/data/" + id;
                     $.ajax( url, {
@@ -55,6 +57,8 @@ _rev = ""
                 
                     $("#formc").append( _.template( $("#<%= controller %>_form_template").jsthtml(), {} ) );
                     $(".save").click({
+                        _rev: "",
+                        _id: "",
                         success: <%= success %>
                     }, window.saveclickHandler );
                 }
@@ -68,5 +72,4 @@ _rev = ""
     editview = new EditView;
         
 </jst>
-
 </script>

@@ -1,0 +1,34 @@
+<script type="text/template" id="test_page_view_template">
+<div id="theform">
+
+</div>
+Teting
+
+<jst>
+    var cow;
+    $("#theform").html( _.template( $("#common_edit_view_template").jsthtml(), { 
+        controller: "client",
+        success: function(data){
+            console.log($.toJSON(data));
+             $("#theform").dialog("close");
+             redirect("client/list");
+        },
+        documentid: "b99b9c689e16e578ce41aeba9807491d"
+    } ) );            
+                    
+                    
+                    
+                    
+    
+    $("#theform").append(template).dialog({
+        draggable: false,
+        resizable: false,
+        closeOnEscape: false,
+        title: "New Fee",
+        modal: true, 
+        hide: 'drop',
+        width: "550px",
+    });
+    
+</jst>
+</script>
