@@ -22,12 +22,7 @@
             <label for="">
                 Comment</label>
             <textarea class="jckeditor" rows="4" name="description" cols="30"><%= typeof description != "undefined" ? description : "" %></textarea>
-
-
-
-
-
-        <br />
+<br />
         <br />
 
     <h3>Add Fees</h3>
@@ -59,14 +54,15 @@
     <jst>
 
         $(".jckeditor").each( function(){
-        $(this).ckeditor(function() {}, {  
-            toolbar: [
-                ['Bold', 'Italic', '-', 'NumberedList', 'BulletedList', '-', 'Link', 'Unlink','-','About'],['Styles','Format','Font','FontSize'],
-                ['TextColor','BGColor'],
-                ['Maximize', 'ShowBlocks','-','About']
-            ]
+            $(this).ckeditor(function() {}, {  
+                toolbar: [
+                    ['Bold', 'Italic', '-', 'NumberedList', 'BulletedList', '-', 'Link', 'Unlink','-','About'],['Styles','Format','Font','FontSize'],
+                    ['TextColor','BGColor'],
+                    ['Maximize', 'ShowBlocks','-','About']
+                ]
+            });
         });
-        });
+        
         Fee = Backbone.Model.extend({
             //Create a model to hold friend atribute
             name: null
@@ -83,26 +79,37 @@
         });
         //Make relationships !TODO
         SectionBackboneView = Backbone.View.extend({
+            
             el: $("#section_form_container"),
             initialize: function () {
-            if( GLOBALS.route_id == "" ){
-                formdata = $(".edit_section_form").serializeObject();
-                formdata.type = "section";
-                   $.ajax( "data", {
-                        dataType: "json",
-                        type: "POST",
-                        contentType: "application/json",
-                        data: $.toJSON(formdata),
-                        success: function(data){
-                            redirect("section/edit/"+data.id);
-                        }
-                    });
-            } else {
-                this.fees = new Fees( null, { view: this });
+            section_backbone = this;
+            alert("thjis shouldn't run");
+            function aaaaaa(){
+                if( GLOBALS.route_id == "" ){
+                    formdata = $(".edit_section_form").serializeObject();
+                    formdata.type = "section";
+                       return $.ajax( "data", {
+                            dataType: "json",
+                            type: "POST",
+                            contentType: "application/json",
+                            data: $.toJSON(formdata),
+                            success: function(resp){
+                                                    //We know the page is about to change so lets clean up any jckeditors hanging around before the dom changes and jckeditors internal reference is updated
+                              
+                                //redirect("section/edit/"+data.id);
+                            }
+                        });
+                }  else {
+                    return { id: GLOBALS.route_id };
+                }
+            }
+            $.when( aaaaaa() ).then( function(resp){
+                alert("match thi shit"+$.toJSON(resp));
+                section_backbone.fees = new Fees( null, { view: section_backbone });
                
                 console.log("lets get all the section fees that we have already added");
                     $.ajax({
-                        url: "related/sectionfee/" + GLOBALS.route_id,
+                        url: "related/sectionfee/" + resp.id,
                         type: "GET",
                         dataType: "json",
                         success: function(data){
@@ -185,10 +192,11 @@
                             }else{
                                 
                                 obj = {
-                                    section_id: GLOBALS.route_id,
+                                    section_id: resp.id,
                                     fee_id: ui.item.id,
                                     type: "sectionfee"
                                 }
+                                alert("relationship" + $.toJSON(obj));
                                 $.ajax({
                                 type: "POST",
                                 url: "/data",
@@ -221,7 +229,9 @@
                     });
                    }
                 });
-               }
+            });
+                
+               
             },
             events: {
                 "click #add-fee":  "feemodal",

@@ -40,7 +40,7 @@
         );
         
         head.js( 
-            "http://ajax.googleapis.com/ajax/libs/jquery/1.5.0/jquery.js",
+            "http://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.js",
             "https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.9/jquery-ui.min.js",
             GLOBALS.server_base + "/media/highchart/js/highcharts.js",
             GLOBALS.server_base + "/media/highchart/js/modules/exporting.js",
@@ -99,10 +99,11 @@
                     url = GLOBALS.server_base + "/api/get" + location.hash.substr(1) + "/" + GLOBALS.route_id; 
                     
                     //We know the page is about to change so lets clean up any jckeditors hanging around before the dom changes and jckeditors internal reference is updated
+                    
                     $(".jckeditor").each( function(){
-                        $(this).ckeditor(function(){ // a hack to make jck editor work on page refresh
-                            this.destroy();
-                        });
+                            $(this).ckeditor(function(){ // a hack to make jck editor work on page refresh
+                                this.destroy();
+                            });
                     });
                     
                     var obj = {};
@@ -119,6 +120,7 @@
                     } else {
                         template_name = GLOBALS.controller + "_" + GLOBALS.action
                     }
+                    $("#contentpane").html("");
                     $("#contentpane").html( _.template( $("#" + template_name + "_view_template").html(), obj));
                     
                     $("#contentpane").html( $("#contentpane").jsthtml() );

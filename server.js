@@ -56,7 +56,7 @@ app.get('/data/:id/:rev?', function(req, res) {
     var request = rCommon.couchdb_request(req, request_url);
     request.end();
     
-    do_request().on('response', function (response) {
+    request.on('response', function (response) {
         response.setEncoding('utf8');
         response.on('data', function (data) {
             var parsed_data = JSON.parse(data);
@@ -130,7 +130,7 @@ app.delete('/delete/:controller/:id/:rev', function(req, res) {
 });
 
 var generic_list_retrieve = function(req, res, request) {
-    if( typeof req.method == "POST" ) {
+    if( req.method == "POST" ) {
 		// Used for selecting multiple keys on POST.
 		request.end(req.rawBody);
 	} else {
