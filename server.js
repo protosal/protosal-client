@@ -28,28 +28,6 @@ app.configure(function() {
   app.use(rCommon.authCheck );
 });
 
-var default_host = 'localhost';
-
-function couchdb_request(req, request_url, method) {
-	if( method == null )
-		method = req.method;
-		
-	var couchdb = http.createClient(5984, 'localhost', true);
-	
-	var request_params = {
-        'Host': default_host,
-        'Authorization': 'Basic ' + rCommon.credentials,
-        'Content-Type': 'application/json'
-    }
-    
-    if( method == "POST" || method == "PUT" )
-		request_params['Content-Type'] = 'application/json';
-		
-    var request = couchdb.request(method, request_url, request_params);
-    
-    return request;
-}
-
 function app_db_handler(req, res, request) {
     req.body.author = req.session.username;
     console.log(JSON.stringify(req.body));
@@ -65,20 +43,17 @@ function app_db_handler(req, res, request) {
 }
 
 app.put('/data/:id/:rev?', function(req, res) {
-	fs.writeFile('./tom.loga', sys.inspect(req) );
 	var request_url = '/app/' + req.params.id + (req.params.rev ? "?rev=" + req.params.rev : "");
-    app_db_handler(req, res, couchdb_request(req, request_url) );
+    app_db_handler(req, res, rCommon.couchdb_request(req, request_url) );
 });
 app.post('/data', function(req, res) {
-    console.log("add new shit nigger");
-	fs.writeFile('./tom.loga', sys.inspect(req) );
 	var request_url = '/app';
-    app_db_handler(req, res, couchdb_request(req, request_url) );
+    app_db_handler(req, res, rCommon.couchdb_request(req, request_url) );
 });
 
 app.get('/data/:id/:rev?', function(req, res) {
     var request_url = '/app/' + req.params.id + (req.params.rev ? "?rev=" + req.params.rev : "");
-    var request = couchdb_request(req, request_url);
+    var request = rCommon.couchdb_request(req, request_url);
 
     request.end();
     request.on('response', function (response) {
@@ -102,9 +77,20 @@ app.get('/data/:id/:rev?', function(req, res) {
     });
 });
 
+function delete_request(req, res, request_url) {
+	var deleterequest = rCommon.couchdb_request(req, request_url, "DELETE");
+	deleterequest.end();
+	deleterequest.on('response', function (responsea) {
+		responsea.on('data', function (data) {
+			res.header('Content-Type', 'application/json');
+			res.send(data);
+		})
+	});
+}
+
 app.delete('/data/:id/:rev?', function(req, res) {
     var request_url = '/app/' + req.params.id + (req.params.rev ? "?rev=" + req.params.rev : "");
-    var authorcheck = couchdb_request(req, request_url, "GET");
+    var authorcheck = rCommon.couchdb_request(req, request_url, "GET");
     
     console.log("url-"+ '/app/' + req.params.id );
     authorcheck.end();
@@ -115,26 +101,16 @@ app.delete('/data/:id/:rev?', function(req, res) {
             author = JSON.parse(data).author;
             console.log("checking the " + author );
             if( req.session.username == author ) {
-                var deleterequest = couchdb_request(req, '/app/' + req.params.id + (req.params.rev ? "?rev=" + req.params.rev : ""), "DELETE");
-                deleterequest.end();
-                deleterequest.on('response', function (responsea) {
-                    responsea.on('data', function (data) {
-                        res.header('Content-Type', 'application/json');
-                        res.send(data);
-                    })
-                })
-            
+				var url = '/app/' + req.params.id + (req.params.rev ? "?rev=" + req.params.rev : "");
+				delete_request(req, res, url);
             }
-            
         });
     });
 });
 
 app.delete('/delete/:controller/:id/:rev', function(req, res) {
-    console.log(req.session.username);
-    var cloudanturl = '/app/_design/' + req.params.controller + "/_view/list?key=[\""+ req.params.id + "\",\""+ req.params.rev+"\"]";
-    console.log(cloudanturl);
-    var request = couchdb_request(req, cloudanturl, "GET");
+    var request_url = '/app/_design/' + req.params.controller + "/_view/list?key=[\""+ req.params.id + "\",\""+ req.params.rev+"\"]";
+    var request = rCommon.couchdb_request(req, request_url, "GET");
     
     request.end(req.rawBody);
     request.on('response', function (response) {
@@ -148,15 +124,7 @@ app.delete('/delete/:controller/:id/:rev', function(req, res) {
             relationshipid = (JSON.parse(rowsa).rows[0].id);
             relationshiprev = (JSON.parse(rowsa).rows[0].value._rev);
             var url = '/app/' +relationshipid+"?rev=" + relationshiprev;
-			var requestdelete = couchdb_request(req, url, "DELETE");
-    
-			requestdelete.end();
-			requestdelete.on('response', function (responsea) {
-				responsea.on('data', function (data) {
-					res.header('Content-Type', 'application/json');
-					res.send(data);
-				})
-			})
+            delete_request(req, res, url);
         });
     });
 });
@@ -183,16 +151,16 @@ var generic_list_retrieve = function(req, res, request) {
 
 app.get('/related/:view/:id', function( req, res ){
 	var request_url = '/app/_design/' + req.params.view + "/_view/listfees?key=\"" + req.params.id + "\"";
-	generic_list_retrieve(req, res, couchdb_request(req, request_url));
+	generic_list_retrieve(req, res, rCommon.couchdb_request(req, request_url));
 });
 
 app.get('/:list_type/:view', function(req, res) {
 	var request_url = '/app/_design/' + req.params.view + "/_view/" + req.params.list_type + "?key=\"" + req.session.username + "\"";
-    generic_list_retrieve(req, res, couchdb_request(req, request_url));
+    generic_list_retrieve(req, res, rCommon.couchdb_request(req, request_url));
 });
 app.post('/:list_type/:view', function(req, res) {
 	var request_url = '/app/_design/' + req.params.view + "/_view/" + req.params.list_type;
-    generic_list_retrieve(req, res, couchdb_request(req, request_url));
+    generic_list_retrieve(req, res, rCommon.couchdb_request(req, request_url));
 });
 
 

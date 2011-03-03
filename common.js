@@ -4,13 +4,35 @@ var urlpaser = require('url');
 var http = require('http');
 var Hash = require('./sha1');
 
+var couchdb_host = 'localhost';
+var couchdb_port = 5984;
+
 exports.base64_encode = function(enc_string) {
     return Base64.encode( new Buffer(enc_string) );
 }
 
 exports.credentials = exports.base64_encode("ryth:abCD--12");
-
 var default_salt = "1";
+
+exports.couchdb_request = function(req, request_url, method) {
+	if( method == null )
+		method = req.method;
+		
+	var couchdb = http.createClient(couchdb_port, couchdb_host, true);
+	
+	var request_params = {
+        'Host': couchdb_host,
+        'Authorization': 'Basic ' + exports.credentials,
+        'Content-Type': 'application/json'
+    }
+    
+    if( method == "POST" || method == "PUT" )
+		request_params['Content-Type'] = 'application/json';
+		
+    var request = couchdb.request(method, request_url, request_params);
+    
+    return request;
+}
 
 exports.authCheck = function (req, res, next) {
     url = req.urlp = urlpaser.parse(req.url, true);
