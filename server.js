@@ -108,8 +108,10 @@ app.delete('/data/:id/:rev?', function(req, res) {
     });
 });
 
-app.delete('/delete/:controller/:id/:rev', function(req, res) {
-    var request_url = '/app/_design/' + req.params.controller + "/_view/list?key=[\""+ req.params.id + "\",\""+ req.params.rev+"\"]";
+
+//Delete the relationship
+app.delete('/delete/:controller/:id/:id2', function(req, res) {
+    var request_url = '/app/_design/' + req.params.controller + "/_view/list?key=[\""+ req.params.id + "\",\""+ req.params.id2 +"\"]";
     var request = rCommon.couchdb_request(req, request_url, "GET");
     request.end(req.rawBody);
     
