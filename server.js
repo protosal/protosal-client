@@ -28,13 +28,29 @@ app.configure(function() {
   app.use(rCommon.authCheck );
 });
 
-var app_db_handler = function(req, res, request_url) {
+var default_host = 'localhost';
+
+function couchdb_request(req, request_url, method) {
+	if( method == null )
+		method = req.method;
+		
 	var couchdb = http.createClient(5984, 'localhost', true);
-    var request = couchdb.request(req.method, request_url, {
-        'Host': 'localhost',
+	
+	var request_params = {
+        'Host': default_host,
         'Authorization': 'Basic ' + rCommon.credentials,
         'Content-Type': 'application/json'
-    });
+    }
+    
+    if( method == "POST" || method == "PUT" )
+		request_params['Content-Type'] = 'application/json';
+		
+    var request = couchdb.request(method, request_url, request_params);
+    
+    return request;
+}
+
+function app_db_handler(req, res, request) {
     req.body.author = req.session.username;
     console.log(JSON.stringify(req.body));
     request.write( JSON.stringify(req.body) );
@@ -51,22 +67,18 @@ var app_db_handler = function(req, res, request_url) {
 app.put('/data/:id/:rev?', function(req, res) {
 	fs.writeFile('./tom.loga', sys.inspect(req) );
 	var request_url = '/app/' + req.params.id + (req.params.rev ? "?rev=" + req.params.rev : "");
-    app_db_handler(req, res, request_url);
+    app_db_handler(req, res, couchdb_request(req, request_url) );
 });
 app.post('/data', function(req, res) {
     console.log("add new shit nigger");
 	fs.writeFile('./tom.loga', sys.inspect(req) );
-	var request_url = '/data';
-    app_db_handler(req, res, request_url);
+	var request_url = '/app';
+    app_db_handler(req, res, couchdb_request(req, request_url) );
 });
 
 app.get('/data/:id/:rev?', function(req, res) {
-
-    var couchdb = http.createClient(5984, 'localhost', true);
-    var request = couchdb.request(req.method, '/app/' + req.params.id + (req.params.rev ? "?rev=" + req.params.rev : ""), {
-        'Host': 'localhost',
-        'Authorization': 'Basic ' + rCommon.credentials
-    });
+    var request_url = '/app/' + req.params.id + (req.params.rev ? "?rev=" + req.params.rev : "");
+    var request = couchdb_request(req, request_url);
 
     request.end();
     request.on('response', function (response) {
@@ -91,12 +103,9 @@ app.get('/data/:id/:rev?', function(req, res) {
 });
 
 app.delete('/data/:id/:rev?', function(req, res) {
-
-    var couchdb = http.createClient(5984, 'localhost', true);
-    var authorcheck = couchdb.request("GET", '/app/' + req.params.id + (req.params.rev ? "?rev=" + req.params.rev : ""), {
-        'Host': 'localhost',
-        'Authorization': 'Basic ' + rCommon.credentials
-    });
+    var request_url = '/app/' + req.params.id + (req.params.rev ? "?rev=" + req.params.rev : "");
+    var authorcheck = couchdb_request(req, request_url, "GET");
+    
     console.log("url-"+ '/app/' + req.params.id );
     authorcheck.end();
     authorcheck.on('response', function (response) {
@@ -106,10 +115,7 @@ app.delete('/data/:id/:rev?', function(req, res) {
             author = JSON.parse(data).author;
             console.log("checking the " + author );
             if( req.session.username == author ) {
-                var deleterequest = couchdb.request("DELETE", '/app/' + req.params.id + (req.params.rev ? "?rev=" + req.params.rev : ""), {
-                    'Host': 'localhost',
-                    'Authorization': 'Basic ' + rCommon.credentials
-                });
+                var deleterequest = couchdb_request(req, '/app/' + req.params.id + (req.params.rev ? "?rev=" + req.params.rev : ""), "DELETE");
                 deleterequest.end();
                 deleterequest.on('response', function (responsea) {
                     responsea.on('data', function (data) {
@@ -128,12 +134,7 @@ app.delete('/delete/:controller/:id/:rev', function(req, res) {
     console.log(req.session.username);
     var cloudanturl = '/app/_design/' + req.params.controller + "/_view/list?key=[\""+ req.params.id + "\",\""+ req.params.rev+"\"]";
     console.log(cloudanturl);
-    var couchdb = http.createClient(5984, 'localhost', true);
-    var request = couchdb.request("GET", cloudanturl, {
-        'Host': 'localhost',
-        'Authorization': 'Basic ' + rCommon.credentials,
-        'Content-Type': 'application/json'
-    });
+    var request = couchdb_request(req, cloudanturl, "GET");
     
     request.end(req.rawBody);
     request.on('response', function (response) {
@@ -147,11 +148,7 @@ app.delete('/delete/:controller/:id/:rev', function(req, res) {
             relationshipid = (JSON.parse(rowsa).rows[0].id);
             relationshiprev = (JSON.parse(rowsa).rows[0].value._rev);
             var url = '/app/' +relationshipid+"?rev=" + relationshiprev;
-			var requestdelete = couchdb.request("DELETE", url, {
-				'Host': 'localhost',
-				'Authorization': 'Basic ' + rCommon.credentials,
-				'Content-Type': 'application/json'
-			});
+			var requestdelete = couchdb_request(req, url, "DELETE");
     
 			requestdelete.end();
 			requestdelete.on('response', function (responsea) {
@@ -164,15 +161,7 @@ app.delete('/delete/:controller/:id/:rev', function(req, res) {
     });
 });
 
-var generic_list_retrieve = function(req, res, request_url) {
-	
-    var couchdb = http.createClient(5984, 'localhost', true);
-    var request = couchdb.request(req.method, request_url, {
-        'Host': 'localhost',
-        'Authorization': 'Basic ' + rCommon.credentials,
-        'Content-Type': 'application/json'
-    });
-    
+var generic_list_retrieve = function(req, res, request) {
     if( typeof req.method == "POST" ) {
 		// Used for selecting multiple keys on POST.
 		request.end(req.rawBody);
@@ -194,16 +183,16 @@ var generic_list_retrieve = function(req, res, request_url) {
 
 app.get('/related/:view/:id', function( req, res ){
 	var request_url = '/app/_design/' + req.params.view + "/_view/listfees?key=\"" + req.params.id + "\"";
-	generic_list_retrieve(req, res, request_url);
+	generic_list_retrieve(req, res, couchdb_request(req, request_url));
 });
 
 app.get('/:list_type/:view', function(req, res) {
 	var request_url = '/app/_design/' + req.params.view + "/_view/" + req.params.list_type + "?key=\"" + req.session.username + "\"";
-    generic_list_retrieve(req, res, request_url);
+    generic_list_retrieve(req, res, couchdb_request(req, request_url));
 });
 app.post('/:list_type/:view', function(req, res) {
 	var request_url = '/app/_design/' + req.params.view + "/_view/" + req.params.list_type;
-    generic_list_retrieve(req, res, request_url);
+    generic_list_retrieve(req, res, couchdb_request(req, request_url));
 });
 
 
