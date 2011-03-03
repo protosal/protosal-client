@@ -1,17 +1,17 @@
 <script type="text/template" id="test_page_view_template">
-<div id="theform">
+<div id="testform">
 
 </div>
 Teting
 
 <jst>
     var cow;
-    $("#theform").html( _.template( $("#common_edit_view_template").jsthtml(), { 
+    $("#testform").html( _.template( $("#common_edit_view_template").jsthtml(), { 
         controller: "section",
         success: function(data){
 			alert("asd");
             console.log($.toJSON(data));
-             $("#theform").dialog("close");
+             $("#testform").dialog("close");
              redirect("client/list");
         }
     } ) );            
@@ -20,14 +20,14 @@ Teting
                     
                     
     
-    $("#theform").dialog({
+    $("#testform").dialog({
         draggable: false,
         resizable: false,
         closeOnEscape: false,
         title: "New Fee",
         modal: true, 
         hide: 'drop',
-        width: "550px",
+        width: "850px",
     });
     
 </jst>

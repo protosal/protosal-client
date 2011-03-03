@@ -96,9 +96,9 @@
                             contentType: "application/json",
                             data: $.toJSON(formdata),
                             success: function(resp){
-                            $('.save').unbind('click');
+								$('.section_save').unbind('click');
                             
-                                $(".save").click({
+                                $(".section_save").click({
                                     _rev: resp.rev,
                                     _id: resp.id,
                                     success: <%= success %> 
@@ -301,7 +301,7 @@
                         controller: "fee",
                         success: function(data){
                             console.log($.toJSON(data));
-                             $("#theform").dialog("close");
+                             $("#fee_form_modal").dialog("close");
                              //redirect("client/list");
                         },
                         documentid: id

@@ -33,7 +33,7 @@ _rev = ""
                     'title': '<%= _(controller).capitalize() %> List',
                     'buttons': [{
                                     'text': 'Save',
-                                    'classes': 'save',
+                                    'classes': '<%= controller %>_save',
                                     'controller': '<%= controller %>'
                         },{
                                     'text': 'Back',
@@ -59,7 +59,7 @@ _rev = ""
                             if (typeof data._rev != "undefined")
                                 _rev = data._rev; 
                             
-                            $(".save").click({
+                            $(".<%= controller %>_save").click({
                                 _rev: _rev,
                                 _id: id,
                                 success: <%= success %>
@@ -70,7 +70,7 @@ _rev = ""
                 } else {
 					
                     $("#<%= controller %>_formc").append( _.template( $("#<%= controller %>_form_template").jsthtml(), { success: <%= success %> } ) );
-                    $(".save").click({
+                    $(".<%= controller %>_save").click({
                         _rev: "",
                         _id: "",
                         success: <%= success %>
