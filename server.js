@@ -30,9 +30,9 @@ app.configure(function() {
 
 function app_db_handler(req, res, request) {
     req.body.author = req.session.username;
-    console.log(JSON.stringify(req.body));
     request.write( JSON.stringify(req.body) );
     request.end();
+    
     request.on('response', function (response) {
         response.on('data', function (data) {
             res.header('Content-Type', 'application/json');
@@ -54,9 +54,9 @@ app.post('/data', function(req, res) {
 app.get('/data/:id/:rev?', function(req, res) {
     var request_url = '/app/' + req.params.id + (req.params.rev ? "?rev=" + req.params.rev : "");
     var request = rCommon.couchdb_request(req, request_url);
-
     request.end();
-    request.on('response', function (response) {
+    
+    do_request().on('response', function (response) {
         response.setEncoding('utf8');
         response.on('data', function (data) {
             var parsed_data = JSON.parse(data);
@@ -80,6 +80,7 @@ app.get('/data/:id/:rev?', function(req, res) {
 function delete_request(req, res, request_url) {
 	var deleterequest = rCommon.couchdb_request(req, request_url, "DELETE");
 	deleterequest.end();
+	
 	deleterequest.on('response', function (responsea) {
 		responsea.on('data', function (data) {
 			res.header('Content-Type', 'application/json');
@@ -91,9 +92,8 @@ function delete_request(req, res, request_url) {
 app.delete('/data/:id/:rev?', function(req, res) {
     var request_url = '/app/' + req.params.id + (req.params.rev ? "?rev=" + req.params.rev : "");
     var authorcheck = rCommon.couchdb_request(req, request_url, "GET");
-    
-    console.log("url-"+ '/app/' + req.params.id );
     authorcheck.end();
+    
     authorcheck.on('response', function (response) {
         response.setEncoding('utf8');
         response.on('data', function (data) {
@@ -111,8 +111,8 @@ app.delete('/data/:id/:rev?', function(req, res) {
 app.delete('/delete/:controller/:id/:rev', function(req, res) {
     var request_url = '/app/_design/' + req.params.controller + "/_view/list?key=[\""+ req.params.id + "\",\""+ req.params.rev+"\"]";
     var request = rCommon.couchdb_request(req, request_url, "GET");
-    
     request.end(req.rawBody);
+    
     request.on('response', function (response) {
         response.setEncoding('utf8');
         rowsa = ""
