@@ -289,9 +289,10 @@
                 
                 return false;
             },
-            feemodal: function() {
-
-
+            feemodal: function(id) {
+                if( typeof id != "string" ){
+                    id = "";
+                }
               $("#fee_form_modal").html( 
                     _.template( $("#common_edit_view_template").jsthtml(), { 
                         controller: "fee",
@@ -299,7 +300,8 @@
                             console.log($.toJSON(data));
                              $("#theform").dialog("close");
                              //redirect("client/list");
-                        }
+                        },
+                        documentid: id
                     } ) 
                 ).dialog({
                     draggable: false,
