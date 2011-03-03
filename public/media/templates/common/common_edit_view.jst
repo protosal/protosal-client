@@ -1,13 +1,27 @@
 <script type="text/template" id="common_edit_view_template">
 
 <% typeof success == "undefined" ? success = function() { redirect(GLOBALS.controller + "/list"); } : success = success; %>
-<% typeof documentid == "undefined" ? current_doc_id = GLOBALS.route_id : current_doc_id = documentid; %>
+<%  
+    if( typeof documentid == "undefined") {
+        /* if you have nested edits then the document id can only be valid
+         if the current controller is equal to globals controller */
+        
+        current_doc_id = "";
+        
+        if( GLOBALS.controller == controller) {
+            current_doc_id = GLOBALS.route_id;
+        }
+        
+    } else {
+        current_doc_id = documentid;
+    }
+ %>
 
 
 
 <div id="<%= controller %>_edit_view_container">
-<div id="pageheader"></div>
-<div id="formc"></div>
+<div id="<%= controller %>_pageheader"></div>
+<div id="<%= controller %>_formc"></div>
 </div>
 <jst>
 _rev = ""
@@ -29,7 +43,7 @@ _rev = ""
                     
                 }
                 
-                $("#pageheader").html( _.template( $("#page_header_template").jsthtml(), options ) );
+                $("#<%= controller %>_pageheader").html( _.template( $("#page_header_template").jsthtml(), options ) );
                 
                 //If  a route id is present load the data for that document
                 //If this template receives a document id user that instead
@@ -40,7 +54,7 @@ _rev = ""
                         dataType: "json",
                         success: function(data){
                             
-                            $("#formc").append( _.template( $("#<%= controller %>_form_template").jsthtml(), data ) );
+                            $("#<%= controller %>_formc").append( _.template( $("#<%= controller %>_form_template").jsthtml(), data ) );
                             
                             if (typeof data._rev != "undefined")
                                 _rev = data._rev; 
@@ -55,7 +69,7 @@ _rev = ""
                     });
                 } else {
                 
-                    $("#formc").append( _.template( $("#<%= controller %>_form_template").jsthtml(), {} ) );
+                    $("#<%= controller %>_formc").append( _.template( $("#<%= controller %>_form_template").jsthtml(), {} ) );
                     $(".save").click({
                         _rev: "",
                         _id: "",
