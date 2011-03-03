@@ -94,6 +94,12 @@
                             contentType: "application/json",
                             data: $.toJSON(formdata),
                             success: function(resp){
+                            $('.save').unbind('click');
+                                $(".save").click({
+                                    _rev: resp.rev,
+                                    _id: resp.id,
+                                    success: <%= typeof success != "undefined" ? success : function() { redirect(GLOBALS.controller + "/list"); } %> 
+                                }, window.saveclickHandler );
                                                     //We know the page is about to change so lets clean up any jckeditors hanging around before the dom changes and jckeditors internal reference is updated
                               
                                 //redirect("section/edit/"+data.id);
@@ -104,7 +110,6 @@
                 }
             }
             $.when( aaaaaa() ).then( function(resp){
-                alert("match thi shit"+$.toJSON(resp));
                 section_backbone.fees = new Fees( null, { view: section_backbone });
                
                 console.log("lets get all the section fees that we have already added");
@@ -196,7 +201,6 @@
                                     fee_id: ui.item.id,
                                     type: "sectionfee"
                                 }
-                                alert("relationship" + $.toJSON(obj));
                                 $.ajax({
                                 type: "POST",
                                 url: "/data",
