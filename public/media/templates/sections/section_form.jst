@@ -229,7 +229,7 @@
             },
             addFee: function (model) {
                 console.log(model);
-                $("#sortablefees").append("<li id='" + model.id + "' class='ui-state-default'><span style='float: left;' class='ui-icon ui-icon-arrowthick-2-n-s'></span><p style='width: 250px; float: left;'>" + model.get("name") + "</p><span class='delete_fee' style='float: right;'>Delete</span></li>")
+                $("#sortablefees").append("<li id='" + model.id + "' class='ui-state-default'><span style='float: left;' class='ui-icon ui-icon-arrowthick-2-n-s'></span><p style='width: 250px; float: left;'>" + model.get("name") + "</p><span class='edit_fee' style='float: right;'>Edit</span><span class='delete_fee' style='margin-right: 100px; float: right;'>Delete</span></li>")
                 $( "#sortablefees" ).sortable({
                     update: section_backbone.updateFeeValues
                 });
@@ -275,8 +275,7 @@
                 
                 return false;
             },
-            feemodal: function(){
-            
+            feemodal: function(id) {
                 var feeoptions = {
                     "id": "",
                     "name": _.escapeHTML( $("#fees").val() ),
@@ -286,63 +285,91 @@
                     "editing": "false",
                     "formName" : "add_fee_form",
                 }
-
-                var template = _.template( $('#fee_form_template').jsthtml(), feeoptions )
-                options = {
-                    'title': 'List',
-                    'buttons': [{
-                                    'text': 'Save',
-                                    'classes': 'modalsave',
-                                    'controller': 'fee'
-                        },{
-                                    'text': 'Back',
-                                    'classes': 'back-button'
-                        }
-                    ]
-                    
-                }
-                $("#fee_form_modal").html( _.template( $("#page_header_template").jsthtml(), options ) );
-                $("#fee_form_modal").append(template).dialog({
-                    draggable: false,
-                    resizable: false,
-                    closeOnEscape: false,
-                    title: "New Fee",
-                    open: function(){  $(".modalsave").click(  {success: function(data){
-                      
-                       $("#fee_form_modal").dialog("close"); //close the modal
-                       
-                                obj = {
-                                    section_id: GLOBALS.route_id,
-                                    fee_id: data.id,
-                                    type: "sectionfee"
-                                }
-                                //set the relationship object
-                                
-                                $.ajax({
-                                type: "POST",
-                                url: "/data",
-                                data: $.toJSON(obj),
-                                dataType: "json",
-                                contentType: "application/json",
-                                success: function( model ){
-                                    
-                                    console.log("Relationship added, add it to the backbone collection");
-                                    
-                                    //on success add to backbone collection which will update the view
-                                    section_backbone.fees.add( {
-                                        "id": data.id,
-                                        "name": data.name,
-                                        "price": data.price,
-                                        "rev": model.rev,
-                                    } );
-                                
-                                }
-                                })
+                
+                var preload_fee_data = function() {
+                    if( id ) {
+                        return $.ajax( "/data/" + id, {
+                            dataType: "json",
+                            async: true,
+                            type: "GET",
+                            success: function(data){
+                                feeoptions.id = data._id;
+                                feeoptions.name = data.name;
+                                feeoptions.price = data.price;
+                                feeoptions.quantity = data.quantity;
+                                feeoptions.description = data.description;
+                                feeoptions.rev = data._rev;
+                            }
+                        });
                     }
-                    },window.saveclickHandler ); },
-                    modal: true, 
-                    hide: 'drop',
-                    width: "550px",
+                }
+                
+                $.when( preload_fee_data() ).then(function() {
+                    var template = _.template( $('#fee_form_template').jsthtml(), feeoptions )
+                    options = {
+                        'title': 'List',
+                        'buttons': [{
+                                        'text': 'Save',
+                                        'classes': 'modalsave',
+                                        'controller': 'fee'
+                            },{
+                                        'text': 'Back',
+                                        'classes': 'back-button'
+                            }
+                        ]
+                        
+                    }
+                    $("#fee_form_modal").html( _.template( $("#page_header_template").jsthtml(), options ) );
+                    $("#fee_form_modal").append(template).dialog({
+                        draggable: false,
+                        resizable: false,
+                        closeOnEscape: false,
+                        title: "New Fee",
+                        open: function(){  $(".modalsave").click(  { model: feeoptions, success: function(data){
+                          
+                           $("#fee_form_modal").dialog("close"); //close the modal
+                                    //lol don't add a new relationship if you were only editing the fee lol
+                                    if( feeoptions.id == "" ){
+                                        obj = {
+                                            section_id: GLOBALS.route_id,
+                                            fee_id: data.id,
+                                            type: "sectionfee"
+                                        }
+                                        //set the relationship object
+                                        
+                                        $.ajax({
+                                        type: "POST",
+                                        url: "/data",
+                                        data: $.toJSON(obj),
+                                        dataType: "json",
+                                        contentType: "application/json",
+                                        success: function( model ){
+                                            
+                                            console.log("Relationship added, add it to the backbone collection");
+                                            
+                                            //on success add to backbone collection which will update the view
+                                   
+                                        
+                                        
+                                         $("#"+data.id).remove();
+                                            section_backbone.fees.add( {
+                                                "id": data.id,
+                                                "name": data.name,
+                                                "price": data.price,
+                                                "rev": model.rev,
+                                            } );
+                                        
+                                        }
+                                        })
+                                } else {
+                                    alert("we don't have a render function so the list item won't update but its all good!");
+                                }
+                        }
+                        },window.saveclickHandler ); },
+                        modal: true, 
+                        hide: 'drop',
+                        width: "550px",
+                    });
                 });
                 
                 
@@ -358,6 +385,15 @@
             var id = $(this).parents("li").attr("id")
             section_backbone.removeFee(id);
              $(this).parents("li").remove();
+            return false;
+        });
+        
+        $(".edit_fee").live("click", function() {
+            var id = $(this).parents("li").attr("id");
+            alert(id);
+            section_backbone.feemodal(id);
+            //section_backbone.removeFee(id);
+            //$(this).parents("li").remove();
             return false;
         });
     </jst>

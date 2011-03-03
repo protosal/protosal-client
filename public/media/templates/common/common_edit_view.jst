@@ -1,5 +1,7 @@
 <script type="text/template" id="common_edit_view_template">
 
+<% typeof success == "undefined" ? success = function() { alert("NO SUCCESS FUNCTION IMPLEMENTED"); } : success = success; %>
+
 <div id="<%=controller %>_edit_view_container">
 <div id="pageheader"></div>
 <div id="formc"></div>
@@ -23,34 +25,38 @@ _rev = ""
                     ]
                     
                 }
+                
                 $("#pageheader").html( _.template( $("#page_header_template").jsthtml(), options ) );
                 
-
-                console.log("ASDAS");
-                if( GLOBALS.route_id ){
-                    var url = GLOBALS.server_base + "/data/" + GLOBALS.route_id;
-                    console.log(url);
+                //If  a route id is present load the data for that document
+                //If this template receives a document id user that instead
+                id = "<%= typeof documentid != "undefined" ? documentid : GLOBALS.route_id %>";
+                
+                if( id ){
+                    var url = GLOBALS.server_base + "/data/" + id;
                     $.ajax( url, {
                         dataType: "json",
                         success: function(data){
-                            console.log(data);
+                            
                             $("#formc").append( _.template( $("#<%= controller %>_form_template").jsthtml(), data ) );
+                            
                             if (typeof data._rev != "undefined")
-                        $(".save").click(  {
-                        success:function(data){
-                            redirect(GLOBALS.controller +"/list");
-                        }
-                        }, window.saveclickHandler );
-                                _rev = data._rev;  
+                                _rev = data._rev; 
+                            
+                            $(".save").click({
+                                _rev: _rev,
+                                _id: id,
+                                success: <%= success %>
+                            }, window.saveclickHandler );
+                             
                         }
                     });
                 } else {
-                    $("#formc").append( _.template( $("#<%=controller %>_form_template").jsthtml(), {} ) );
-                    $(".save").click(  {
-                    success:function(data){
-                            redirect(GLOBALS.controller +"/list");
-                        }
-                        }, window.saveclickHandler );
+                
+                    $("#formc").append( _.template( $("#<%= controller %>_form_template").jsthtml(), {} ) );
+                    $(".save").click({
+                        success: <%= success %>
+                    }, window.saveclickHandler );
                 }
                 
         
