@@ -82,7 +82,10 @@
             
             el: $("#section_form_container"),
             initialize: function () {
+            
             section_backbone = this;
+            
+            //Create a section id at initialization so you can attach relationships straight away
             function aaaaaa(){
                 if( GLOBALS.route_id == "" ){
                     formdata = $(".edit_section_form").serializeObject();
@@ -94,10 +97,11 @@
                             data: $.toJSON(formdata),
                             success: function(resp){
                             $('.save').unbind('click');
+                            
                                 $(".save").click({
                                     _rev: resp.rev,
                                     _id: resp.id,
-                                    success: <%= typeof success != "undefined" ? success : function() { redirect(GLOBALS.controller + "/list"); } %> 
+                                    success: <%= success %> 
                                 }, window.saveclickHandler );
                                                     //We know the page is about to change so lets clean up any jckeditors hanging around before the dom changes and jckeditors internal reference is updated
                               
