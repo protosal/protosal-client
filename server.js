@@ -49,19 +49,16 @@ var app_db_handler = function(req, res, request_url) {
 }
 
 app.put('/data/:id/:rev?', function(req, res) {
-fs.writeFile('./tom.loga', sys.inspect(req) );
-	var request_url = '/data';
+	fs.writeFile('./tom.loga', sys.inspect(req) );
+	var request_url = '/app/' + req.params.id + (req.params.rev ? "?rev=" + req.params.rev : "");
     app_db_handler(req, res, request_url);
 });
 app.post('/data', function(req, res) {
     console.log("add new shit nigger");
 	fs.writeFile('./tom.loga', sys.inspect(req) );
-	var request_url = '/app/' + req.params.id + (req.params.rev ? "?rev=" + req.params.rev : "");
+	var request_url = '/data';
     app_db_handler(req, res, request_url);
 });
-
-
-
 
 app.get('/data/:id/:rev?', function(req, res) {
 
