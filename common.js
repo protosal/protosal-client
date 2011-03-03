@@ -4,14 +4,13 @@ var urlpaser = require('url');
 var http = require('http');
 var Hash = require('./sha1');
 
-
-exports.credentials = "ryth:abCD--12";
-var default_salt = "1";
-
-
 exports.base64_encode = function(enc_string) {
     return Base64.encode( new Buffer(enc_string) );
 }
+
+exports.credentials = exports.base64_encode("ryth:abCD--12");
+
+var default_salt = "1";
 
 exports.authCheck = function (req, res, next) {
     url = req.urlp = urlpaser.parse(req.url, true);
@@ -67,7 +66,7 @@ exports.authCheck = function (req, res, next) {
         var request = couchdb.request("GET", '/_users', {
             'Host': 'localhost',
             'Content-Type': 'application/json',
-            'Authorization': 'Basic ' + exports.base64_encode(req.body.username + ":"+ req.body.password)
+            'Authorization': 'Basic ' + exports.base64_encode(req.body.username + ":" + req.body.password)
         });
         console.log(req.body.username + ":"+ req.body.password);
         request.end();
@@ -106,28 +105,5 @@ exports.authCheck = function (req, res, next) {
         }
         res.end( JSON.stringify( redirect ) );
         return;   
-     }   
-    
-    
-    /*
-    if ( url.pathname == "/user/login" && 
-         req.body.username == "max" && 
-         req.body.password == "herewego"  ) {
-      req.session.auth = true;
-        redirect = {
-            redirect: "home/dashboard"
-        }
-        res.end( JSON.stringify( redirect ) );
-      return;
-    }
-
-    // ####
-    // User is not unauthorized. Stop talking to him.
-    res.writeHead(401);
-    redirect = {
-        redirect: "user/login"
-    }
-    res.end( JSON.stringify( redirect ) );
-    return;
-    * */
+     }
 }
