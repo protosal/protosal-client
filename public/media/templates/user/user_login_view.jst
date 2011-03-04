@@ -1,13 +1,16 @@
-<script type="text/template" id="user_login_view_template">
+<script type="text/template" id="dashboard_login_view_template">
 <br />
 <br />
 <br />
-<br />
-<br />
-<div id="loginwindow" style="padding-bottom: 15px; width: 400px;margin: auto;">
-    <div class="tabs" style="overflow: hidden;" title="MGF CONSULTANTS - Ryth - Login">
+<div id="loginwindow" style="padding-bottom: 15px; width: 680px;margin: auto; border: 1px solid #f7f7f7;">
+    <div style="float: left; width: 289px; margin-top: 34px; padding: 30px; border: 1px solid #ccc; border-right: none;">
+    <h3 style="color: #c4c5ff;">Maybe a heading</h3>
+    Updates or some shit goes here stil deciding
+    
+    </div>
+    <div class="tabs" style="width: 330px; float: right;overflow: hidden;" title="MGF CONSULTANTS - Ryth - Login">
         <ul>
-            <li><a href="#tab-1">Login</a></li>
+            <li style="margin-left: 10px;"><a href="#tab-1">Login</a></li>
             <li><a href="#tab-2">Register</a></li>
             <li><a href="#tab-3">Forgot Password</a></li>
         </ul>
@@ -110,6 +113,6 @@
           //  $("#login_form").prepend('<div style="margin-top: 5px" id="loginerror" class="thirdsized">Incorrect username/password</div>').uihighlight();  
 
     //$(".ui-widget-overlay").css("opacity","1 !important")
-    //setTimeout( function (){     $("#username").focus(); }, 1000);
+    setTimeout( function (){     $("#password").focus(); }, 100);
 </jst>
 </script>

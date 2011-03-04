@@ -73,7 +73,7 @@ function login(req, res) {
 				req.session.password = req.body.password
 				req.session.creds = exports.base64_encode(req.body.username + ":"+ req.body.password)
 				redirect = {
-					redirect: "home/dashboard"
+					redirect: "dashboard/home"
 				}
 				res.end( JSON.stringify( redirect ) );
 				return;
@@ -93,7 +93,7 @@ function login(req, res) {
 function logout(req, res) {
 	req.session.destroy();
 	redirect = {
-		redirect: "user/login"
+		redirect: "dashboard/login"
 	}
 	res.send( JSON.stringify( redirect ) );
 }
@@ -102,7 +102,7 @@ function auth_error(res) {
 	res.writeHead(401);
 	console.log("Default error, not validted redirect this fool to user/login");
 	redirect = {
-		redirect: "user/login"
+		redirect: "dashboard/login"
 	}
 	res.end( JSON.stringify( redirect ) ); 
 }
