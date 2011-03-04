@@ -161,7 +161,12 @@ app.get('/related2/:view/:id', function( req, res ){
 	var request_url = '/app/_design/' + req.params.view + "/_view/list_by_parent?key=\"" + req.params.id + "\"";
 	var request = rCommon.couchdb_request(req, request_url);
 	request.end();
-	
+	/* The relationship request format is now parent_child.
+	 * The script figures out how to call the right views.
+	 */
+	 
+    var child = req.params.view.split('_')[1];
+    
     
     request.on('response', function (response) {
         response.setEncoding('utf8');
@@ -173,7 +178,7 @@ app.get('/related2/:view/:id', function( req, res ){
 			var asd = JSON.parse(all_data).rows;
 			
             keys = _.map(JSON.parse(all_data).rows, function( row ) {
-				var property = req.params.view.split('_')[1] + '_id';
+				var property = child + '_id';
 				return row.value[property];
 			});
 			
@@ -181,7 +186,7 @@ app.get('/related2/:view/:id', function( req, res ){
 				"keys": keys
 			});
 			
-			var request_url2 = '/app/_design/' + req.params.view.split('_')[1] + "/_view/list_by_id";
+			var request_url2 = '/app/_design/' + child + "/_view/list_by_id";
 			req.method = "POST";
 			generic_list_retrieve(req, res, rCommon.couchdb_request(req, request_url2));
         });

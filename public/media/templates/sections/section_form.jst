@@ -111,57 +111,30 @@
                
                 console.log("lets get all the section fees that we have already added");
                     $.ajax({
-                        url: "related/sectionfee/" + resp.id,
+                        url: "related2/section_fee/" + resp.id,
                         type: "GET",
                         dataType: "json",
                         success: function(data){
                             if( !data.error ){
-                            if( data.rows.length > 0 ){
-                                keys = _.map(data.rows, function( row ){
-                                
-                                    return row.value.fee_id;
-                                });
-                                obj = {
-                                    "keys": keys
+                                if( data.rows.length > 0 ){
+                                    var feelist = "<%= typeof feelist != "undefined" ? feelist : "" %>";
+                                    var sorted = _.sortBy( data.rows, function( row ) { return feelist.indexOf(row.value._id); } );
+                                    _.each( sorted, function( model ) {
+                                        model = model.value;
+                                        section_backbone.fees.add( {
+                                            "id": model._id,
+                                            "name": model.name,
+                                            "price": model.price,
+                                            "rev": model._rev,
+                                        } );
+                                    });
+                                } else {
+                                 console.log("no rows");
                                 }
-                                $.ajax({
-                                    url: "list_by_id/fee/",
-                                    type: "POST",
-                                    contentType: "application/json",
-                                    dataType: "json",
-                                    data: $.toJSON( obj ),
-                                    success: function(data){
-                                        console.log("Got the related data");
-                                            var feelist = "<%= typeof feelist != "undefined" ? feelist : "" %>".split(",");
-                                            
-                                            var sorted = _.sortBy( data.rows, function( row ) { return feelist.indexOf(row.value._id); } );
-                                            console.log(sorted);
-                                            //var sorted = _.map(feelist, function(fee){ return _.map( data.rows, function( feeid ) { fee == data.rows.value.fee_id }) );
-                                        _.each( sorted, function( model ) {
-                                            
-                                            
-                                            
-                                            model = model.value;
-                                             section_backbone.fees.add( {
-                                                "id": model._id,
-                                                "name": model.name,
-                                                "price": model.price,
-                                                "rev": model._rev,
-                                            } );
-                                        
-                                        })
-                                       
-                                    }
-                                });
                             } else {
-                                console.log(" no fees" );
+                                console.log("we have an error");
                             }
-                            } else {
-                             console.log("we got an error");
-                            }
-                        
                         }
-                    
                     });
                 $.ajax({
                    type: "GET",
