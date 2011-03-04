@@ -8,6 +8,7 @@ var fs = require('fs');
 var sys = require('sys');
 var app = express.createServer();
 var connect = require('connect');
+var _ = require('underscore');
 
 app.configure(function() {
   
@@ -152,8 +153,39 @@ var generic_list_retrieve = function(req, res, request) {
 }
 
 app.get('/related/:view/:id', function( req, res ){
-	var request_url = '/app/_design/' + req.params.view + "/_view/listfees?key=\"" + req.params.id + "\"";
+	var request_url = '/app/_design/' + req.params.view + "/_view/list_by_parent?key=\"" + req.params.id + "\"";
 	generic_list_retrieve(req, res, rCommon.couchdb_request(req, request_url));
+});
+
+app.get('/related2/:view/:id', function( req, res ){
+	var request_url = '/app/_design/' + req.params.view + "/_view/list_by_parent?key=\"" + req.params.id + "\"";
+	var request = rCommon.couchdb_request(req, request_url);
+	request.end();
+	
+    
+    request.on('response', function (response) {
+        response.setEncoding('utf8');
+        all_data = ""
+        response.on('data', function (data) {
+            all_data += data;
+        });
+        response.on('end', function (){
+			var asd = JSON.parse(all_data).rows;
+			
+            keys = _.map(JSON.parse(all_data).rows, function( row ) {
+				var property = req.params.view.split('_')[1] + '_id';
+				return row.value[property];
+			});
+			
+			req.rawBody = JSON.stringify({
+				"keys": keys
+			});
+			
+			var request_url2 = '/app/_design/' + req.params.view.split('_')[1] + "/_view/list_by_id";
+			req.method = "POST";
+			generic_list_retrieve(req, res, rCommon.couchdb_request(req, request_url2));
+        });
+    });
 });
 
 app.get('/:list_type/:view', function(req, res) {

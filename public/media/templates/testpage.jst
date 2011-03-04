@@ -1,34 +1,54 @@
 <script type="text/template" id="test_page_view_template">
-<div id="testform">
+<div id="<%= controller %>testform">
 
 </div>
 Teting
 
 <jst>
     var cow;
-    $("#testform").html( _.template( $("#common_edit_view_template").jsthtml(), { 
+    _.jstTemplate( $("#<%= controller %>testform"), $("#common_edit_view_template"), { 
         controller: "section",
         success: function(data){
-			alert("asd");
-            console.log($.toJSON(data));
-             $("#testform").dialog("close");
-             redirect("client/list");
-        }
-    } ) );            
+             $("#<%= controller %>testform").dialog("close");
+        },
+        buttons: [
+				{ text: "Close", class: "close" }
+				]
+    });          
                     
                     
                     
-                    
+    cked = $(".jckeditor", $("#<%= controller %>testform"));    
     
-    $("#testform").dialog({
+    var mydialog = $("#<%= controller %>testform").dialog({
+		autoOpen: false,
         draggable: false,
         resizable: false,
-        closeOnEscape: false,
-        title: "New Fee",
+        closeOnEscape: true,
+        close: function(){
+				cked.ckeditor(function(){ // a hack to make jck editor work on page refresh
+						
+						this.destroy();
+			});
+			mydialog.dialog("destroy");
+			
+						$("#<%= controller %>testform").remove();
+        },
+        beforeClose: function(){
+				
+				
+		},
+        open: function(){
+			console.log($("#jckeditor"));
+			setTimeout( function(){ cked.ckeditor(ckeditor_options);  }, 200);
+			console.log($("#jckeditor")); 
+			$("form input").focus();      
+        },
         modal: true, 
         hide: 'drop',
         width: "850px",
-    });
-    
+        position: ["50%",100]
+    }).dialog("open");
+   
 </jst>
 </script>

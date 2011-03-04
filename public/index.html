@@ -9,7 +9,7 @@
         <script type="text/javascript" src="http://ajax.cdnjs.com/ajax/libs/headjs/0.9/head.load.min.js"></script>
          
         <script type="text/javascript">
-        
+        cked = "";
         var GLOBALS = {
             "route_id": null,
             "controller": null,
@@ -17,7 +17,13 @@
             "server_base": "http://localhost:3000",
             "couch_server": "http://localhost:3000",
         };
-        
+        ckeditor_options = {  
+                toolbar: [
+                    ['Bold', 'Italic', '-', 'NumberedList', 'BulletedList', '-', 'Link', 'Unlink','-','About'],['Styles','Format','Font','FontSize'],
+                    ['TextColor','BGColor'],
+                    ['Maximize', 'ShowBlocks','-','About']
+                ]
+            };
         if(window.location.pathname != "/") window.location = "/"; //handles 404 errors
         
         // Dynamically load CSS files.
@@ -54,7 +60,6 @@
             GLOBALS.server_base + "/media/js/jquery.defaultvalue.js",
             GLOBALS.server_base + "/media/js/jquery.dataTables.js",
             GLOBALS.server_base + "/media/js/jquery/plugins/ryth/rythjsthtml.js",
-            GLOBALS.server_base + "/media/js/ryth_renderer_config.js",
             GLOBALS.server_base + "/media/js/jquery/plugins/ryth/rythbutton.js"
             //GLOBALS.server_base + "/_utils/script/sha1.js",
             //GLOBALS.server_base + "/_utils/script/json2.js",
@@ -100,11 +105,13 @@
                     
                     //We know the page is about to change so lets clean up any jckeditors hanging around before the dom changes and jckeditors internal reference is updated
                     
-                    $(".jckeditor").each( function(){
-                            $(this).ckeditor(function(){ // a hack to make jck editor work on page refresh
-                                this.destroy();
-                            });
+					$(".jckeditor").each( function(){
+						$(this).ckeditor(function(){ // a hack to make jck editor work on page refresh
+						
+							this.destroy();
+						});
                     });
+                    
                     
                     var obj = {};
                     template = GLOBALS.controller + "_" + GLOBALS.action + "_view";
@@ -120,10 +127,8 @@
                     } else {
                         template_name = GLOBALS.controller + "_" + GLOBALS.action
                     }
-                    $("#contentpane").html("");
-                    $("#contentpane").html( _.template( $("#" + template_name + "_view_template").html(), obj));
                     
-                    $("#contentpane").html( $("#contentpane").jsthtml() );
+                    _.jstTemplate( $("#contentpane"), $("#" + template_name + "_view_template"), obj )
                     
               }, //end of DEFAULT ROUTE
 
@@ -182,6 +187,7 @@
                     data: $.toJSON(formdata),
                     success: function(data){
                         _.extend( data, formdata );
+						
                         event.data.success(data);
                     }
                 });
@@ -221,7 +227,7 @@
                     <li id="fee" class="ui-state-default ui-corner-top"><a href="#/fee/list">Fees</a></li>
                     <li id="client" class="ui-state-default ui-corner-top"><a href="#/client/list">Clients</a></li>
                     <li id="setting" class="ui-state-default ui-corner-top"><a href="#/setting/main">Settings</a></li>
-                    <div style="float: right; margin-right: 24px; margin-top: 10px;">help | <a href="#/logout">logout</a></div>
+                    <div style="float: right; margin-right: 24px; margin-top: 10px;"><a href="#/test/page">help</a> | <a href="#/logout">logout</a></div>
                 </ul>
             </div> <!-- #layout -->
 

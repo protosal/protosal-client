@@ -21,7 +21,7 @@
 
             <label for="">
                 Comment</label>
-            <textarea class="jckeditor" rows="4" name="description" cols="30"><%= typeof description != "undefined" ? description : "" %></textarea>
+            <textarea  class="jckeditor" rows="4" name="description" cols="30"><%= typeof description != "undefined" ? description : "" %></textarea>
 <br />
         <br />
 
@@ -53,16 +53,9 @@
 </div>
     <jst>
 
-        $(".jckeditor").each( function(){
-            $(this).ckeditor(function() {}, {  
-                toolbar: [
-                    ['Bold', 'Italic', '-', 'NumberedList', 'BulletedList', '-', 'Link', 'Unlink','-','About'],['Styles','Format','Font','FontSize'],
-                    ['TextColor','BGColor'],
-                    ['Maximize', 'ShowBlocks','-','About']
-                ]
-            });
-        });
-        
+	
+			
+  
         Fee = Backbone.Model.extend({
             //Create a model to hold friend atribute
             name: null
@@ -83,6 +76,7 @@
             el: $("#section_form_container"),
             initialize: function () {
             
+
             section_backbone = this;
             
             //Create a section id at initialization so you can attach relationships straight away
@@ -296,8 +290,7 @@
                 if( typeof id != "string" ){
                     id = "";
                 }
-              $("#fee_form_modal").html( 
-                    _.template( $("#common_edit_view_template").jsthtml(), { 
+              _.jstTemplate( $("#fee_form_modal"), $("#common_edit_view_template"),{ 
                         controller: "fee",
                         success: function(data){
                             console.log($.toJSON(data));
@@ -305,8 +298,9 @@
                              //redirect("client/list");
                         },
                         documentid: id
-                    } ) 
-                ).dialog({
+                    } ); 
+  
+                $("#fee_form_modal").dialog({
                     draggable: false,
                     resizable: false,
                     closeOnEscape: false,
@@ -319,8 +313,6 @@
                 
                  
             }
-            
-            
         });
         
         var section_backbone = new SectionBackboneView;

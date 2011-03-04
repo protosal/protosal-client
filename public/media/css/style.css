@@ -290,8 +290,6 @@ color: #ccc;
 }
 
 .megaform{
-background: #F4F8FD;
-border: 1px solid #D2DBF4;
 padding: 40px;
 }
 form input[type=text],input[type=password], textarea, .dataTables_filter input { 
@@ -553,3 +551,6 @@ text-align: center;
     -moz-box-shadow: none;
 }
  
+.ui-dialog-titlebar {
+    display:none !important;
+}

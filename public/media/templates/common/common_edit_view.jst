@@ -39,14 +39,23 @@ _rev = ""
                                     'text': 'Back',
                                     'classes': 'back-button'
                         }
+                        <% if( typeof buttons != "undefined" ){ _.each( buttons, function(button){  %>
+							,{
+										'text': '<%= button.text %>',
+										'classes': '<%= button.class %>'
+							}
+                        <% })} %>
                     ]
                     
                 }
                 
-                $("#<%= controller %>_pageheader").html( _.template( $("#page_header_template").jsthtml(), options ) );
+				_.jstTemplate( $("#<%= controller %>_pageheader"), $("#page_header_template"), options );  
                 
-                //If  a route id is present load the data for that document
-                //If this template receives a document id user that instead
+                
+                /*
+                If  a route id is present load the data for that document
+                If this template receives a document id user that instead
+                */
                 id = "<%= current_doc_id %>";
                 if( id ){
                     var url = GLOBALS.server_base + "/data/" + id;
@@ -56,6 +65,11 @@ _rev = ""
                             data.success = <%= success %>;
                             $("#<%= controller %>_formc").append( _.template( $("#<%= controller %>_form_template").jsthtml(), data ) );
                             
+                   
+                                 
+			
+			
+			
                             if (typeof data._rev != "undefined")
                                 _rev = data._rev; 
                             
@@ -68,8 +82,10 @@ _rev = ""
                         }
                     });
                 } else {
-					
-                    $("#<%= controller %>_formc").append( _.template( $("#<%= controller %>_form_template").jsthtml(), { success: <%= success %> } ) );
+					_.jstTemplate( $("#<%= controller %>_formc"), $("#<%= controller %>_form_template"), { success: <%= success %> } );  
+                 
+                    
+                    
                     $(".<%= controller %>_save").click({
                         _rev: "",
                         _id: "",
@@ -77,8 +93,8 @@ _rev = ""
                     }, window.saveclickHandler );
                 }
                 
-        
-                
+                cked = "";
+                setTimeout( function() { cked = ($(".jckeditor", $("#<%= controller %>_formc") )); cked.ckeditor(ckeditor_options); }, 100);
                 
             },
 

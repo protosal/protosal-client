@@ -42,7 +42,14 @@ _.mixin({
         var y=parseInt(x);
         if (isNaN(y)) return false;
         return x==y && x.toString()==y.toString();
-    }
+    },
+    jstTemplate: function(jquery_ref, template_obj, obj) {
+		$(jquery_ref).html("");
+		// Don't replace jst with script tags as they will get shuffled around on dom insertion.
+		$(jquery_ref).append( _.template( $(template_obj).jsthtml(), obj));
+		// We can replace jst tags now as they are now in the right place.
+		//$(jquery_ref).html( $(jquery_ref).jsthtml() );
+	}
 });
 
 /*
