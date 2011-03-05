@@ -43,18 +43,41 @@ function app_db_handler(req, res, request) {
     });
 }
 
+function get_data(url, method) {
+    var request = '';
+}
+
 app.put('/data/:id/:rev?', function(req, res) {
-	var request_url = '/app/' + req.params.id + (req.params.rev ? "?rev=" + req.params.rev : "");
-    app_db_handler(req, res, rCommon.couchdb_request(req, request_url) );
+    var request_url = '/app/' + req.params.id + (req.params.rev ? "?rev=" + req.params.rev : "");
+    app_db_handler(req, res, rCommon.couchdb_request(request_url, req.method) );
 });
 app.post('/data', function(req, res) {
-	var request_url = '/app';
-    app_db_handler(req, res, rCommon.couchdb_request(req, request_url) );
+    var request_url = '/app';
+    app_db_handler(req, res, rCommon.couchdb_request(request_url, req.method) );
 });
+
+app.post('data/newinstance/:id', function(req, rest) {
+    var request_url = 'app';
+    /* Set the template id for the new record. */
+    req.body.template = req.params.id;
+    /* Set the HTTP request method to COPY so we can leverage CouchDB's
+     * inbuilt functionality.
+     */
+    req.method = 'COPY';
+
+    /* Copy all fees. */
+    if( req.body.type == "section" ) {
+        var url = '/app/_design/section_fee/_view/list_by_parent?key=' + req.params.id;
+        var fee_request = rCommon.couchdb_request(url, req.method);
+    }
+
+    app_db_handler(req, res, rCommon.couchdb_request(request_url, req.method) );
+});
+ 
 
 app.get('/data/:id/:rev?', function(req, res) {
     var request_url = '/app/' + req.params.id + (req.params.rev ? "?rev=" + req.params.rev : "");
-    var request = rCommon.couchdb_request(req, request_url);
+    var request = rCommon.couchdb_request(request_url, req.method);
     request.end();
     
     request.on('response', function (response) {
@@ -79,20 +102,20 @@ app.get('/data/:id/:rev?', function(req, res) {
 });
 
 function delete_request(req, res, request_url) {
-	var deleterequest = rCommon.couchdb_request(req, request_url, "DELETE");
-	deleterequest.end();
-	
-	deleterequest.on('response', function (responsea) {
-		responsea.on('data', function (data) {
-			res.header('Content-Type', 'application/json');
-			res.send(data);
-		})
-	});
+    var deleterequest = rCommon.couchdb_request(request_url, "DELETE");
+    deleterequest.end();
+    
+    deleterequest.on('response', function (responsea) {
+        responsea.on('data', function (data) {
+            res.header('Content-Type', 'application/json');
+            res.send(data);
+        })
+    });
 }
 
 app.delete('/data/:id/:rev?', function(req, res) {
     var request_url = '/app/' + req.params.id + (req.params.rev ? "?rev=" + req.params.rev : "");
-    var authorcheck = rCommon.couchdb_request(req, request_url, "GET");
+    var authorcheck = rCommon.couchdb_request(request_url, "GET");
     authorcheck.end();
     
     authorcheck.on('response', function (response) {
@@ -102,8 +125,8 @@ app.delete('/data/:id/:rev?', function(req, res) {
             author = JSON.parse(data).author;
             console.log("checking the " + author );
             if( req.session.username == author ) {
-				var url = '/app/' + req.params.id + (req.params.rev ? "?rev=" + req.params.rev : "");
-				delete_request(req, res, url);
+                var url = '/app/' + req.params.id + (req.params.rev ? "?rev=" + req.params.rev : "");
+                delete_request(req, res, url);
             }
         });
     });
@@ -113,7 +136,7 @@ app.delete('/data/:id/:rev?', function(req, res) {
 //Delete the relationship
 app.delete('/delete/:controller/:id/:id2', function(req, res) {
     var request_url = '/app/_design/' + req.params.controller + "/_view/list?key=[\""+ req.params.id + "\",\""+ req.params.id2 +"\"]";
-    var request = rCommon.couchdb_request(req, request_url, "GET");
+    var request = rCommon.couchdb_request(request_url, "GET");
     request.end(req.rawBody);
     
     request.on('response', function (response) {
@@ -134,11 +157,11 @@ app.delete('/delete/:controller/:id/:id2', function(req, res) {
 
 var generic_list_retrieve = function(req, res, request) {
     if( req.method == "POST" ) {
-		// Used for selecting multiple keys on POST.
-		request.end(req.rawBody);
-	} else {
-		request.end();
-	}
+        // Used for selecting multiple keys on POST.
+        request.end(req.rawBody);
+    } else {
+        request.end();
+    }
     
     request.on('response', function (response) {
         response.setEncoding('utf8');
@@ -153,18 +176,18 @@ var generic_list_retrieve = function(req, res, request) {
 }
 
 app.get('/related/:view/:id', function( req, res ){
-	var request_url = '/app/_design/' + req.params.view + "/_view/list_by_parent?key=\"" + req.params.id + "\"";
-	generic_list_retrieve(req, res, rCommon.couchdb_request(req, request_url));
+    var request_url = '/app/_design/' + req.params.view + "/_view/list_by_parent?key=\"" + req.params.id + "\"";
+    generic_list_retrieve(req, res, rCommon.couchdb_request(request_url, req.method));
 });
 
 app.get('/related2/:view/:id', function( req, res ){
-	var request_url = '/app/_design/' + req.params.view + "/_view/list_by_parent?key=\"" + req.params.id + "\"";
-	var request = rCommon.couchdb_request(req, request_url);
-	request.end();
-	/* The relationship request format is now parent_child.
-	 * The script figures out how to call the right views.
-	 */
-	 
+    var request_url = '/app/_design/' + req.params.view + "/_view/list_by_parent?key=\"" + req.params.id + "\"";
+    var request = rCommon.couchdb_request(request_url, req.method);
+    request.end();
+    /* The relationship request format is now parent_child.
+     * The script figures out how to call the right views.
+     */
+     
     var child = req.params.view.split('_')[1];
     
     
@@ -175,31 +198,31 @@ app.get('/related2/:view/:id', function( req, res ){
             all_data += data;
         });
         response.on('end', function (){
-			var asd = JSON.parse(all_data).rows;
-			
+            var asd = JSON.parse(all_data).rows;
+            
             keys = _.map(JSON.parse(all_data).rows, function( row ) {
-				var property = child + '_id';
-				return row.value[property];
-			});
-			
-			req.rawBody = JSON.stringify({
-				"keys": keys
-			});
-			
-			var request_url2 = '/app/_design/' + child + "/_view/list_by_id";
-			req.method = "POST";
-			generic_list_retrieve(req, res, rCommon.couchdb_request(req, request_url2));
+                var property = child + '_id';
+                return row.value[property];
+            });
+            
+            req.rawBody = JSON.stringify({
+                "keys": keys
+            });
+            
+            var request_url2 = '/app/_design/' + child + "/_view/list_by_id";
+            req.method = "POST";
+            generic_list_retrieve(req, res, rCommon.couchdb_request(request_url2, req.method));
         });
     });
 });
 
 app.get('/:list_type/:view', function(req, res) {
-	var request_url = '/app/_design/' + req.params.view + "/_view/" + req.params.list_type + "?key=\"" + req.session.username + "\"";
-    generic_list_retrieve(req, res, rCommon.couchdb_request(req, request_url));
+    var request_url = '/app/_design/' + req.params.view + "/_view/" + req.params.list_type + "?key=\"" + req.session.username + "\"";
+    generic_list_retrieve(req, res, rCommon.couchdb_request(request_url, req.method));
 });
 app.post('/:list_type/:view', function(req, res) {
-	var request_url = '/app/_design/' + req.params.view + "/_view/" + req.params.list_type;
-    generic_list_retrieve(req, res, rCommon.couchdb_request(req, request_url));
+    var request_url = '/app/_design/' + req.params.view + "/_view/" + req.params.list_type;
+    generic_list_retrieve(req, res, rCommon.couchdb_request(request_url, req.method));
 });
 
 
