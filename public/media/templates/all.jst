@@ -649,11 +649,51 @@
 <script type="text/template" id="proposal_form_template">
 <div id="proposal_form_container">
     <form id="add_proposal_form"  class="edit_proposal_form" enctype="multipart/form-data" >
-        Editing Form
+        
     </form>
     </div>
 </div>
+<jst>
 
+    FeeModel = Backbone.Model.extend({
+    
+    });
+    SectionModel = Backbone.Model.extend({
+    
+    });
+    
+    FeeCollection = Backbone.Collection.extend({
+        model: FeeModel,
+        initialize: function(){
+            console.log("Initialize the Fee collection");
+        }
+    });
+    
+    SectionCollection = Backbone.Collection.extend({
+        model: SectionModel,
+        initialize: function(){
+            console.log("Initialise the Section collection");
+        },
+        getSections: function(){
+        
+        }
+    });
+    
+    ProposalView = Backbone.View.extend({
+        el: $("#proposal_form_container"),
+        sections: null, 
+        fees: null, 
+        initialize: function(){
+            console.log("Initialize the proposal view");
+            this.sections = new SectionCollection;
+            this.fees = new FeeCollection;
+            
+        }
+    
+    });
+    
+    proposal_view = new ProposalView;
+</jst>
 </script>
 <script type="text/template" id="proposal_preview_section_template">
 
