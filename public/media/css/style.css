@@ -69,7 +69,7 @@ figure img {width: 100%;}
 	60px  144px  228px  312px  396px  480px  564px  648px	*/
 
 body {
-	background: #ebebeb;/* url(../images/main-bg.png);*/
+	background: #f7f7f7;/* url(../images/main-bg.png);*/
 	padding: 0;
 	
 	-webkit-tap-highlight-color: rgb(255,255,0);
@@ -553,4 +553,9 @@ text-align: center;
  
 .ui-dialog-titlebar {
     display:none !important;
+}
+
+.icons li img{  
+    width: 50px;
+    
 }

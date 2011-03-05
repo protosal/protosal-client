@@ -135,9 +135,9 @@
             });
             
             $(".back-button").live("click", function() { history.go(-1); return false; });
-            
+            d = new Date();
             $.ajax({ 
-                url: "media/templates/all.jst",
+                url: "media/templates/all.jst?" +   d.getTime(),
                 success: function(response){
                         $("body").append(response);
                         
