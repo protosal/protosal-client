@@ -11,20 +11,17 @@ var connect = require('connect');
 var _ = require('underscore');
 
 app.configure(function() {
-  
-  app.use(express.bodyDecoder());
+  app.use(express.responseTime());  
+  app.use(express.bodyParser());
 
   app.use(express.methodOverride());
   //app.use(express.logger());
-  app.use(express.gzip());
-  app.use(express.conditionalGet());
-  app.use(express.cache());
 
   // Enable static file serving
-  app.use(express.staticProvider(__dirname + '/public'));
+  app.use(express.static(__dirname + '/public'));
   app.use(express.errorHandler({ dumpExceptions: true }));
   //app.use(connect.logger({ format: ':method :url' }));
-  app.use(connect.cookieDecoder());
+  app.use(connect.cookieParser());
   app.use(connect.session({ secret: 'foobar' }));
   app.use(rCommon.authCheck );
 });
