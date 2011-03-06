@@ -15,7 +15,7 @@
     </ul>
     </div>
     <div class="logintabs" style="border: none; width: 260px; z-index: 1; float: right;overflow: hidden;" title="MGF CONSULTANTS - Ryth - Login">
-        <a style="float: right;" href="#tab-2" class="tabli button blue">Start Free Trial</a>
+        <a style="float: right;" href="#tab-2" class="register userpage button blue">Start Free Trial</a>
         <ul>
              <!--<li><a href="#tab-2">Register</a></li>
            <li><a href="#tab-3">Forgot Password</a></li>-->
@@ -122,14 +122,26 @@
     //$(".ui-widget-overlay").css("opacity","1 !important")
     setTimeout( function (){     $("#username").focus(); }, 100);
     $("button").button();
-    $(".tabli").click( function(){
+    $(".userpage").click( function(){
         tab = $(this).attr("href");
-        $(".active-tab").removeClass("active-tab");
-        $(tab).addClass("active-tab");
-        $(this).addClass("active-tab");
+        if( $(this).hasClass("register") ){
+           $("#tab-1").removeClass("active-tab"); 
+           $("#tab-2").addClass("active-tab"); 
+           $(this).removeClass("register").addClass("login").addClass("orange").removeClass("blue");
+           $(this).text("Back to Login");
+        } else {
+           $("#tab-2").removeClass("active-tab"); 
+           $("#tab-1").addClass("active-tab"); 
+           
+            $(this).text("Start Free Trial");
+           $(this).removeClass("login").addClass("register").addClass("blue").removeClass("orange");
+        }
+//active-tab").removeClass("active-tab");
+       // $(tab).addClass("active-tab");
+       // $(this).addClass("active-tab");
         return false;
     });
     $("#tab-1").addClass("active-tab");
-    $(".logintabs li:first a").addClass("active-tab");
+    //$(".logintabs li:first a").addClass("active-tab");
 </jst>
 </script>
