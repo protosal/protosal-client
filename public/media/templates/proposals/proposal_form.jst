@@ -1,8 +1,19 @@
 <script type="text/template" id="proposal_form_template">
 <div id="proposal_form_container">
     <form id="add_proposal_form"  class="edit_proposal_form" enctype="multipart/form-data" >
-        
+        <fieldset>
+            <label for="">
+                Name</label>
+            <input name="name" id="" type="text" value="<%= typeof name != "undefined" ? name : "" %>" />
+        </fieldset>
+        <label for="">
+            Autocomplete</label>
+        <input type="text" id="add_section_input" />
     </form>
+    </div>
+    <div id="toc">
+        <ol>
+        </ol>
     </div>
 </div>
 <jst>
@@ -11,7 +22,9 @@
     
     });
     SectionModel = Backbone.Model.extend({
-    
+        initialize: function() {
+            console.log("New Section Model created");
+        }
     });
     
     FeeCollection = Backbone.Collection.extend({
@@ -25,25 +38,100 @@
         model: SectionModel,
         initialize: function(){
             console.log("Initialise the Section collection");
+            this.bind("refresh", function() { proposal_view.addSectionRender(); });
+            //this.bind("add", this.addEvent );
+            
         },
-        getSections: function(){
-        
+        addToTOC: function(section) {
+                proposal_view.toc.addSection(section);
+        },
+        getAllTemplates: function(){
+            console.log("Start fetching the section templates");
+            section_templates = {};
+            $.when( $.ajax("list_by_author/section", { dataType: "json" }) )
+                .then( function(data) { 
+                    //Update this collections sections
+                    console.log("Template sections received, send them to collection");
+                    proposal_view.allsections.refresh(data.rows); 
+            }); //When statement end
         }
     });
-    
+    SectionsView = Backbone.View.extend({
+        
+    });
+    TOCView = Backbone.View.extend({
+        el: $("#toc"),
+        initialize: function(){
+            console.log("Initialize the table of contents");
+        },
+        addSection: function( section ){
+            console.log("Add section to the ordered list");
+            this.$("ol").append( _.template( $("#toc_list_item").html(), section.get("value") ) );
+        }
+    });
     ProposalView = Backbone.View.extend({
         el: $("#proposal_form_container"),
         sections: null, 
         fees: null, 
+        toc: null,
+        allsectoins: null,
         initialize: function(){
             console.log("Initialize the proposal view");
-            this.sections = new SectionCollection;
-            this.fees = new FeeCollection;
             
+            this.sections = new SectionCollection;
+            this.sections.bind("add", this.sections.addToTOC);
+            
+            this.allsections = new SectionCollection;
+            this.allsections.getAllTemplates();
+            
+            this.fees = new FeeCollection;
+            this.toc = new TOCView;
+        },
+        addSectionRender: function(){
+            console.log( "Render the add section auto complete" );
+            var sections = this.allsections.models;
+            console.log( "Map the sections to return values that the auto complete plugin can use" );
+            sections = _.map( sections, function( section ){
+                section = section.get("value");
+                return {
+                    "id" : section._id,
+                    "label" : section.name,
+                    "value" : section.name,
+                    "rev" : section._rev,
+                };
+            }); //Map function end
+            console.log( "Mapped sections: " + sections.length );
+             $("#add_section_input").autocomplete({
+                        source: sections,
+                        minLength: 1,
+                        delay: 0,
+                        select: function( event, ui ) {
+                            console.log("TODO - Instantiate a new section and return the id");
+                            function getInstance(){ 
+                                    return $.Deferred(function(dfd){
+                                        var instance = proposal_view.allsections.get( ui.item.id ).clone();
+                                        instance.set({ "id": "newid" });
+                                        console.log("Changed id of the new instance");
+                                        dfd.resolve( instance );
+                                    }).promise();
+                                    
+                            }
+                            $.when( getInstance() )
+                            .then( function( section_instance) {
+                                    console.log( "Section instantiated with id " + section_instance);
+                                    proposal_view.sections.add(section_instance);
+                            });
+                            $( this ).val("").focus();
+                            return false;
+                        }
+            }); //Auto complete end
         }
     
     });
     
     proposal_view = new ProposalView;
 </jst>
+</script>
+<script type="text/template" id="toc_list_item">
+<li><%= name %></li>
 </script>

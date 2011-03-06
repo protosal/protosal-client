@@ -649,8 +649,19 @@
 <script type="text/template" id="proposal_form_template">
 <div id="proposal_form_container">
     <form id="add_proposal_form"  class="edit_proposal_form" enctype="multipart/form-data" >
-        
+        <fieldset>
+            <label for="">
+                Name</label>
+            <input name="name" id="" type="text" value="<%= typeof name != "undefined" ? name : "" %>" />
+        </fieldset>
+        <label for="">
+            Autocomplete</label>
+        <input type="text" id="add_section_input" />
     </form>
+    </div>
+    <div id="toc">
+        <ol>
+        </ol>
     </div>
 </div>
 <jst>
@@ -659,7 +670,9 @@
     
     });
     SectionModel = Backbone.Model.extend({
-    
+        initialize: function() {
+            console.log("New Section Model created");
+        }
     });
     
     FeeCollection = Backbone.Collection.extend({
@@ -673,27 +686,102 @@
         model: SectionModel,
         initialize: function(){
             console.log("Initialise the Section collection");
+            this.bind("refresh", function() { proposal_view.addSectionRender(); });
+            //this.bind("add", this.addEvent );
+            
         },
-        getSections: function(){
-        
+        addToTOC: function(section) {
+                proposal_view.toc.addSection(section);
+        },
+        getAllTemplates: function(){
+            console.log("Start fetching the section templates");
+            section_templates = {};
+            $.when( $.ajax("list_by_author/section", { dataType: "json" }) )
+                .then( function(data) { 
+                    //Update this collections sections
+                    console.log("Template sections received, send them to collection");
+                    proposal_view.allsections.refresh(data.rows); 
+            }); //When statement end
         }
     });
-    
+    SectionsView = Backbone.View.extend({
+        
+    });
+    TOCView = Backbone.View.extend({
+        el: $("#toc"),
+        initialize: function(){
+            console.log("Initialize the table of contents");
+        },
+        addSection: function( section ){
+            console.log("Add section to the ordered list");
+            this.$("ol").append( _.template( $("#toc_list_item").html(), section.get("value") ) );
+        }
+    });
     ProposalView = Backbone.View.extend({
         el: $("#proposal_form_container"),
         sections: null, 
         fees: null, 
+        toc: null,
+        allsectoins: null,
         initialize: function(){
             console.log("Initialize the proposal view");
-            this.sections = new SectionCollection;
-            this.fees = new FeeCollection;
             
+            this.sections = new SectionCollection;
+            this.sections.bind("add", this.sections.addToTOC);
+            
+            this.allsections = new SectionCollection;
+            this.allsections.getAllTemplates();
+            
+            this.fees = new FeeCollection;
+            this.toc = new TOCView;
+        },
+        addSectionRender: function(){
+            console.log( "Render the add section auto complete" );
+            var sections = this.allsections.models;
+            console.log( "Map the sections to return values that the auto complete plugin can use" );
+            sections = _.map( sections, function( section ){
+                section = section.get("value");
+                return {
+                    "id" : section._id,
+                    "label" : section.name,
+                    "value" : section.name,
+                    "rev" : section._rev,
+                };
+            }); //Map function end
+            console.log( "Mapped sections: " + sections.length );
+             $("#add_section_input").autocomplete({
+                        source: sections,
+                        minLength: 1,
+                        delay: 0,
+                        select: function( event, ui ) {
+                            console.log("TODO - Instantiate a new section and return the id");
+                            function getInstance(){ 
+                                    return $.Deferred(function(dfd){
+                                        var instance = proposal_view.allsections.get( ui.item.id ).clone();
+                                        instance.set({ "id": "newid" });
+                                        console.log("Changed id of the new instance");
+                                        dfd.resolve( instance );
+                                    }).promise();
+                                    
+                            }
+                            $.when( getInstance() )
+                            .then( function( section_instance) {
+                                    console.log( "Section instantiated with id " + section_instance);
+                                    proposal_view.sections.add(section_instance);
+                            });
+                            $( this ).val("").focus();
+                            return false;
+                        }
+            }); //Auto complete end
         }
     
     });
     
     proposal_view = new ProposalView;
 </jst>
+</script>
+<script type="text/template" id="toc_list_item">
+<li><%= name %></li>
 </script>
 <script type="text/template" id="proposal_preview_section_template">
 
@@ -1648,41 +1736,43 @@ Nothing
 <br />
 <br />
 <br />
-<div id="loginwindow" style="padding-bottom: 15px; width: 680px;margin: auto; border: 1px solid #f7f7f7;">
-    <div style="float: left; width: 289px; margin-top: 34px; padding: 30px; border: 1px solid #ccc; border-right: none;">
-    <h3 style="color: #c4c5ff;">Maybe a heading</h3>
-    Updates or some shit goes here stil decidingssd
+<div id="loginwindow" style="padding-bottom: 15px; width: 610px;margin: auto; border: 1px solid #f7f7f7;">
+    <div style="float: left; width: 289px; margin-top: -40px; padding: 30px;">
+    <h3 style="color: #444;">perfect proposal generation</h3>
+    <p style="color: #333;">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque eget lorem est, nec iaculis orci. Nulla nec nisl augue.</p>
+    <br />
     <ul class="icons">
-    <li><img src="/media/icons/Files-Document-icon.png" />Create proposals on the fly easy and simple</li>
-    <li><img src="/media/icons/contacts-blue-icon.png" />Manage your contacts and conversations</li>
-    <li></li>
-    <li></li>
+    <li><img src="/media/icons/Files-Document-icon.png" />Create proposals on the fly easy and simple.</li>
+    <li><img src="/media/icons/contacts-blue-icon.png" />Manage your contacts and conversations all in one place.</li>
+    <li><img src="/media/icons/Graph-icon.png" />Track analytics and some other shit that ryan should write.</li>
+    
     </ul>
     </div>
-    <div class="tabs" style="width: 330px; float: right;overflow: hidden;" title="MGF CONSULTANTS - Ryth - Login">
+    <div class="logintabs" style="border: none; width: 260px; z-index: 1; float: right;overflow: hidden;" title="MGF CONSULTANTS - Ryth - Login">
+        <a style="float: right;" href="#tab-2" class="tabli button blue">Start Free Trial</a>
         <ul>
-            <li style="margin-left: 10px;"><a href="#tab-1">Login</a></li>
-            <li><a href="#tab-2">Register</a></li>
-            <li><a href="#tab-3">Forgot Password</a></li>
+             <!--<li><a href="#tab-2">Register</a></li>
+           <li><a href="#tab-3">Forgot Password</a></li>-->
         </ul>
-
-        <div id="tab-1">
+        <div style="clear:both;"></div>
+        <div class="logintab" id="tab-1">
+        <br />
             <div id="loginformc"  style=" margin: auto;">
-                <form id="loginform">
+                <form id="loginform" class="pretty">
                     <fieldset> 
                         <legend></legend> 
-                        <ol style="width:260px; margin: auto;">
-                            <li><label for="username">Username</label><input class="required" minlength="3"  value="" id="username" name="username" type="text" /></li>
+                        <ol>
+                            <li><label for="username">Email</label><input class="required" minlength="3"  value="" id="username" name="username" type="text" /></li>
                             <li><label for="password">Password</label><input type="password" name="password" id="password" value="" class="required" minlength="6" /></li>
                         </ol>
                     </fieldset>
-                    <p style="text-align: center;"> 
+                    <p style="padding-left: 175px;"> 
                         <button id="loginbutton" type="submit" class="submit" value="Login" >Login</button
                     </p>
                 </form>
             </div>
         </div>
-        <div id="tab-2">
+        <div class="logintab" id="tab-2">
             <div id="registerform"  style=" margin: auto;">
         
         
@@ -1705,7 +1795,7 @@ Nothing
     
     </div>
 
-        <div id="tab-3">
+        <div class="logintab" id="tab-3">
             <div class="uihighlight halfsized">Ask Ryan</div>
         </div>
     </div>
@@ -1765,5 +1855,15 @@ Nothing
 
     //$(".ui-widget-overlay").css("opacity","1 !important")
     setTimeout( function (){     $("#username").focus(); }, 100);
+    $("button").button();
+    $(".tabli").click( function(){
+        tab = $(this).attr("href");
+        $(".active-tab").removeClass("active-tab");
+        $(tab).addClass("active-tab");
+        $(this).addClass("active-tab");
+        return false;
+    });
+    $("#tab-1").addClass("active-tab");
+    $(".logintabs li:first a").addClass("active-tab");
 </jst>
 </script>
