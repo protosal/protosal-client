@@ -3,8 +3,10 @@ var Buffer = require('buffer').Buffer;
 var urlpaser = require('url');
 var http = require('http');
 var Hash = require('./sha1');
+var fs = require('fs');
+var sys = require('sys');
 
-var couchdb_host = 'localhost';
+var couchdb_host = '127.0.0.1';
 var couchdb_port = 5984;
 
 exports.base64_encode = function(enc_string) {
@@ -15,19 +17,21 @@ exports.credentials = exports.base64_encode("ryth:abCD--12");
 var default_salt = "1";
 
 exports.couchdb_request = function(request_url, method, credentials) {
-    if( credentials == null )
-        credentials = exports.credentials;
+    if( credentials == null ) {
+        credentials = "";
+    } else {
+        credentials = exports.base64_encode(credentials);
+    }
         
     var couchdb = http.createClient(couchdb_port, couchdb_host, true);
     
     var request_params = {
         'Host': couchdb_host,
         'Authorization': 'Basic ' + credentials,
-        'Content-Type': 'application/json'
     }
     
     if( method == "POST" || method == "PUT" )
-        request_params['Content-Type'] = 'application/json';
+        request_params['Content-Type'] = 'application/json'; 
         
     var request = couchdb.request(method, request_url, request_params);
     
@@ -35,7 +39,7 @@ exports.couchdb_request = function(request_url, method, credentials) {
 }
 
 function register(req, res) {
-    var request = exports.couchdb_request(req, '/_users', "POST");
+    var request = exports.couchdb_request('/_users', "POST");
         
     var newUser = {
         _id: "org.couchdb.user:" + req.body.email,
@@ -56,13 +60,26 @@ function register(req, res) {
 }
 
 function login(req, res) {
-    var credentials = exports.base64_encode(req.body.username + ":" + req.body.password);
-    var request = exports.couchdb_request(req, '/_users', "GET", credentials);
+    var credentials = "";
+    fs.writeFile('temp.out', sys.inspect(req));
+    if( req.body ) {
+        credentials = req.body.username + ":" + req.body.password;
+    } else {
+        auth_error(res);
+        return;    
+    }
+
+    var request = exports.couchdb_request('/_session', "GET", credentials);
     request.end();
     
     request.on('response', function (response) {
         response.setEncoding('utf8');
-        response.on('data', function (data) {
+        data = "";
+        response.on('data', function (chunk) {
+            data += chunk;
+        });
+        response.on('end', function () {
+            response.setEncoding("utf8");
             res.header('Content-Type', 'application/json');
             data = JSON.parse(data);
             if( typeof data.error == "undefined" ) {
@@ -75,16 +92,12 @@ function login(req, res) {
                 }
                 res.end( JSON.stringify( redirect ) );
                 return;
-            } 
-            console.log(data);
-            res.writeHead(401);
-            console.log("Wrong password or some shit");
-            redirect = {
-                redirect: "user/login"
+            } else {
+                console.log("Wrong password or some shit");
+                auth_error(res);
+                return;
             }
-            res.end( JSON.stringify( redirect ) );
         });
-
     });
 }
 
@@ -125,11 +138,13 @@ exports.authCheck = function (req, res, next) {
     // ########
     // Auth - Replace this simple if with you Database or File or Whatever...
     // If Database, you need a Async callback...
+    console.log("URL Pathname: " + url.pathname);
     if( url.pathname == "/user/register" ) {
         register(req, res);
     } else if ( url.pathname == "/user/login" ) {
         login(req, res);
     } else {
+        console.log("The fuck?");
         auth_error(res);
     }
 }
