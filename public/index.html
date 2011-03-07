@@ -7,6 +7,8 @@
         <link REL="shortcut icon" HREF="http://protosal.com/favicon.ico" type="image/x-icon">
     
         <script type="text/javascript" src="http://ajax.cdnjs.com/ajax/libs/headjs/0.9/head.load.min.js"></script>
+        <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.js"></script>
+        <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.9/jquery-ui.min.js"></script>
          
         <script type="text/javascript">
         cked = "";
@@ -16,6 +18,7 @@
             "action": null,
             "server_base": "http://localhost:3000",
             "couch_server": "http://localhost:3000",
+            "session": false,
         };
         ckeditor_options = {  
                 toolbar: [
@@ -46,8 +49,6 @@
         );
         
         head.js( 
-            "http://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.js",
-            "https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.9/jquery-ui.min.js",
             GLOBALS.server_base + "/media/highchart/js/highcharts.js",
             GLOBALS.server_base + "/media/highchart/js/modules/exporting.js",
             GLOBALS.server_base + "/media/ckeditor/ckeditor.js",
@@ -61,14 +62,49 @@
             GLOBALS.server_base + "/media/js/jquery.dataTables.js",
             GLOBALS.server_base + "/media/js/jquery/plugins/ryth/rythjsthtml.js",
             GLOBALS.server_base + "/media/js/jquery/plugins/ryth/rythbutton.js"
-            //GLOBALS.server_base + "/_utils/script/sha1.js",
-            //GLOBALS.server_base + "/_utils/script/json2.js",
-            //GLOBALS.server_base + "/_utils/script/jquery.couch.js"
         );
 
 
        head.ready(function() {
             console.log("Head.js has finished loading");
+                        d = new Date();
+            $.ajax({ 
+                url: "media/templates/all.jst?" +   d.getTime(),
+                success: function(response){
+                        $("body").append(response);
+                        
+                         $.ajaxPrefilter(function( options ) {
+                          
+                           options.error = function(data){
+                                if( typeof $.parseJSON( data.responseText ).redirect != "undefined" ) {
+                                    redirect( $.parseJSON( data.responseText ).redirect );
+                                }
+                           }
+                        });
+                        function checkSession(){
+                            var url = GLOBALS.server_base + "/list_by_author/" + "proposal";
+                            return $.ajax( url, {
+                                dataType: "json",
+                                complete: function(headers){
+                                    if( headers.status != 401 ){
+                                        GLOBALS.session = true;
+                                    }
+                                }
+                            
+                            });
+                        };
+                        
+                        //After checking the session returns false if 401 so the then fucntion has to take a success and failure function to start the controller
+                        $.when( checkSession())
+                        .then( function(){
+                           protosal_controller = new ProtosalController;
+                           Backbone.history.start();
+                        }, function(){
+                           protosal_controller = new ProtosalController;
+                           Backbone.history.start();
+                        });
+                }
+            });
             
             var ProtosalController = Backbone.Controller.extend({
             
@@ -89,70 +125,56 @@
                     });
                 },
                 landingPage: function(){
-                  window.location = "#/home/dashboard"
+                  window.location = "#/dashboard/login"
                 },
               defaultRoute: function(controller, action, vid) {
-                    if( vid == null) vid = "";
-                    GLOBALS.controller = controller;
-                    GLOBALS.action = action;
-                    GLOBALS.route_id = vid;
+                    if( GLOBALS.session || action == "login") {
+                        if( vid == null) vid = "";
+                        GLOBALS.controller = controller;
+                        GLOBALS.action = action;
+                        GLOBALS.route_id = vid;
 
-                    $('.maintabs li').removeClass('ui-state-active').removeClass('ui-tabs-selected'); //Make all tabs inactive
-                    $("#" + GLOBALS.controller).addClass('ui-state-active').addClass('ui-tabs-selected');
-                
-                    //get URL for the ajax call
-                    url = GLOBALS.server_base + "/api/get" + location.hash.substr(1) + "/" + GLOBALS.route_id; 
+                        $('.maintabs li').removeClass('ui-state-active').removeClass('ui-tabs-selected'); //Make all tabs inactive
+                        $("#" + GLOBALS.controller).addClass('ui-state-active').addClass('ui-tabs-selected');
                     
-                    //We know the page is about to change so lets clean up any jckeditors hanging around before the dom changes and jckeditors internal reference is updated
-                    
-					$(".jckeditor").each( function(){
-						$(this).ckeditor(function(){ // a hack to make jck editor work on page refresh
-						
-							this.destroy();
-						});
-                    });
-                    
-                    
-                    var obj = {};
-                    template = GLOBALS.controller + "_" + GLOBALS.action + "_view";
+                        //get URL for the ajax call
+                        url = GLOBALS.server_base + "/api/get" + location.hash.substr(1) + "/" + GLOBALS.route_id; 
+                        
+                        //We know the page is about to change so lets clean up any jckeditors hanging around before the dom changes and jckeditors internal reference is updated
+                        
+                        $(".jckeditor").each( function(){
+                            $(this).ckeditor(function(){ // a hack to make jck editor work on page refresh
+                            
+                                this.destroy();
+                            });
+                        });
+                        
+                        
+                        var obj = {};
+                        template = GLOBALS.controller + "_" + GLOBALS.action + "_view";
 
-                    
-                    var template_name = "";
-                    obj.controller = GLOBALS.controller;
-                    obj.action = GLOBALS.action;
-                    if ( GLOBALS.action == "list" ) {
-                        template_name = "common_list";
-                    } else if( GLOBALS.action == "edit" ) {
-                        template_name = "common_edit";
+                        
+                        var template_name = "";
+                        obj.controller = GLOBALS.controller;
+                        obj.action = GLOBALS.action;
+                        if ( GLOBALS.action == "list" ) {
+                            template_name = "common_list";
+                        } else if( GLOBALS.action == "edit" ) {
+                            template_name = "common_edit";
+                        } else {
+                            template_name = GLOBALS.controller + "_" + GLOBALS.action
+                        }
+                        
+                        _.jstTemplate( $("#contentpane"), $("#" + template_name + "_view_template"), obj )
                     } else {
-                        template_name = GLOBALS.controller + "_" + GLOBALS.action
+                        redirect("dashboard/login");
                     }
-                    
-                    _.jstTemplate( $("#contentpane"), $("#" + template_name + "_view_template"), obj )
-                    
               }, //end of DEFAULT ROUTE
 
             });
             
             $(".back-button").live("click", function() { history.go(-1); return false; });
-            d = new Date();
-            $.ajax({ 
-                url: "media/templates/all.jst?" +   d.getTime(),
-                success: function(response){
-                        $("body").append(response);
-                        
-                         $.ajaxPrefilter(function( options ) {
-                          
-                           options.error = function(data){
-                                if( typeof $.parseJSON( data.responseText ).redirect != "undefined" ) {
-                                    redirect( $.parseJSON( data.responseText ).redirect );
-                                }
-                           }
-                        });
-                       protosal_controller = new ProtosalController;
-                       Backbone.history.start();
-                }
-            });
+
             window.saveclickHandler =  function(event){
 
                 formdata = null;
