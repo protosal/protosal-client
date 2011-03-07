@@ -33,7 +33,7 @@
                         </ol>
                     </fieldset>
                     <p style="padding-left: 175px;"> 
-                        <button id="loginbutton" type="submit" class="submit" value="Login" >Login</button
+                        <button id="loginbutton" type="submit" class="submit" value="Login" >Login</button>
                     </p>
                 </form>
             </div>
@@ -44,15 +44,16 @@
         
        
        <form id="registrationform"  class="pretty" method="post">
-        <p>Register a username.</p>
+        
            <fieldset> 
         <legend></legend> 
            <ol>
                <li><label for="email">Email</label><input id="email" name="email" type="text" /></li>
             <li><label for="password">Password</label><input type="password" name="password" /></li>
+            <li><label for="password">Password Again</label><input type="password" name="password2" /></li>
         </ol>
         </fieldset>
-       <p> <input id="registerbutton" type="submit" class="submit" value="Register" /></p>
+       <p style="padding-left: 155px;">  <button id="registerbutton" type="submit" class="submit" >Register</button></p>
 
        </form>
 
@@ -89,7 +90,9 @@
                 data: $.toJSON(formdata),
                 contentType: "application/json",
                 success: function(data){
+                    GLOBALS.session = true;
                     redirect( data.redirect );
+                    
                     console.log("whoop round 2");
                     console.log(data);
                 }
@@ -129,12 +132,14 @@
            $("#tab-2").addClass("active-tab"); 
            $(this).removeClass("register").addClass("login").addClass("orange").removeClass("blue");
            $(this).text("Back to Login");
+           setTimeout( function (){     $("#email").focus(); }, 100);
         } else {
            $("#tab-2").removeClass("active-tab"); 
            $("#tab-1").addClass("active-tab"); 
            
             $(this).text("Start Free Trial");
            $(this).removeClass("login").addClass("register").addClass("blue").removeClass("orange");
+           setTimeout( function (){     $("#username").focus(); }, 100);
         }
 //active-tab").removeClass("active-tab");
        // $(tab).addClass("active-tab");
