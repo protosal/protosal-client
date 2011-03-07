@@ -90,7 +90,9 @@
                 data: $.toJSON(formdata),
                 contentType: "application/json",
                 success: function(data){
+                    GLOBALS.session = true;
                     redirect( data.redirect );
+                    
                     console.log("whoop round 2");
                     console.log(data);
                 }
