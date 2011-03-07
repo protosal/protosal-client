@@ -60,7 +60,13 @@ function register(req, res) {
 }
 
 function login(req, res) {
+    if( req.method != "POST" ) {
+        auth_error(res);
+        return;    
+    }
+
     var credentials = "";
+
     if( req.body ) {
         credentials = req.body.username + ":" + req.body.password;
     } else {
@@ -92,7 +98,6 @@ function login(req, res) {
                 res.end( JSON.stringify( redirect ) );
                 return;
             } else {
-                console.log("Wrong password or some shit");
                 auth_error(res);
                 return;
             }
@@ -143,7 +148,6 @@ exports.authCheck = function (req, res, next) {
     } else if ( url.pathname == "/user/login" ) {
         login(req, res);
     } else {
-        console.log("The fuck?");
         auth_error(res);
     }
 }
