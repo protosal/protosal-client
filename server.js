@@ -46,7 +46,7 @@ function get_data(url, method) {
 app.put('/data/:id/:rev?', function(req, res) {
     var request_url = '/app/' + req.params.id + (req.params.rev ? "?rev=" + req.params.rev : "");
     app_db_handler(req, res,
-        rCommon.couchdb_request(req, res, request_url, {"method" : "req.method"}) );
+        rCommon.couchdb_request(req, res, request_url, {"method" : req.method}) );
 });
 
 app.post('/data', function(req, res) {
