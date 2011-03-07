@@ -9,43 +9,51 @@ var sys = require('sys');
 var couchdb_host = '127.0.0.1';
 var couchdb_port = 5984;
 
-exports.base64_encode = function(enc_string) {
+function base64_encode(enc_string) {
     return Base64.encode( new Buffer(enc_string) );
 }
 
-exports.credentials = exports.base64_encode("ryth:abCD--12");
-var default_salt = "1";
+var _masterCredentials = "ryth:abCD--12";
+var _defaultSalt = "1";
 
-exports.couchdb_request = function(request_url, method, credentials) {
-    if( credentials == null ) {
-        credentials = "";
-    } else {
-        credentials = exports.base64_encode(credentials);
+exports.couchdb_request = function(req, res, request_url, options) {
+    // If no credentials are specified, check to see if the user is authenticated
+    if( options == null)
+        options = {};
+
+    if( !options.credentials ) {
+        console.log("No credentials supplied");
+        if( typeof req.session != "undefined" && !req.session.auth ) {
+            auth_error(res);
+            return;
+        } else {
+            options.credentials = _masterCredentials;
+        }
     }
-        
+
     var couchdb = http.createClient(couchdb_port, couchdb_host, true);
     
     var request_params = {
         'Host': couchdb_host,
-        'Authorization': 'Basic ' + credentials,
+        'Authorization': 'Basic ' + base64_encode(options.credentials),
     }
     
-    if( method == "POST" || method == "PUT" )
+    if( options.method == "POST" || options.method == "PUT" )
         request_params['Content-Type'] = 'application/json'; 
         
-    var request = couchdb.request(method, request_url, request_params);
+    var request = couchdb.request(options.method, request_url, request_params);
     
     return request;
 }
 
 function register(req, res) {
-    var request = exports.couchdb_request('/_users', "POST");
+    var request = exports.couchdb_request(req, res, '/_users', {"method" :"POST"});
         
     var newUser = {
         _id: "org.couchdb.user:" + req.body.email,
         name: req.body.email,
-        password_sha: Hash.hex_sha1(req.body.password + default_salt),
-        salt: default_salt,
+        password_sha: Hash.hex_sha1(req.body.password + _defaultSalt),
+        salt: _defaultSalt,
         type: "user",
         roles: []
     }
@@ -74,7 +82,9 @@ function login(req, res) {
         return;    
     }
 
-    var request = exports.couchdb_request('/_session', "GET", credentials);
+    // Map the POST login request to a get request using the HTTP Authorization header
+    var request = exports.couchdb_request(req, res, '/_session',
+            {"method" : "GET", "credentials" : credentials});
     request.end();
     
     request.on('response', function (response) {
@@ -91,7 +101,7 @@ function login(req, res) {
                 req.session.auth = true;
                 req.session.username = req.body.username
                 req.session.password = req.body.password
-                req.session.creds = exports.base64_encode(req.body.username + ":"+ req.body.password)
+                req.session.creds = base64_encode(req.body.username + ":"+ req.body.password)
                 redirect = {
                     redirect: "dashboard/home"
                 }
