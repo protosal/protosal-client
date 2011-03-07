@@ -81,28 +81,24 @@
                                 }
                            }
                         });
-                        function checkSession(){
                             var url = GLOBALS.server_base + "/list_by_author/" + "proposal";
-                            return $.ajax( url, {
+                            $.ajax( url, {
                                 dataType: "json",
                                 complete: function(headers){
                                     if( headers.status != 401 ){
                                         GLOBALS.session = true;
                                     }
+                                    
+                                        protosal_controller = new ProtosalController;
+                                        Backbone.history.start();
                                 }
                             
                             });
-                        };
                         
-                        //After checking the session returns false if 401 so the then fucntion has to take a success and failure function to start the controller
-                        $.when( checkSession())
-                        .then( function(){
-                           protosal_controller = new ProtosalController;
-                           Backbone.history.start();
-                        }, function(){
-                           protosal_controller = new ProtosalController;
-                           Backbone.history.start();
-                        });
+                        
+                       
+            
+                     
                 }
             });
             
@@ -120,6 +116,7 @@
                         url: "/logout",
                         dataType: "json",
                         success: function(data){
+                            GLOBALS.session = false;
                             redirect(data.redirect);
                         }
                     });

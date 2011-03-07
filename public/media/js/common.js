@@ -26,6 +26,7 @@ function refresh () {
   };
   
 })(jQuery);
+
 _.mixin({
     capitalize : function(string) {
         return string.charAt(0).toUpperCase() + string.substring(1).toLowerCase();
@@ -44,12 +45,24 @@ _.mixin({
         return x==y && x.toString()==y.toString();
     },
     jstTemplate: function(jquery_ref, template_obj, obj) {
-		$(jquery_ref).html("");
 		// Don't replace jst with script tags as they will get shuffled around on dom insertion.
-		$(jquery_ref).append( _.template( $(template_obj).jsthtml(), obj));
+		$(jquery_ref).html( _.template( $(template_obj).jsthtml(), obj));
 		// We can replace jst tags now as they are now in the right place.
 		//$(jquery_ref).html( $(jquery_ref).jsthtml() );
-	}
+	},
+    replaceHtml: function(el, html) {
+        var oldEl = typeof el === "string" ? document.getElementById(el) : el;
+        /*@cc_on // Pure innerHTML is slightly faster in IE
+            oldEl.innerHTML = html;
+            return oldEl;
+        @*/
+        var newEl = oldEl.cloneNode(false);
+        newEl.innerHTML = html;
+        oldEl.parentNode.replaceChild(newEl, oldEl);
+        /* Since we just removed the old element from the DOM, return a reference
+        to the new element, which can be used to restore variable references. */
+        return newEl;
+    }
 });
 
 /*

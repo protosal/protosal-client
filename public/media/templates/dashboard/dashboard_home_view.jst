@@ -82,7 +82,7 @@
     var chart;
     $(document).ready(function() {
     
-    
+        setTimeout( function(){    
         chart = new Highcharts.Chart({
             chart: {
                 renderTo: 'graph',
@@ -143,7 +143,7 @@
         
         
     });
-
+}, 2000);
     $(function() {
     $( ".column" ).sortable({
         connectWith: ".column"
