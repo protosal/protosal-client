@@ -61,7 +61,6 @@ function register(req, res) {
 
 function login(req, res) {
     var credentials = "";
-    fs.writeFile('temp.out', sys.inspect(req));
     if( req.body ) {
         credentials = req.body.username + ":" + req.body.password;
     } else {
