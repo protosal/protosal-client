@@ -5,42 +5,89 @@
             <label for="">
                 Name</label>
             <input name="name" id="" type="text" value="<%= typeof name != "undefined" ? name : "" %>" />
+            <label for="">
+                Client</label>
+            <select id="clients_combo">
+            </select>
+            <label for="">
+                Section Order</label>
+            <textarea id="toc_order" name="toc_order" />
+            </fieldset>
+            <label for="">
+                Autocomplete</label>
+            <input type="text" id="add_section_input" />
         </fieldset>
-        <label for="">
-            Autocomplete</label>
-        <input type="text" id="add_section_input" />
     </form>
     </div>
     <div id="toc">
-        <ol>
+        <ol id="toc_list">
         </ol>
     </div>
 </div>
 <jst>
 
     FeeModel = Backbone.Model.extend({
-    
+        initialize: function() {
+            console.log("New Fee Model created");
+        }
+    });
+
+    ClientModel = Backbone.Model.extend({
+        initialize: function() {
+            console.log("New Client Model created");
+        }
     });
     SectionModel = Backbone.Model.extend({
         initialize: function() {
             console.log("New Section Model created");
         }
     });
-    
+
     FeeCollection = Backbone.Collection.extend({
         model: FeeModel,
         initialize: function(){
             console.log("Initialize the Fee collection");
         }
     });
-    
+    ClientComboView = Backbone.View.extend({
+        el: $("#clients_combo"),
+        initialize: function(){
+            
+            
+        },
+        renderCombo: function(){
+            var client_combo = this.view.el;
+            _.each(this.models, function(client){
+                client_combo.append("<option>asd</option>")
+            })
+        }
+    });
+    ClientCollection = Backbone.Collection.extend({
+        model: FeeModel,
+        initialize: function(){
+            console.log("Initialize the Client collection");
+            this.view = new ClientComboView;
+            this.bind("refresh", this.view.renderCombo)
+        },
+        getAllClients: function(){
+            console.log("Start fetching the clients");
+            clients = {};
+            $.when( $.ajax("list_by_author/client", { dataType: "json" }) )
+                .then( function(data) {
+                    //Update this clients
+                    console.log("Clients received, send them to collection");
+                    proposal_view.clients.refresh(data.rows);
+            }); //When statement end
+        }
+    });
+
     SectionCollection = Backbone.Collection.extend({
         model: SectionModel,
         initialize: function(){
             console.log("Initialise the Section collection");
             this.bind("refresh", function() { proposal_view.addSectionRender(); });
             //this.bind("add", this.addEvent );
-            
+
         },
         addToTOC: function(section) {
                 proposal_view.toc.addSection(section);
@@ -49,15 +96,15 @@
             console.log("Start fetching the section templates");
             section_templates = {};
             $.when( $.ajax("list_by_author/section", { dataType: "json" }) )
-                .then( function(data) { 
+                .then( function(data) {
                     //Update this collections sections
                     console.log("Template sections received, send them to collection");
-                    proposal_view.allsections.refresh(data.rows); 
+                    proposal_view.allsections.refresh(data.rows);
             }); //When statement end
         }
     });
     SectionsView = Backbone.View.extend({
-        
+
     });
     TOCView = Backbone.View.extend({
         el: $("#toc"),
@@ -66,26 +113,53 @@
         },
         addSection: function( section ){
             console.log("Add section to the ordered list");
-            this.$("ol").append( _.template( $("#toc_list_item").html(), section.get("value") ) );
+            this.$("#toc_list").append( _.template( $("#toc_list_item").html(), section.get("value") ) );
+            $("#toc_list").sortable({
+                update: proposal_view.toc.updateOrder
+            });
+            proposal_view.toc.updateOrder();
+        },
+        updateOrder: function(){
+            sections = $("#toc_list").sortable('toArray').toString();
+            console.log("Update order of sections");
+            console.log(sections);
+            $("#toc_order").val( sections );
         }
+    });
+    ClientsView = Backbone.View.extend({
+        el: $("#clients_combo"),
+        initialize: function(){
+            console.log("Initializing the clients view");
+            
+        }
+    
     });
     ProposalView = Backbone.View.extend({
         el: $("#proposal_form_container"),
-        sections: null, 
-        fees: null, 
+        sections: null,
+        fees: null,
         toc: null,
-        allsectoins: null,
+        allsections: null,
+        clients: null,
         initialize: function(){
             console.log("Initialize the proposal view");
+            $.when( this.get_id() ).then( $.proxy( function(){
+                console.log(arguments);
+                console.log("Get the proposal id");
+                this.sections = new SectionCollection;
+                this.sections.bind("add", this.sections.addToTOC);
+
+                this.allsections = new SectionCollection;
+                this.allsections.getAllTemplates();
+
+                this.clients = new ClientCollection;
+                this.clients.getAllClients();
+                console.log(this.clients);
+                this.fees = new FeeCollection;
             
-            this.sections = new SectionCollection;
-            this.sections.bind("add", this.sections.addToTOC);
-            
-            this.allsections = new SectionCollection;
-            this.allsections.getAllTemplates();
-            
-            this.fees = new FeeCollection;
-            this.toc = new TOCView;
+                this.toc = new TOCView;
+            }, this)
+            )
         },
         addSectionRender: function(){
             console.log( "Render the add section auto complete" );
@@ -101,20 +175,20 @@
                 };
             }); //Map function end
             console.log( "Mapped sections: " + sections.length );
-             $("#add_section_input").autocomplete({
+            $("#add_section_input").autocomplete({
                         source: sections,
                         minLength: 1,
                         delay: 0,
                         select: function( event, ui ) {
                             console.log("TODO - Instantiate a new section and return the id");
-                            function getInstance(){ 
+                            function getInstance(){
                                     return $.Deferred(function(dfd){
                                         var instance = proposal_view.allsections.get( ui.item.id ).clone();
                                         instance.set({ "id": "newid" });
                                         console.log("Changed id of the new instance");
                                         dfd.resolve( instance );
                                     }).promise();
-                                    
+
                             }
                             $.when( getInstance() )
                             .then( function( section_instance) {
@@ -125,13 +199,38 @@
                             return false;
                         }
             }); //Auto complete end
+        },
+        get_id: function(){
+            if( GLOBALS.route_id == "" ){
+                // Get the empty form fields and serialize them so we can insert into the database
+                formdata = $(".edit_proposal_form").serializeObject();
+                // Add the type of form to the form object
+                formdata.type = "proposal";
+
+                return $.ajax( "data", {
+                        dataType: "json",
+                        type: "POST",
+                        contentType: "application/json",
+                        data: $.toJSON(formdata),
+                        success: function(resp){
+                            //Unbind the default click handler and attach a new one now that we have created a new proposal
+                            $('.proposal_save').unbind('click');
+                            $(".proposal_save").click({
+                                _rev: resp.rev,
+                                _id: resp.id,
+                                success: <%= success %>
+                            }, window.saveclickHandler );
+                        }
+                    });
+            }  else {
+                return { id: GLOBALS.route_id };
+            }
         }
-    
     });
-    
+
     proposal_view = new ProposalView;
 </jst>
 </script>
 <script type="text/template" id="toc_list_item">
-<li><%= name %></li>
+<li id="<%= _id %>"><%= name %></li>
 </script>
