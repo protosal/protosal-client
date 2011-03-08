@@ -132,6 +132,12 @@ function auth_error(res) {
     res.end( JSON.stringify( redirect ) ); 
 }
 
+exports.noDelay = function(req, res, next) {
+    res.socket.setNoDelay(true);
+    next();
+    return;
+}
+
 exports.authCheck = function (req, res, next) {
     url = req.urlp = urlpaser.parse(req.url, true);
 
