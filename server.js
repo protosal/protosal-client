@@ -151,8 +151,6 @@ app.delete('/delete/:controller/:id/:id2', function(req, res) {
     var request_url = '/app/_design/' + req.params.controller + "/_view/list?key=[\""+ req.params.id + "\",\""+ req.params.id2 +"\"]";
     var request = rCommon.couchdb_request(req, res, request_url,
         {"method" : "GET"});
-    //console.log(req.rawBody);
-    //request.end(req.rawBody);
     request.end();
     
     request.on('response', function (response) {
@@ -172,7 +170,7 @@ app.delete('/delete/:controller/:id/:id2', function(req, res) {
             var relationship_url = '/app/' + relationshipid + '?rev=' + relationshiprev;
             delete_request(req, res, relationship_url);
 
-            var childid = (parsed_data.key[1]);
+            var childid = (parsed_data.rows[0].key[1]);
 
             var child_request_url = '/app/' + childid;
 
