@@ -54,10 +54,11 @@
 
        head.ready(function() {
             console.log("Head.js has finished loading");
-                        d = new Date();
+            d = new Date();
             $.ajax({ 
                 url: "media/templates/all.jst?" +   d.getTime(),
                 success: function(response){
+                        console.log("tempplates loaded, appending to dom");
                         $("body").append(response);
                         
                          $.ajaxPrefilter(function( options ) {
@@ -68,19 +69,20 @@
                                 }
                            }
                         });
-                            var url = GLOBALS.server_base + "/list_by_author/" + "proposal";
-                            $.ajax( url, {
-                                dataType: "json",
-                                complete: function(headers){
-                                    if( headers.status != 401 ){
-                                        GLOBALS.session = true;
-                                    }
-                                    
-                                        protosal_controller = new ProtosalController;
-                                        Backbone.history.start();
+                        var url = GLOBALS.server_base + "/list_by_author/" + "proposal";
+                        $.ajax( url, {
+                            dataType: "json",
+                            complete: function(headers){
+                                if( headers.status != 401 ){
+                                    GLOBALS.session = true;
+                                    console.log("User already logged in");
                                 }
-                            
-                            });
+                                    
+                                    protosal_controller = new ProtosalController;
+                                    Backbone.history.start();
+                            }
+                        
+                        });
                         
                         
                        
@@ -147,6 +149,7 @@
                             template_name = "common_edit";
                         } else {
                             template_name = GLOBALS.controller + "_" + GLOBALS.action
+                            $("#contentpane").hide();
                         }
                         if( GLOBALS.controller + GLOBALS.action == "proposaledit"){
                             $(".footer").hide();
@@ -161,7 +164,7 @@
                             
                         
                         _.jstTemplate( $("#contentpane"), $("#" + template_name + "_view_template"), obj )
-                       
+                       $("#contentpane").fadeIn(300);
                     } else {
                         redirect("dashboard/login");
                     }
@@ -247,7 +250,7 @@
                     <li id="fee" class="ui-state-default ui-corner-top"><a href="#/fee/list">Fees</a></li>
                     <li id="client" class="ui-state-default ui-corner-top"><a href="#/client/list">Clients</a></li>
                     <li id="setting" class="ui-state-default ui-corner-top"><a href="#/setting/main">Settings</a></li>
-                    <div style="float: right; margin-right: 30px; margin-top: 8px;"><a href="#/test/page" style="float: left; width: 20px; margin-left: -4px;"><img style="margin-top: -1px;width: 20px;" src="/media/icons/Help-icon .png" /></a> | <a style="padding-top: 6px;" href="#/logout">logout</a></div>
+                    <div style="float: right; margin-right: 30px; margin-top: 8px;"><a href="#/test/page" style="float: left; width: 20px; margin-right: 7px;"><img style="margin-top: -1px;width: 20px;" src="/media/icons/Help-icon .png" /></a> | <a style="padding-top: 6px;" href="#/logout">logout</a></div>
                 </ul>
             </div> <!-- #layout -->
 
@@ -255,7 +258,9 @@
 
                 <!-- This is where the magic happens. Basically everything the user mainpulates resides in here. -->
                 <div id="contentpane">
-
+                    <div style="text-align: center; height: 300px;" id="loadingbarpage"> <!-- loading bar -->
+                        <div class='loading' style="width: 32px; margin:auto; margin-top: 100px;"> </div>
+                    </div>                
                 </div> <!--  #contentpane -->
                 
                 <div style="clear:both;"></div>
@@ -272,8 +277,6 @@
             </div>
         </div>
         
-        <div style="display: none;" id="loadingbarpage"> <!-- loading bar -->
-            <div class='loading' style="text-align: center; padding-top: 200px;"> </div>
-        </div>
+
     </body>    
 </html>      
