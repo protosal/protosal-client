@@ -151,7 +151,9 @@ app.delete('/delete/:controller/:id/:id2', function(req, res) {
     var request_url = '/app/_design/' + req.params.controller + "/_view/list?key=[\""+ req.params.id + "\",\""+ req.params.id2 +"\"]";
     var request = rCommon.couchdb_request(req, res, request_url,
         {"method" : "GET"});
-    request.end(req.rawBody);
+    //console.log(req.rawBody);
+    //request.end(req.rawBody);
+    request.end();
     
     request.on('response', function (response) {
         response.setEncoding('utf8');
