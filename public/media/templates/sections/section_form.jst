@@ -1,10 +1,3 @@
-<style>
- <style>
-        #sortablefees { list-style-type: none; margin: 0; padding: 0; width: 60%; }
-        #sortablefees li { cursor: pointer; margin: 0 3px 3px 3px; padding: 0.4em; padding-left: 1.5em; font-size: 1.4em; height: 18px; }
-        #sortablefees li span { margin-left: -1.3em; }
-    </style>
-</style>
 <script type="text/template" id="section_form_template">
 <div id="section_form_container">
     <form id="add_section_form"  class="edit_section_form" enctype="multipart/form-data" >
@@ -235,7 +228,6 @@
                  $.ajax({
                                 type: "DELETE",
                                 url: "delete/sectionfee/" + GLOBALS.route_id + "/" + id,
-                                data: $.toJSON(obj),
                                 dataType: "json",
                                 contentType: "application/json",
                                 success: function( data ){
@@ -293,8 +285,9 @@
         
         $(".delete_fee").live("click", function() {
             var id = $(this).parents("li").attr("id")
-            section_backbone.removeFee(id);
-             $(this).parents("li").remove();
+            console.log("hey bro you mad?" + id)
+             section_backbone.removeFee(id);
+            // $(this).parents("li").remove();
             return false;
         });
         
