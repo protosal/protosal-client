@@ -293,7 +293,7 @@ app.all('/:list_type/:view', function(req, res) {
 app.listen(3000);
 
 http.createServer(function(req, res) {
-    //res.socket.setNoDelay();
+    res.socket.setNoDelay();
     res.writeHead(200, {'Content-Type': 'application/json'});
     var host = '127.0.0.1';
 
