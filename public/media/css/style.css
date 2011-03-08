@@ -89,12 +89,11 @@ body {
     margin-left: -480px;
     z-index: 3;
 	}
-	.containerspace {
-		    -moz-box-shadow: 0 1px 5px 5px #ccc;
-	-webkit-box-shadow: 0 1px 5px 5px #ccc;
-	box-shadow: 0 1px 4px 4px #ccc;
-		
-	}
+		.proposalcontainer {
+			border: 1px solid #999;	
+			
+		}
+
 .logo {
     position: absolute;
     top: 15px;
@@ -660,3 +659,75 @@ font-weight: bold;
 	background: -moz-linear-gradient(top,  #00ccff,  #0033ff);
 	filter:  progid:DXImageTransform.Microsoft.gradient(startColorstr='#00ccff  ', endColorstr='#0033ff');
 }
+.containerspace {
+	position: fixed;
+	 z-index: 2; 
+	 background: #f7f7f7; 
+	 top: 0; 
+	 width: 960px;
+     left: 50%;
+     margin-left: -480px;
+	 height: 265px; 
+}
+.containerspace .preview_buttons{
+	margin-top: 230px;
+	
+}
+.proposal_preview {
+z-index: 1;
+top: 277px;
+ height:2000px;
+	width: 890px;
+	padding: 30px 35px 35px 35px;
+	color: #444;
+}
+.proposal_preview .header {
+    height: 100px;
+    padding-bottom: 0px;
+    border-bottom: 1px solid #ccc;
+    margin-bottom: 30px;
+}
+.proposal_preview h2 {
+    font-size: 1.8em;
+    line-height: 1.2;
+}
+.proposal_preview h2.company {
+    font-size: 1.4em;
+    color: #555;
+}
+.proposal_preview .userlogo {
+    height: 90px;
+    float: right;
+    width: 200px;
+    margin-top: -15px;
+    
+}
+.proposal_preview .details {
+    float: left;
+    font-size: 0.95em;
+    line-height: 1.1em;
+}
+
+.proposal_preview .introduction {
+    font-size: 0.9em;
+}
+
+.proposal_preview .section_container{ 
+    margin-top: 50px;
+}
+.proposal_preview .section {
+    margin-bottom: 30px;
+}
+.proposal_preview .section h3 {
+    font-size: 1.2em;
+    line-height: 1.9em;
+}
+.proposal_preview .section_content {
+    font-size: 0.9em;
+    padding-left: 20px;
+}
+.proposal_preview .section_content ul {
+    padding: 15px 0 0 40px;
+    line-height: 28px;
+}
+
