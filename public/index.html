@@ -50,14 +50,13 @@
                     
                     '/media/highchart/js/highcharts.js',
                     '/media/ckeditor/ckeditor.js',
-                    '/media/ckeditor/adapters/jquery.js',
                     '/media/js/jgrowl.min.js',
                     '/media/js/jquery.json-2.2.min.js',
                     '/media/js/jquery.defaultvalue.js',
                     '/media/js/jquery.dataTables.js',
                     '/media/js/jquery/plugins/ryth/rythbutton.js',
                 ], function(){ 
-                    
+                    $script('/media/ckeditor/adapters/jquery.js', function(){})
         })
         })
         });
