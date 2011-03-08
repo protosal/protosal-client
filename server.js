@@ -212,7 +212,7 @@ var generic_list_retrieve = function(req, res, request) {
         });
 
         response.on('end', function (){
-           res.send(data); 
+            res.send(data); 
         });
     });
 }
@@ -233,8 +233,7 @@ app.get('/related2/:view/:id', function( req, res ){
      */
      
     var child = req.params.view.split('_')[1];
-    
-    
+
     request.on('response', function (response) {
         response.setEncoding('utf8');
         data = "";
@@ -251,10 +250,12 @@ app.get('/related2/:view/:id', function( req, res ){
             req.rawBody = JSON.stringify({
                 "keys": keys
             });
+
+            req.method = "POST";
             
             var request_url2 = '/app/_design/' + child + "/_view/list_by_id";
             generic_list_retrieve(req, res, rCommon.couchdb_request(req, res,
-                    request_url2, {"method" : "POST"}));
+                    request_url2, {"method" : req.method}));
         });
     });
 });
