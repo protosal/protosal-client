@@ -6,9 +6,7 @@
         <title>protosal - where your dreams come true</title>
         <link REL="shortcut icon" HREF="http://protosal.com/favicon.ico" type="image/x-icon">
     
-        <script type="text/javascript" src="/media/js/head.load.min.js"></script>
-        <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.js"></script>
-        <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.9/jquery-ui.min.js"></script>
+        <script type="text/javascript" src="/media/js/script.js"></script>
         <link rel="stylesheet" type="text/css" href="/media/css/style.css"> 
         <link rel="stylesheet" type="text/css" href="/media/css/demo_page.css"> 
         <link rel="stylesheet" type="text/css" href="/media/css/demo_table.css"> 
@@ -34,25 +32,37 @@
         if(window.location.pathname != "/") window.location = "/"; //handles 404 errors
         
         // Dynamically load CSS files.
-
-        head.js( 
-            GLOBALS.server_base + "/media/highchart/js/highcharts.js",
-            GLOBALS.server_base + "/media/highchart/js/modules/exporting.js",
-            GLOBALS.server_base + "/media/ckeditor/ckeditor.js",
-            GLOBALS.server_base + "/media/ckeditor/adapters/jquery.js",
-            GLOBALS.server_base + "/media/js/underscore.js",
-            GLOBALS.server_base + "/media/js/backbone.js",
-            GLOBALS.server_base + "/media/js/common.js",
-            GLOBALS.server_base + "/media/js/jgrowl.min.js",
-            GLOBALS.server_base + "/media/js/jquery.json-2.2.min.js",
-            GLOBALS.server_base + "/media/js/jquery.defaultvalue.js",
-            GLOBALS.server_base + "/media/js/jquery.dataTables.js",
-            GLOBALS.server_base + "/media/js/jquery/plugins/ryth/rythjsthtml.js",
-            GLOBALS.server_base + "/media/js/jquery/plugins/ryth/rythbutton.js"
-        );
-
-
-       head.ready(function() {
+        $script([
+            'http://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.js',
+            '/media/js/underscore.js'
+            ],function(){
+                $script([
+                '/media/js/jquery/plugins/ryth/rythjsthtml.js',
+                '/media/js/common.js',
+                'https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.9/jquery-ui.min.js',
+                '/media/js/backbone.js'
+                ],
+            
+             function(){
+                loadMain();
+                $script([
+                
+                    
+                    '/media/highchart/js/highcharts.js',
+                    '/media/ckeditor/ckeditor.js',
+                    '/media/ckeditor/adapters/jquery.js',
+                    '/media/js/jgrowl.min.js',
+                    '/media/js/jquery.json-2.2.min.js',
+                    '/media/js/jquery.defaultvalue.js',
+                    '/media/js/jquery.dataTables.js',
+                    '/media/js/jquery/plugins/ryth/rythbutton.js',
+                ], function(){ 
+                    
+        })
+        })
+        });
+        
+       function loadMain() {
             console.log("Head.js has finished loading");
             d = new Date();
             $.ajax({ 
@@ -231,7 +241,7 @@
             });  
             
             $(".preview_buttons button").button();             
-        });
+        };
         
 
     </script>
