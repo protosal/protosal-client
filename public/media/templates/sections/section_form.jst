@@ -224,19 +224,19 @@
                 //section_backbone.updateFeeValues();
                 console.log(this.fees.get( id ));
                 console.log("nomepha");
-                this.fees.url = "delete/sectionfee/get_section";
+                // this.fees.url = "delete/sectionfee/get_section";
                  $.ajax({
-                                type: "DELETE",
-                                url: "delete/sectionfee/" + GLOBALS.route_id + "/" + id,
-                                dataType: "json",
-                                contentType: "application/json",
-                                success: function( data ){
-                                    
-                                    console.log(data);
-                                  
-                                
-                                }
-                                })
+                    type: "DELETE",
+                    url: "delete/sectionfee/" + GLOBALS.route_id + "/" + id,
+                    dataType: "json",
+                    contentType: "application/json",
+                        success: function( data ){
+                            
+                            console.log(data);
+                          
+                        
+                        }
+                    })
                  
            
             //appview.fees.get().remove();
