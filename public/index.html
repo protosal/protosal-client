@@ -9,7 +9,11 @@
         <script type="text/javascript" src="/media/js/head.load.min.js"></script>
         <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.js"></script>
         <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.9/jquery-ui.min.js"></script>
-         
+        <link rel="stylesheet" type="text/css" href="/media/css/style.css"> 
+        <link rel="stylesheet" type="text/css" href="/media/css/demo_page.css"> 
+        <link rel="stylesheet" type="text/css" href="/media/css/demo_table.css"> 
+        <link rel="stylesheet" type="text/css" href="/media/css/jgrowl.css""> 
+        <link rel="stylesheet" type="text/css" href="/media/css/jquery-ui/Aristo/css/Aristo/jquery-ui-1.8.7.custom.css"> 
         <script type="text/javascript">
         cked = "";
         var GLOBALS = {
@@ -30,24 +34,7 @@
         if(window.location.pathname != "/") window.location = "/"; //handles 404 errors
         
         // Dynamically load CSS files.
-        head.css = function() {
-            for(i = 0; i < arguments.length; i++) {
-                var fileref=document.createElement("link");
-                fileref.setAttribute("rel", "stylesheet");
-                fileref.setAttribute("type", "text/css");
-                fileref.setAttribute("href", GLOBALS.server_base + arguments[i]);
-                document.getElementsByTagName("head")[0].appendChild(fileref);
-            }
-        }
-        
-        head.css(
-            "/media/css/style.css",
-            "/media/css/demo_page.css",
-            "/media/css/demo_table.css",
-            "/media/css/jgrowl.css",
-            "/media/css/jquery-ui/Aristo/css/Aristo/jquery-ui-1.8.7.custom.css"
-        );
-        
+
         head.js( 
             GLOBALS.server_base + "/media/highchart/js/highcharts.js",
             GLOBALS.server_base + "/media/highchart/js/modules/exporting.js",
