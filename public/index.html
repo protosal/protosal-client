@@ -164,10 +164,12 @@
                         if( GLOBALS.controller + GLOBALS.action == "proposaledit"){
                             $(".footer").hide();
                             $(".maincontainer").css("position", "fixed");
+                            $(".containerspace").show();
                         } else {
                             $(".footer").show();
                             $(".maincontainer").css("position", "absolute");
                             $(".proposalcontainer").remove();
+                            $(".containerspace").hide();
                         }
                             
                         
@@ -276,7 +278,7 @@
             &copy;2010–2011 Protosal, Inc. | Version 2.1
             </div>
         </div> <!-- #Container  -->
-        <div class="containerspace" style="">
+        <div class="containerspace" style="display:none;">
             <div class="preview_buttons">
                  <button>Table of Contents</button>
                  <button>Upload logo</button>
