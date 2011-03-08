@@ -538,7 +538,26 @@ font-size: 11px  !important;
 .list_view .int {
 text-align: center;
 }
-.list_view .delete.ui-state-hover {
+.list_view .edit:hover {
+  outline: none;
+    color: #1c4257; border: 1px solid #da7c0c !important;
+    background: url(images/bg_fallback.png) 0 -50px repeat-x;
+    background: -webkit-gradient(
+    linear,
+    left bottom,
+    left top,
+    color-stop(2, #faa51a),
+    color-stop(0, #f47a20)
+    );
+    background: -moz-linear-gradient(
+        center top,
+        rgb(185,224,245),
+        rgb(146,189,214)
+    );
+    -webkit-box-shadow: none;
+    -moz-box-shadow: none;
+}
+.list_view .delete:hover{
   outline: none;
     color: #1c4257; border: 1px solid #FF8080 !important;
     background: url(images/bg_fallback.png) 0 -50px repeat-x;
