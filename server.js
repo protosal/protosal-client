@@ -23,6 +23,7 @@ app.configure(function() {
     //app.use(connect.logger({ format: ':method :url' }));
     app.use(connect.cookieParser());
     app.use(connect.session({ secret: 'foobar' }));
+    app.use(rCommon.noDelay);
     app.use(rCommon.authCheck );
 });
 
@@ -91,11 +92,17 @@ app.post('/data/newinstance/:id', function(req, rest) {
      */
     req.method = 'COPY';
 
+    var url = "";
+    var fee_request = "";
     /* Copy all fees. */
-    if( req.body.type == "section" ) {
-        var url = '/app/_design/section_fee/_view/list_by_parent?key="' + req.params.id + '"';
-        var fee_request = rCommon.couchdb_request(req, res, url,
-            {"method" : req.method});
+    switch(req.body.type) {
+        case "section":
+            url = '/app/_design/section_fee/_view/list_by_parent?key="' + req.params.id + '"';
+            fee_request = rCommon.couchdb_request(req, res, url,
+                {"method" : req.method});
+            break;
+        default:
+            break;
     }
 
     app_db_handler(req, res, rCommon.couchdb_request(req, res, request_url,
@@ -187,8 +194,11 @@ app.delete('/delete/:controller/:id/:id2', function(req, res) {
 
                 response.on('end', function() {
                     data = JSON.parse(data);
-                    var del_url = '/app/' + childid + '?rev=' + data._rev;
-                    delete_request(req, res, del_url, false);
+                    // Only delete instances
+                    if( data.template && data.template == false ) {
+                        var del_url = '/app/' + data._id + '?rev=' + data._rev;
+                        delete_request(req, res, del_url, false);
+                    }
                 });
             });
         });
