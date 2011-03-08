@@ -98,11 +98,11 @@ body {
     position: absolute;
     top: 15px;
     left: 50%;
-    
+    background: #fff;
     margin-left: -450px; 
     height: 43px;
     width: 231px;
-    background: url(../images/logo.png);
+    /*background: url(../images/logo.png)*/;
 }
 h3 {
 	font-size: 18px;
@@ -130,9 +130,9 @@ margin: auto;
 }
 
 .loading {
-width: 100px;
-height: 100px;
-background: url(../images/ajaxloader.gif);
+width: 32px;
+height: 32px;
+background: url(../images/ajax-loader.gif) no-repeat;
 
 }
 
@@ -664,18 +664,19 @@ font-weight: bold;
 	 z-index: 2; 
 	 background: #f7f7f7; 
 	 top: 0; 
-	 width: 960px;
+	 width: 978px;
      left: 50%;
-     margin-left: -480px;
-	 height: 265px; 
+     margin-left: -489px;
+	 height: 252px; 
+	 
 }
 .containerspace .preview_buttons{
-	margin-top: 230px;
-	
+	margin-top: 210px;
+	padding-left: 20px;
 }
 .proposal_preview {
 z-index: 1;
-top: 277px;
+top: 257px;
  height:2000px;
 	width: 890px;
 	padding: 30px 35px 35px 35px;

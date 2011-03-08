@@ -6,10 +6,14 @@
         <title>protosal - where your dreams come true</title>
         <link REL="shortcut icon" HREF="http://protosal.com/favicon.ico" type="image/x-icon">
     
-        <script type="text/javascript" src="http://ajax.cdnjs.com/ajax/libs/headjs/0.9/head.load.min.js"></script>
+        <script type="text/javascript" src="/media/js/head.load.min.js"></script>
         <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.js"></script>
         <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.9/jquery-ui.min.js"></script>
-         
+        <link rel="stylesheet" type="text/css" href="/media/css/style.css"> 
+        <link rel="stylesheet" type="text/css" href="/media/css/demo_page.css"> 
+        <link rel="stylesheet" type="text/css" href="/media/css/demo_table.css"> 
+        <link rel="stylesheet" type="text/css" href="/media/css/jgrowl.css""> 
+        <link rel="stylesheet" type="text/css" href="/media/css/jquery-ui/Aristo/css/Aristo/jquery-ui-1.8.7.custom.css"> 
         <script type="text/javascript">
         cked = "";
         var GLOBALS = {
@@ -30,24 +34,7 @@
         if(window.location.pathname != "/") window.location = "/"; //handles 404 errors
         
         // Dynamically load CSS files.
-        head.css = function() {
-            for(i = 0; i < arguments.length; i++) {
-                var fileref=document.createElement("link");
-                fileref.setAttribute("rel", "stylesheet");
-                fileref.setAttribute("type", "text/css");
-                fileref.setAttribute("href", GLOBALS.server_base + arguments[i]);
-                document.getElementsByTagName("head")[0].appendChild(fileref);
-            }
-        }
-        
-        head.css(
-            "/media/css/style.css",
-            "/media/css/demo_page.css",
-            "/media/css/demo_table.css",
-            "/media/css/jgrowl.css",
-            "/media/css/jquery-ui/Aristo/css/Aristo/jquery-ui-1.8.7.custom.css"
-        );
-        
+
         head.js( 
             GLOBALS.server_base + "/media/highchart/js/highcharts.js",
             GLOBALS.server_base + "/media/highchart/js/modules/exporting.js",
@@ -67,10 +54,11 @@
 
        head.ready(function() {
             console.log("Head.js has finished loading");
-                        d = new Date();
+            d = new Date();
             $.ajax({ 
                 url: "media/templates/all.jst?" +   d.getTime(),
                 success: function(response){
+                        console.log("tempplates loaded, appending to dom");
                         $("body").append(response);
                         
                          $.ajaxPrefilter(function( options ) {
@@ -81,19 +69,20 @@
                                 }
                            }
                         });
-                            var url = GLOBALS.server_base + "/list_by_author/" + "proposal";
-                            $.ajax( url, {
-                                dataType: "json",
-                                complete: function(headers){
-                                    if( headers.status != 401 ){
-                                        GLOBALS.session = true;
-                                    }
-                                    
-                                        protosal_controller = new ProtosalController;
-                                        Backbone.history.start();
+                        var url = GLOBALS.server_base + "/list_by_author/" + "proposal";
+                        $.ajax( url, {
+                            dataType: "json",
+                            complete: function(headers){
+                                if( headers.status != 401 ){
+                                    GLOBALS.session = true;
+                                    console.log("User already logged in");
                                 }
-                            
-                            });
+                                    
+                                    protosal_controller = new ProtosalController;
+                                    Backbone.history.start();
+                            }
+                        
+                        });
                         
                         
                        
@@ -160,19 +149,22 @@
                             template_name = "common_edit";
                         } else {
                             template_name = GLOBALS.controller + "_" + GLOBALS.action
+                            $("#contentpane").hide();
                         }
                         if( GLOBALS.controller + GLOBALS.action == "proposaledit"){
                             $(".footer").hide();
                             $(".maincontainer").css("position", "fixed");
+                            $(".containerspace").show();
                         } else {
                             $(".footer").show();
                             $(".maincontainer").css("position", "absolute");
                             $(".proposalcontainer").remove();
+                            $(".containerspace").hide();
                         }
                             
                         
                         _.jstTemplate( $("#contentpane"), $("#" + template_name + "_view_template"), obj )
-                       
+                       $("#contentpane").fadeIn(300);
                     } else {
                         redirect("dashboard/login");
                     }
@@ -251,14 +243,14 @@
             <div id="layout" class="ui-tabs ui-widget ui-widget-content ui-corner-all">
                 <div style="clear:both;"></div>
                 <ul style="position: relative; padding-top: 15px;" class="maintabs ui-tabs-nav ui-helper-reset ui-helper-clearfix ui-widget-header ui-corner-all">
-                    <a class="logo" href="/" border="0"></a>
-                    <li style="margin-lefT: 300px;" id="dashboard" class="ui-state-default ui-corner-top"><a href="#/dashboard/home">Dashboard</a></li>
+                    <a class="logo" href="/" border="0"><img src="/media/images/logo.png"></a>
+                    <li style="margin-lefT: 300px;" id="dashboard" class="ui-state-default ui-corner-top  ui-state-active ui-tabs-selected"><a href="#/dashboard/home">Dashboard</a></li>
                     <li id="proposal" class="ui-state-default ui-corner-top"><a href="#/proposal/list">Proposals</a></li>
                     <li id="section" class="ui-state-default ui-corner-top"><a href="#/section/list">Sections</a></li>
                     <li id="fee" class="ui-state-default ui-corner-top"><a href="#/fee/list">Fees</a></li>
                     <li id="client" class="ui-state-default ui-corner-top"><a href="#/client/list">Clients</a></li>
                     <li id="setting" class="ui-state-default ui-corner-top"><a href="#/setting/main">Settings</a></li>
-                    <div style="float: right; margin-right: 30px; margin-top: 8px;"><a href="#/test/page" style="float: left; width: 20px;"><img style="margin-top: -1px;width: 20px;" src="/media/icons/Help-icon .png" /></a> | <a style="padding-top: 6px;" href="#/logout">logout</a></div>
+                    <div style="float: right; margin-right: 30px; margin-top: 8px;"><a href="#/test/page" style="float: left; width: 20px; margin-right: 7px;"><img style="margin-top: -1px;width: 20px;" src="/media/icons/Help-icon .png" /></a> | <a style="padding-top: 6px;" href="#/logout">logout</a></div>
                 </ul>
             </div> <!-- #layout -->
 
@@ -266,7 +258,9 @@
 
                 <!-- This is where the magic happens. Basically everything the user mainpulates resides in here. -->
                 <div id="contentpane">
-
+                    <div style="text-align: center; height: 300px;" id="loadingbarpage"> <!-- loading bar -->
+                        <div class='loading' style="width: 32px; margin:auto; margin-top: 100px;"> </div>
+                    </div>                
                 </div> <!--  #contentpane -->
                 
                 <div style="clear:both;"></div>
@@ -276,15 +270,13 @@
             &copy;2010–2011 Protosal, Inc. | Version 2.1
             </div>
         </div> <!-- #Container  -->
-        <div class="containerspace" style="">
+        <div class="containerspace" style="display:none;">
             <div class="preview_buttons">
                  <button>Table of Contents</button>
                  <button>Upload logo</button>
             </div>
         </div>
         
-        <div style="display: none;" id="loadingbarpage"> <!-- loading bar -->
-            <div class='loading' style="text-align: center; padding-top: 200px;"> </div>
-        </div>
+
     </body>    
 </html>      
