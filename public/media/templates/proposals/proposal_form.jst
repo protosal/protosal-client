@@ -169,7 +169,8 @@
                 this.fees = new FeeCollection;
             
                 this.toc = new TOCView;
-                $("body").append("<div style='z-index: 1;top: 300px; height:2000px;' class='proposalcontainer container'>Yo</div>")
+                $("body").append("<div style='' class='proposalcontainer proposal_preview container'>Yo</div>");
+                $(".proposalcontainer").html( _.template( $("#proposal_preview").html(), {} ) );
             }, this)
 
             )
@@ -261,4 +262,72 @@
         <option value="<%= clientmodel._id %>" <%= selected %>><%= clientmodel.name %></option>
         <% });%>
     </select>
+</script>
+<script type="text/template" id="proposal_preview">
+<div class="header">
+				<div class="details">
+					<strong>Consultants (NQ) Pty LTD</strong><br />
+					Building Services Consulting Engnieers<br />
+					<br />
+					<strong>Ph</strong>: (07) 4030 1000<br /> 
+					<strong>Fx</strong>: (07) 4723 1780
+				</div>
+				<div class="userlogo">
+				<img src="/media/userimages/logo.jpg" />
+				</div>
+				
+			</div>
+			<br />
+			<br />
+			<h2>Sample Proposal - Waterworks</h2>
+			<h2 class="company">Sample Company</h2>
+			<br />
+			<p class="introduction">A This is a short but effective proposal template for a website redesign project. It clearly outlines the business challenges the client faces, how these challenges will be taken care of, and what the client must do to get the project started.</p>
+			<br />
+			
+			<div class="section_container">
+				<div class="section">
+					<h3 class="section_heading">Overview</h3>
+					<div class="section_content">
+					This is a short but effective proposal template for a website redesign project. It clearly outlines the business challenges the client faces, how these challenges will be taken care of, and what the client must do to get the project started.
+					</div>
+				</div>
+				
+				<div class="section">
+					<h3 class="section_heading">Terms of Reference</h3>
+					<div class="section_content">
+						An Example of a bulleted list in the editor:-
+						<ul>
+							<li>Web Design</li>
+							<li>Brick Designs</li>
+							<li>Tailored Fingernails</li>
+							<li>Obese Training</li>
+						</ul>
+					</div>
+				</div>
+				
+				<div class="section">
+					<h3 class="section_heading">Section with a Fee</h3>
+					<div class="section_content">
+						This section is an example of what a section with a fee table looks like.  This is going to be tricky but we can do it. Because we da best.
+						<table>
+							<tr>
+								<td>Fee</td>
+								<td>Price</td>
+							</tr>
+							<tr>
+								<td>Web Design</td>
+								<td>$100</td>
+							</tr>
+						</table>
+					</div>
+				</div>
+				
+				<div class="section">
+					<h3 class="section_heading">Conclusion</h3>
+					<div class="section_content">
+						This agreement becomes effective only when signed by agents of Sample client Company and tyth.  This is the conclusion you better believe it.
+					</div>
+				</div>
+			</div>
 </script>

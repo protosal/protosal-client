@@ -236,7 +236,9 @@
                     }
                     return base + (base.charAt(base.length - 1) == '/' ? '' : '/') + this.id + rev;
                 }
-            });   
+            });  
+            
+            $(".preview_buttons button").button();             
         });
         
 
@@ -274,7 +276,12 @@
             &copy;2010–2011 Protosal, Inc. | Version 2.1
             </div>
         </div> <!-- #Container  -->
-        <div class="containerspace" style="position: fixed; z-index: 2; background: #f7f7f7; top: 220px; width: 100%;height: 40px; "></div>
+        <div class="containerspace" style="">
+            <div class="preview_buttons">
+                 <button>Table of Contents</button>
+                 <button>Upload logo</button>
+            </div>
+        </div>
         
         <div style="display: none;" id="loadingbarpage"> <!-- loading bar -->
             <div class='loading' style="text-align: center; padding-top: 200px;"> </div>
