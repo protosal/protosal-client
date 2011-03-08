@@ -133,7 +133,7 @@
 
                         $('.maintabs li').removeClass('ui-state-active').removeClass('ui-tabs-selected'); //Make all tabs inactive
                         $("#" + GLOBALS.controller).addClass('ui-state-active').addClass('ui-tabs-selected');
-                    
+                        $("#contentpane div").fadeOut(300);
                         //get URL for the ajax call
                         url = GLOBALS.server_base + "/api/get" + location.hash.substr(1) + "/" + GLOBALS.route_id; 
                         
@@ -161,8 +161,18 @@
                         } else {
                             template_name = GLOBALS.controller + "_" + GLOBALS.action
                         }
+                        if( GLOBALS.controller + GLOBALS.action == "proposaledit"){
+                            $(".footer").hide();
+                            $(".maincontainer").css("position", "fixed");
+                        } else {
+                            $(".footer").show();
+                            $(".maincontainer").css("position", "absolute");
+                            $(".proposalcontainer").remove();
+                        }
+                            
                         
                         _.jstTemplate( $("#contentpane"), $("#" + template_name + "_view_template"), obj )
+                       
                     } else {
                         redirect("dashboard/login");
                     }
@@ -235,7 +245,7 @@
 
     <body>
     
-        <div class="container">
+        <div class="maincontainer container">
             <div id="layout" class="ui-tabs ui-widget ui-widget-content ui-corner-all">
                 <div style="clear:both;"></div>
                 <ul style="position: relative; padding-top: 15px;" class="maintabs ui-tabs-nav ui-helper-reset ui-helper-clearfix ui-widget-header ui-corner-all">
@@ -260,11 +270,11 @@
                 <div style="clear:both;"></div>
 
             </div> <!--  #contentcontainer -->
-            <div style="text-align: center; padding-top: 40px;padding-bottom: 5px; color: #555;">
+            <div class="footer" style="text-align: center; padding-top: 40px;padding-bottom: 5px; color: #555;">
             &copy;2010–2011 Protosal, Inc. | Version 2.1
             </div>
         </div> <!-- #Container  -->
-        
+        <div class="containerspace" style="position: fixed; z-index: 2; background: #f7f7f7; top: 220px; width: 100%;height: 40px; "></div>
         
         <div style="display: none;" id="loadingbarpage"> <!-- loading bar -->
             <div class='loading' style="text-align: center; padding-top: 200px;"> </div>

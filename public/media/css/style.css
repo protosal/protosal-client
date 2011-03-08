@@ -67,24 +67,33 @@ figure img {width: 100%;}
 	---------------------------------------------------------
 	1     2      3      4      5      6      7      8     
 	60px  144px  228px  312px  396px  480px  564px  648px	*/
-
+html {overflow-y: scroll;}
 body {
 	background: #f7f7f7;/* url(../images/main-bg.png);*/
 	padding: 0;
 	color: #333;
 	-webkit-tap-highlight-color: rgb(255,255,0);
+	
 }
 
 ::selection 	 {background: rgb(255,255,0);}
 ::-moz-selection {background: rgb(255,255,0);}
 .container {
-		width: 960px;	
-        background: #fff;
-        margin: auto;
-        -moz-box-shadow: 0 0 5px 5px #ccc;
--webkit-box-shadow: 0 0 5px 5px #ccc;
-box-shadow: 0 0 4px 4px #ccc;
-
+	width: 960px;	
+    background: #fff;
+    -moz-box-shadow: 0 0 5px 5px #ccc;
+	-webkit-box-shadow: 0 0 5px 5px #ccc;
+	box-shadow: 0 0 4px 4px #ccc;
+	position: absolute;
+    left: 50%;
+    margin-left: -480px;
+    z-index: 3;
+	}
+	.containerspace {
+		    -moz-box-shadow: 0 1px 5px 5px #ccc;
+	-webkit-box-shadow: 0 1px 5px 5px #ccc;
+	box-shadow: 0 1px 4px 4px #ccc;
+		
 	}
 .logo {
     position: absolute;
@@ -105,7 +114,6 @@ margin: auto;
 }
 #contentcontainer {
     margin-top:20px;
-min-height: 600px;	
 
 }
 #example {
