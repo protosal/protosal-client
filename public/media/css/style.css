@@ -98,11 +98,11 @@ body {
     position: absolute;
     top: 15px;
     left: 50%;
-    
+    background: #fff;
     margin-left: -450px; 
     height: 43px;
     width: 231px;
-    background: url(../images/logo.png);
+    /*background: url(../images/logo.png)*/;
 }
 h3 {
 	font-size: 18px;
