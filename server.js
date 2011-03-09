@@ -19,11 +19,20 @@ app.configure(function() {
 
     // Enable static file serving
     app.use(express.static(__dirname + '/public'));
-    app.use(express.errorHandler({ dumpExceptions: true }));
+    //app.use(express.errorHandler({ dumpExceptions: true }));
     //app.use(connect.logger({ format: ':method :url' }));
     app.use(connect.cookieParser());
     app.use(connect.session({ secret: 'foobar' }));
     app.use(rCommon.authCheck );
+});
+
+app.error(function(err, req, res) {
+    var error = {
+        "error": "You done fucked up",
+        "message": "Bad request. Or something."
+    };
+
+    res.send(JSON.stringify(error));
 });
 
 function app_db_handler(req, res, request) {
