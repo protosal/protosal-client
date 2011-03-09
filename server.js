@@ -23,7 +23,6 @@ app.configure(function() {
     //app.use(connect.logger({ format: ':method :url' }));
     app.use(connect.cookieParser());
     app.use(connect.session({ secret: 'foobar' }));
-    app.use(rCommon.noDelay);
     app.use(rCommon.authCheck );
 });
 
@@ -291,30 +290,3 @@ app.all('/:list_type/:view', function(req, res) {
 });
 
 app.listen(3000);
-
-http.createServer(function(req, res) {
-    res.socket.setNoDelay();
-    res.writeHead(200, {'Content-Type': 'application/json'});
-    var host = '127.0.0.1';
-
-    var couchdb = http.createClient(5984, host, true);
-    
-    var request_params = {
-        'Host': host,
-        'Authorization': 'Basic cnl0aDphYkNELS0xMg==',
-    }
-    
-    var request = couchdb.request('GET', '/app/_design/fee/_view/list_by_author?key="mya"', request_params);
-    request.end();
-
-    request.on('response', function(response) {
-        var data = '';
-        response.on('data', function(chunk) {
-            data += chunk;
-        });
-
-        response.on('end', function() {
-            res.end(data);
-        });
-    });
-}).listen(3001, '127.0.0.1');
