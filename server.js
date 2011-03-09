@@ -305,18 +305,17 @@ app.get('/related2/:view/:id', function( req, res ){
 });
 
 app.all('/:list_type/:view', function(req, res) {
-    var request_url = "";
+    var request_url = '/app/_design/' + req.params.view + "/_view/" + req.params.list_type;
 
     switch(req.method) {
         case "GET":
-            request_url = '/app/_design/' + req.params.view + "/_view/" + req.params.list_type + "?key=\"" + req.session.username + "\"";
+            request_url += "?key=\"" + req.session.username + "\"";
             break;
         case "POST":
-            var request_url = '/app/_design/' + req.params.view + "/_view/" + req.params.list_type;
+            /* The request URL is already correct. */
             break;
         default:
-            res.header('Content-Type', 'application/json');
-            res.send(JSON.stringify({"error": "Only GET and POST are supported for " + req.params.list_type + "/" + req.params.view}));
+            res.send({"error": "Only GET and POST are supported for " + req.params.list_type + "/" + req.params.view});
             return;
     }
 
