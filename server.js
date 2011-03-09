@@ -178,8 +178,9 @@ app.delete('/delete/:controller/:id/:id2', function(req, res) {
         response.on('end', function (){
             /* Delete the relationship record. */
             var parsed_data = JSON.parse(data);
+            console.log(parsed_data);
 
-            if( parsed_data && parsed_data.rows[0] ) {
+            if( parsed_data && parsed_data.rows && parsed_data.rows[0] ) {
                 var relationshipid = (parsed_data.rows[0].id);
                 var relationshiprev = (parsed_data.rows[0].value._rev);
                 var relationship_url = '/app/' + relationshipid + '?rev=' + relationshiprev;
@@ -210,7 +211,11 @@ app.delete('/delete/:controller/:id/:id2', function(req, res) {
                     });
                 });
             } else {
-                res.send({"error":"deleted failed", "reason":"No relationship matches the supplied keys."}, 400);
+                if( parsed_data ) {
+                    res.send( parsed_data, 400 );
+                } else {
+                    res.send({"error":"deleted failed"}, 400);
+                }
             }
         });
     });
