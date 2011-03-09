@@ -62,11 +62,7 @@
        function loadMain() {
             console.log("Head.js has finished loading");
             
-            $.ajaxPrefilter( function( options, originalOptions, jqXHR ) {
-                jqXHR.error (function() {
-                    $.jGrowl("Something went wrong! Refresh the page if it continues to happen",{  theme: 'apple', position: "top-right"});
-                });
-            });
+
             
             d = new Date();
             $.ajax({ 
@@ -91,9 +87,14 @@
                                     GLOBALS.session = true;
                                     console.log("User already logged in");
                                 }
-                                    
+                                    $.ajaxPrefilter( function( options, originalOptions, jqXHR ) {
+                                        jqXHR.error (function() {
+                                            $.jGrowl("Something went wrong! Refresh the page if it continues to happen",{  theme: 'apple', position: "top-right"});
+                                        });
+                                    });
                                     protosal_controller = new ProtosalController;
                                     Backbone.history.start();
+                                    
                             }
                         
                         });
@@ -198,7 +199,7 @@
                 formdata = $(".edit_" + savebuttoncontroller + "_form").serializeObject();
                 
                 formdata.type = savebuttoncontroller;
-                
+                formdata.template    = true;
                 var url = GLOBALS.couch_server + "/data";
                 type = "POST";
                 

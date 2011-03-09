@@ -33,6 +33,16 @@
     <a class="button delete ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button"><span class="ui-button-text">View PDF</span></a>
     </div>
 </div>
+<div id="section_chooser_container" style="display:none;">
+    <div class="ui-widget-header">
+        <h3 style="text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);float: left;">Add Sections</h3>
+            <a class="add_sections button ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" style="float:right;"><span class="ui-button-text">Add to Proposal</span></a><br />
+        <div style="clear:both;"></div>
+    </div>
+    <ul>
+    
+    </ul>
+</div>
 <jst>
 
     FeeModel = Backbone.Model.extend({
@@ -80,7 +90,7 @@
         getAllClients: function(){
             console.log("Start fetching the clients");
             clients = {};
-            $.when( $.ajax("list_by_author/client", { dataType: "json" }) )
+            $.when( $.ajax("list_by_author_templates/client", { dataType: "json" }) )
                 .then( function(data) {
                     //Update this clients
                     console.log("Clients received, send them to collection");
@@ -103,7 +113,7 @@
         getAllTemplates: function(){
             console.log("Start fetching the section templates");
             section_templates = {};
-            $.when( $.ajax("list_by_author/section", { dataType: "json" }) )
+            $.when( $.ajax("list_by_author_templates/section", { dataType: "json" }) )
                 .then( function(data) {
                     //Update this collections sections
                     console.log("Template sections received, send them to collection");
@@ -114,6 +124,58 @@
     SectionsView = Backbone.View.extend({
 
     });
+    SectionChooser = Backbone.View.extend({
+        el: $("#section_chooser_container"),
+        selectedSections: null,
+        initialize: function(){
+            
+
+            
+        },
+        events: {
+            "click .section_list_item":    "toggleTick",  
+            "click .add_sections":         "addToPreview"
+        },
+        toggleTick: function(event){
+            
+            list_item = $(event.currentTarget);
+            tick = $(".tick", list_item);
+            if( tick.hasClass("ticked") ){
+                tick.removeClass("ticked")
+            } else{
+                tick.addClass("ticked")
+            }
+            
+        },
+        addToPreview: function(){
+            $("#section_chooser_container li").each( function(){
+                if( $(".tick", this).hasClass("ticked") ){
+                    
+                    console.log("woot")
+                }    
+            })
+            
+                proposal_view.section_chooser.el.dialog("close");
+        },
+        renderList: function( sections ){
+            
+                $("ul",this.el).html( _.template( $("#section_chooser_list_template").html(), {sections: sections} ) );
+                this.el.dialog({
+                    autoOpen: false,
+                    draggable: false,
+                    resizable: false,
+                    closeOnEscape: false,
+                    title: "New Fee",
+                    modal: true, 
+                    hide: 'drop',
+                    width: "550px",
+                });
+                this.el.dialog("open");
+            console.log("Dialog created")
+            
+        }
+    
+    })
     TOCView = Backbone.View.extend({
         el: $("#proposal_preview_toc"),
         initialize: function(){
@@ -173,15 +235,19 @@
                 this.fees = new FeeCollection;
             
                 this.toc = new TOCView;
-
+                this.section_chooser = new SectionChooser;
+                
             }, this)
 
             )
         },
         addSectionRender: function(){
-            console.log( "Render the add section auto complete" );
+            console.log( "Render the add section modal window" );
             var sections = this.allsections.models;
-            console.log( "Map the sections to return values that the auto complete plugin can use" );
+            // Now that we have all the section templates, populate the section choose
+            proposal_view.section_chooser.renderList(sections);
+            
+            /*
             sections = _.map( sections, function( section ){
                 section = section.get("value");
                 return {
@@ -216,6 +282,7 @@
                             return false;
                         }
             }); //Auto complete end
+            */
         },
         get_id: function(){
             if( GLOBALS.route_id == "" ){
@@ -223,7 +290,7 @@
                 formdata = $(".edit_proposal_form").serializeObject();
                 // Add the type of form to the form object
                 formdata.type = "proposal";
-
+                formdata.template = true;
                 return $.ajax( "data", {
                         dataType: "json",
                         type: "POST",
@@ -266,78 +333,87 @@
         <% });%>
     </select>
 </script>
+<script type="text/template" id="section_chooser_list_template">
+<li class="section_list_item" style="margin-bottom: 25px;"><i>New Empty Section</i><div class="tick"></div></li>
+<% _.each( sections, function(section) {
+section = section.get("value");
+%>
+    <li class="section_list_item" section_id="<%= section._id %>"><%= section.name %><div class="tick"></div></li>
+<% }); %>
+
+</script>
 <script type="text/template" id="proposal_preview">
             <div class="header">
-				<div class="details">
-					<strong>Consultants (NQ) Pty LTD</strong><br />
-					Building Services Consulting Engnieers<br />
-					<br />
-					<strong>Ph</strong>: (07) 4030 1000<br /> 
-					<strong>Fx</strong>: (07) 4723 1780
-				</div>
-				<div class="userlogo">
-				<img src="/media/userimages/logo.jpg" />
-				</div>
-				
-			</div>
-			<br />
-			
-			<br />
-			<h2>Sample Proposal - Waterworks</h2>
-			<h2 class="company">Sample Company</h2>
-			<br />
-			<p class="introduction">A This is a short but effective proposal template for a website redesign project. It clearly outlines the business challenges the client faces, how these challenges will be taken care of, and what the client must do to get the project started.</p>
-			<br />
-			<div class="section">
-				<h3 class="section_heading">Table of contents</h3>
-			    <div id="proposal_preview_toc">
-			        <ol id="toc_list"></ol>
-			    </div>
-			</div>
+                <div class="details">
+                    <strong>Consultants (NQ) Pty LTD</strong><br />
+                    Building Services Consulting Engnieers<br />
+                    <br />
+                    <strong>Ph</strong>: (07) 4030 1000<br /> 
+                    <strong>Fx</strong>: (07) 4723 1780
+                </div>
+                <div class="userlogo">
+                <img src="/media/userimages/logo.jpg" />
+                </div>
+                
+            </div>
+            <br />
+            
+            <br />
+            <h2>Sample Proposal - Waterworks</h2>
+            <h2 class="company">Sample Company</h2>
+            <br />
+            <p class="introduction">A This is a short but effective proposal template for a website redesign project. It clearly outlines the business challenges the client faces, how these challenges will be taken care of, and what the client must do to get the project started.</p>
+            <br />
+            <div class="section">
+                <h3 class="section_heading">Table of contents</h3>
+                <div id="proposal_preview_toc">
+                    <ol id="toc_list"></ol>
+                </div>
+            </div>
 
-			<div class="section_container">
-				<div class="section">
-					<h3 class="section_heading">Overview</h3>
-					<div class="section_content">
-					This is a short but effective proposal template for a website redesign project. It clearly outlines the business challenges the client faces, how these challenges will be taken care of, and what the client must do to get the project started.
-					</div>
-				</div>
-				
-				<div class="section">
-					<h3 class="section_heading">Terms of Reference</h3>
-					<div class="section_content">
-						An Example of a bulleted list in the editor:-
-						<ul>
-							<li>Web Design</li>
-							<li>Brick Designs</li>
-							<li>Tailored Fingernails</li>
-							<li>Obese Training</li>
-						</ul>
-					</div>
-				</div>
-				
-				<div class="section">
-					<h3 class="section_heading">Section with a Fee</h3>
-					<div class="section_content">
-						This section is an example of what a section with a fee table looks like.  This is going to be tricky but we can do it. Because we da best.
-						<table>
-							<tr>
-								<td>Fee</td>
-								<td>Price</td>
-							</tr>
-							<tr>
-								<td>Web Design</td>
-								<td>$100</td>
-							</tr>
-						</table>
-					</div>
-				</div>
-				
-				<div class="section">
-					<h3 class="section_heading">Conclusion</h3>
-					<div class="section_content">
-						This agreement becomes effective only when signed by agents of Sample client Company and tyth.  This is the conclusion you better believe it.
-					</div>
-				</div>
-			</div>
+            <div class="section_container">
+                <div class="section">
+                    <h3 class="section_heading">Overview</h3>
+                    <div class="section_content">
+                    This is a short but effective proposal template for a website redesign project. It clearly outlines the business challenges the client faces, how these challenges will be taken care of, and what the client must do to get the project started.
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <h3 class="section_heading">Terms of Reference</h3>
+                    <div class="section_content">
+                        An Example of a bulleted list in the editor:-
+                        <ul>
+                            <li>Web Design</li>
+                            <li>Brick Designs</li>
+                            <li>Tailored Fingernails</li>
+                            <li>Obese Training</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <h3 class="section_heading">Section with a Fee</h3>
+                    <div class="section_content">
+                        This section is an example of what a section with a fee table looks like.  This is going to be tricky but we can do it. Because we da best.
+                        <table>
+                            <tr>
+                                <td>Fee</td>
+                                <td>Price</td>
+                            </tr>
+                            <tr>
+                                <td>Web Design</td>
+                                <td>$100</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <h3 class="section_heading">Conclusion</h3>
+                    <div class="section_content">
+                        This agreement becomes effective only when signed by agents of Sample client Company and tyth.  This is the conclusion you better believe it.
+                    </div>
+                </div>
+            </div>
 </script>
