@@ -27,10 +27,7 @@
         </fieldset>
     </form>
     </div>
-    <div id="toc">
-        <ol id="toc_list">
-        </ol>
-    </div>
+
 </div>
 <jst>
 
@@ -114,16 +111,17 @@
 
     });
     TOCView = Backbone.View.extend({
-        el: $("#toc"),
+        el: $("#proposal_preview_toc"),
         initialize: function(){
             console.log("Initialize the table of contents");
         },
         addSection: function( section ){
             console.log("Add section to the ordered list");
-            this.$("#toc_list").append( _.template( $("#toc_list_item").html(), section.get("value") ) );
+            console.log(this);
+            $("#toc_list").append( _.template( $("#toc_list_item").html(), section.get("value") ) );
             $("#toc_list").sortable({
                 update: proposal_view.toc.updateOrder
-            });
+            }); 
             proposal_view.toc.updateOrder();
         },
         updateOrder: function(){
@@ -153,6 +151,8 @@
         
         initialize: function(){
             console.log("Initialize the proposal view");
+            $("body").append("<div style='' class='proposalcontainer proposal_preview container'>Yo</div>");
+            $(".proposalcontainer").html( _.template( $("#proposal_preview").html(), {} ) );
             $.when( this.get_id() ).then( $.proxy( function(){
                 console.log(arguments);
                 console.log("Get the proposal id");
@@ -169,8 +169,7 @@
                 this.fees = new FeeCollection;
             
                 this.toc = new TOCView;
-                $("body").append("<div style='' class='proposalcontainer proposal_preview container'>Yo</div>");
-                $(".proposalcontainer").html( _.template( $("#proposal_preview").html(), {} ) );
+
             }, this)
 
             )
@@ -249,7 +248,8 @@
     <li id="<%= _id %>"><%= name %></li>
 </script>
 <script type="text/template" id="clients_combo_form_element">
-    <select name="client_id">
+    <select name="client_id">                $("body").append("<div style='' class='proposalcontainer proposal_preview container'>Yo</div>");
+                $(".proposalcontainer").html( _.template( $("#proposal_preview").html(), {} ) );
     <option value="">Select Client</option>
     <% _.each( models, function( clientmodel) { 
             selected = "";
@@ -263,7 +263,7 @@
     </select>
 </script>
 <script type="text/template" id="proposal_preview">
-<div class="header">
+            <div class="header">
 				<div class="details">
 					<strong>Consultants (NQ) Pty LTD</strong><br />
 					Building Services Consulting Engnieers<br />
@@ -277,13 +277,16 @@
 				
 			</div>
 			<br />
+			
 			<br />
 			<h2>Sample Proposal - Waterworks</h2>
 			<h2 class="company">Sample Company</h2>
 			<br />
 			<p class="introduction">A This is a short but effective proposal template for a website redesign project. It clearly outlines the business challenges the client faces, how these challenges will be taken care of, and what the client must do to get the project started.</p>
 			<br />
-			
+			<div id="proposal_preview_toc">dd
+			    <ol id="toc_list"></ol>
+			</div>
 			<div class="section_container">
 				<div class="section">
 					<h3 class="section_heading">Overview</h3>
