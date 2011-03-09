@@ -9,6 +9,7 @@ var sys = require('sys');
 var app = express.createServer();
 var connect = require('connect');
 var _ = require('underscore');
+var uuid = require('node-uuid');
 var Exceptional = require('./exceptional').Exceptional;
 
 
@@ -30,6 +31,11 @@ app.configure(function() {
     app.use(rCommon.authCheck );
 });
 
+app.error(function(err, req, res, next){
+    Exceptional.handle(err);
+    console.log(err);
+}); 
+
 function app_db_handler(req, res, request) {
     req.body.author = req.session.username;
     request.write( JSON.stringify(req.body) );
@@ -43,9 +49,46 @@ function app_db_handler(req, res, request) {
     });
 }
 
-function get_data(url, method) {
-    var request = '';
-}
+app.get('/data/newinstance/:id', function(req, res) {
+    var section_url = '/app/' + req.params.id;
+    var section_request = rCommon.couchdb_request(req, res, section_url, {"method" : "GET"});
+    section_request.end();
+
+    section_request.on('response', function(response) {
+        var section_data = '';
+        response.on('data', function(chunk) {
+            section_data += chunk;
+        });
+
+        response.on('end', function() {
+            section_data = JSON.parse(section_data);
+            var new_section_url = '/app/' + req.params.id;
+
+            new_section = rCommon.couchdb_request(req, res, new_section_url,
+                {
+                    "method" : "COPY",
+                    "request_params": {
+                        "Content-Type": "application/json",
+                        "Destination": uuid().replace(/-/g, '')
+                    } 
+                });
+            new_section.end();
+
+            new_section.on('response', function(response) {
+                var new_section_data = '';
+                
+                response.on('data', function(chunk) {
+                    new_section_data += chunk;
+                });
+
+                response.on('end', function() {
+                    res.send(JSON.parse(new_section_data));
+                });
+            });
+        });
+    });
+
+});
 
 app.get('/data/:id/:rev?', function(req, res) {
     var request_url = '/app/' + req.params.id + (req.params.rev ? "?rev=" + req.params.rev : "");
@@ -92,32 +135,7 @@ app.post('/data', function(req, res) {
         rCommon.couchdb_request(req, res, request_url, {"method" : req.method}) );
 });
 
-app.post('/data/newinstance/:id', function(req, rest) {
-    var request_url = 'app';
-    /* Set the template id for the new record. */
-    req.body.template = req.params.id;
-    /* Set the HTTP request method to COPY so we can leverage CouchDB's
-     * inbuilt functionality.
-     */
-    req.method = 'COPY';
 
-    var url = "";
-    var fee_request = "";
-    /* Copy all fees. */
-    switch(req.body.type) {
-        case "section":
-            url = '/app/_design/section_fee/_view/list_by_parent?key="' + req.params.id + '"';
-            fee_request = rCommon.couchdb_request(req, res, url,
-                {"method" : req.method});
-            break;
-        default:
-            break;
-    }
-
-    app_db_handler(req, res, rCommon.couchdb_request(req, res, request_url,
-            {"method" : req.method}) );
-});
- 
 
 function delete_request(req, res, request_url, return_value) {
     if( return_value == null )
