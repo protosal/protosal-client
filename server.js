@@ -51,7 +51,13 @@ app.get('/data/:id/:rev?', function(req, res) {
     
     request.on('response', function (response) {
         response.setEncoding('utf8');
-        response.on('data', function (data) {
+        var data = '';
+
+        response.on('data', function(chunk) {
+            data += chunk;    
+        });
+
+        response.on('end', function () {
             var parsed_data = JSON.parse(data);
             if( parsed_data.author == req.session.username ) {
                 res.header('Content-Type', 'application/json');
