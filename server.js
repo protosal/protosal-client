@@ -210,7 +210,8 @@ app.delete('/delete/:controller/:id/:id2', function(req, res) {
                     });
                 });
             } else {
-                res.send({"error":"deleted failed", "reason":"No relationship matches the supplied keys."});
+                res.
+                res.send({"error":"deleted failed", "reason":"No relationship matches the supplied keys."}, 400);
             }
         });
     });
