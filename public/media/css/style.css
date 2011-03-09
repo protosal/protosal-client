@@ -781,3 +781,8 @@ top: 222px;
 .section_list_item:hover {
 	background: #f7f7f7;
 }
+.section:hover {
+	cursor: pointer;
+	background: #ccff22;
+	
+}
