@@ -178,35 +178,40 @@ app.delete('/delete/:controller/:id/:id2', function(req, res) {
         response.on('end', function (){
             /* Delete the relationship record. */
             var parsed_data = JSON.parse(data);
-            var relationshipid = (parsed_data.rows[0].id);
-            var relationshiprev = (parsed_data.rows[0].value._rev);
-            var relationship_url = '/app/' + relationshipid + '?rev=' + relationshiprev;
-            delete_request(req, res, relationship_url);
 
-            var childid = (parsed_data.rows[0].key[1]);
+            if( parsed_data && parsed_data.rows[0] ) {
+                var relationshipid = (parsed_data.rows[0].id);
+                var relationshiprev = (parsed_data.rows[0].value._rev);
+                var relationship_url = '/app/' + relationshipid + '?rev=' + relationshiprev;
+                delete_request(req, res, relationship_url);
 
-            var child_request_url = '/app/' + childid;
+                var childid = (parsed_data.rows[0].key[1]);
 
-            /* Cascade the delete to the child record. */
-            var child_request = rCommon.couchdb_request(req, res, child_request_url,
-                {"method" : "GET"});
-            child_request.end();
-            child_request.on('response', function(response) {
-                data = '';
+                var child_request_url = '/app/' + childid;
 
-                response.on('data', function(chunk) {
-                    data += chunk;
+                /* Cascade the delete to the child record. */
+                var child_request = rCommon.couchdb_request(req, res, child_request_url,
+                    {"method" : "GET"});
+                child_request.end();
+                child_request.on('response', function(response) {
+                    data = '';
+
+                    response.on('data', function(chunk) {
+                        data += chunk;
+                    });
+
+                    response.on('end', function() {
+                        data = JSON.parse(data);
+                        // Only delete instances
+                        if( data.template && data.template == false ) {
+                            var del_url = '/app/' + data._id + '?rev=' + data._rev;
+                            delete_request(req, res, del_url, false);
+                        }
+                    });
                 });
-
-                response.on('end', function() {
-                    data = JSON.parse(data);
-                    // Only delete instances
-                    if( data.template && data.template == false ) {
-                        var del_url = '/app/' + data._id + '?rev=' + data._rev;
-                        delete_request(req, res, del_url, false);
-                    }
-                });
-            });
+            } else {
+                res.send({"error":"deleted failed", "reason":"No relationship matches the supplied keys."});
+            }
         });
     });
 });
