@@ -678,8 +678,23 @@ font-weight: bold;
 	background: -moz-linear-gradient(top,  #00ccff,  #0033ff);
 	filter:  progid:DXImageTransform.Microsoft.gradient(startColorstr='#00ccff  ', endColorstr='#0033ff');
 }
+#sidemenu {
+    background: #fff;
+    -moz-box-shadow: 0 0 5px 5px #ccc;
+	-webkit-box-shadow: 0 0 5px 5px #ccc;
+	box-shadow: 0 0 4px 4px #ccc;
+	position: absolute; 
+	top: 225px; 
+	left: 50%;
+	margin-left: 320px;
+	z-index: 3;
+	width: 150px;
+	text-align: center;
+	padding: 5px;
+}
 #sidemenu a{
 	width: 130px;
+	margin-top: 5px;
 	
 }
 .proposal_preview {

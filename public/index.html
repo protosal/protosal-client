@@ -41,6 +41,7 @@
                 '/media/js/common.js',
                 'https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.9/jquery-ui.min.js',
                 '/media/js/backbone.js',
+                '/media/js/jgrowl.min.js',
                 '/media/js/jquery/plugins/ryth/rythbutton.js'
                 ],
             
@@ -49,7 +50,6 @@
                 $script([
                     '/media/highchart/js/highcharts.js',
                     '/media/ckeditor/ckeditor.js',
-                    '/media/js/jgrowl.min.js',
                     '/media/js/jquery.json-2.2.min.js',
                     '/media/js/jquery.defaultvalue.js',
                     '/media/js/jquery.dataTables.js',
@@ -61,6 +61,13 @@
         
        function loadMain() {
             console.log("Head.js has finished loading");
+            
+            $.ajaxPrefilter( function( options, originalOptions, jqXHR ) {
+                jqXHR.error (function() {
+                    $.jGrowl("Something went wrong! Refresh the page if it continues to happen",{  theme: 'apple', position: "top-right"});
+                });
+            });
+            
             d = new Date();
             $.ajax({ 
                 url: "media/templates/all.jst?" +   d.getTime(),
