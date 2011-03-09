@@ -9,6 +9,9 @@ var sys = require('sys');
 var app = express.createServer();
 var connect = require('connect');
 var _ = require('underscore');
+var Exceptional = require('./exceptional');
+
+Exceptional.API_KEY = '05f3e5df3c4b21870836f019eff3d4e3fa49f0bb';
 
 app.configure(function() {
     app.use(express.responseTime());  
@@ -24,17 +27,6 @@ app.configure(function() {
     app.use(connect.cookieParser());
     app.use(connect.session({ secret: 'foobar' }));
     app.use(rCommon.authCheck );
-});
-
-app.error(function(err, req, res) {
-    var error = {
-        "error": "You done fucked up",
-        "message": "Bad request. Or something."
-    };
-
-    console.log(err);
-
-    res.send(JSON.stringify(error));
 });
 
 function app_db_handler(req, res, request) {
@@ -158,9 +150,7 @@ app.delete('/data/:id/:rev?', function(req, res) {
         });
 
         response.on('end', function () {
-            console.log(data);
             author = JSON.parse(data).author;
-            console.log("checking the " + author );
             if( req.session.username == author ) {
                 var url = '/app/' + req.params.id + (req.params.rev ? "?rev=" + req.params.rev : "");
                 delete_request(req, res, url);
@@ -185,7 +175,6 @@ app.delete('/delete/:controller/:id/:id2', function(req, res) {
         });
 
         response.on('end', function (){
-            console.log(data);
             /* Delete the relationship record. */
             var parsed_data = JSON.parse(data);
             var relationshipid = (parsed_data.rows[0].id);
@@ -307,3 +296,8 @@ app.all('/:list_type/:view', function(req, res) {
 });
 
 app.listen(3000);
+
+process.on('uncaughtException', function (err) {
+    console.log(err);
+    Exceptional.handle(err);
+});
