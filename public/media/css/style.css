@@ -678,27 +678,16 @@ font-weight: bold;
 	background: -moz-linear-gradient(top,  #00ccff,  #0033ff);
 	filter:  progid:DXImageTransform.Microsoft.gradient(startColorstr='#00ccff  ', endColorstr='#0033ff');
 }
-.containerspace {
-	position: fixed;
-	 z-index: 2; 
-	 background: #f7f7f7; 
-	 top: 0; 
-	 width: 978px;
-     left: 50%;
-     margin-left: -489px;
-	 height: 252px; 
-	 
-}
-.containerspace .preview_buttons{
-	margin-top: 210px;
-	padding-left: 20px;
+#sidemenu a{
+	width: 130px;
+	
 }
 .proposal_preview {
 z-index: 1;
-top: 257px;
+top: 222px;
  height:2000px;
-	width: 890px;
-	padding: 30px 35px 35px 35px;
+	width: 725px;
+	padding: 25px 25px 25px 25px;
 	color: #444;
 }
 .proposal_preview .header {
