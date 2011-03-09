@@ -51,7 +51,7 @@
                 $("#pageheader").html( _.template( $("#page_header_template").jsthtml(), options ) );
                 
                 
-                var url = GLOBALS.server_base + "/list_by_author/" + GLOBALS.controller;
+                var url = GLOBALS.server_base + "/list_by_author_templates/" + GLOBALS.controller;
                 $.ajax( url, {
                     dataType: "json",
                     success: function(data){
