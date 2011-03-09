@@ -9,7 +9,8 @@ var sys = require('sys');
 var app = express.createServer();
 var connect = require('connect');
 var _ = require('underscore');
-var Exceptional = require('./exceptional');
+var Exceptional = require('./exceptional').Exceptional;
+
 
 Exceptional.API_KEY = '05f3e5df3c4b21870836f019eff3d4e3fa49f0bb';
 

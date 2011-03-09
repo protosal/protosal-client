@@ -11,7 +11,7 @@ var Exceptional = {
   Host: "api.getexceptional.com",
   Port: 80,
 
-  handle: function(error) {
+  "handle": function(error) {
     if (Exceptional.API_KEY == undefined) {
       throw "API_KEY must be set";
     }
