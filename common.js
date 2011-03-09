@@ -18,8 +18,10 @@ var _defaultSalt = "1";
 
 exports.couchdb_request = function(req, res, request_url, options) {
     // If no credentials are specified, check to see if the user is authenticated
-    if( options == null)
+    if( !options )
         options = {};
+    if( !options.request_params )
+        options.request_params = {};
 
     if( !options.credentials ) {
         if( typeof req.session != "undefined" && !req.session.auth ) {
@@ -32,15 +34,14 @@ exports.couchdb_request = function(req, res, request_url, options) {
 
     var couchdb = http.createClient(couchdb_port, couchdb_host, true);
     
-    var request_params = {
-        'Host': couchdb_host,
-        'Authorization': 'Basic ' + base64_encode(options.credentials),
-    }
+    options.request_params['Host'] = couchdb_host;
+    options.request_params['Authorization'] = 'Basic ' + base64_encode(options.credentials);
     
     if( options.method == "POST" || options.method == "PUT" )
-        request_params['Content-Type'] = 'application/json'; 
+        options.request_params['Content-Type'] = 'application/json'; 
+
         
-    var request = couchdb.request(options.method, request_url, request_params);
+    var request = couchdb.request(options.method, request_url, options.request_params);
     
     return request;
 }
