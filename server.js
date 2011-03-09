@@ -32,6 +32,8 @@ app.error(function(err, req, res) {
         "message": "Bad request. Or something."
     };
 
+    console.log(err);
+
     res.send(JSON.stringify(error));
 });
 

@@ -22,7 +22,6 @@ exports.couchdb_request = function(req, res, request_url, options) {
         options = {};
 
     if( !options.credentials ) {
-        console.log("No credentials supplied");
         if( typeof req.session != "undefined" && !req.session.auth ) {
             auth_error(res);
             return;
@@ -125,7 +124,6 @@ function logout(req, res) {
 
 function auth_error(res) {
     res.writeHead(401);
-    console.log("Default error, not validted redirect this fool to user/login");
     redirect = {
         redirect: "dashboard/login"
     }
@@ -152,7 +150,6 @@ exports.authCheck = function (req, res, next) {
     // ########
     // Auth - Replace this simple if with you Database or File or Whatever...
     // If Database, you need a Async callback...
-    console.log("URL Pathname: " + url.pathname);
     if( url.pathname == "/user/register" ) {
         register(req, res);
     } else if ( url.pathname == "/user/login" ) {
