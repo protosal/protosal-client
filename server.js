@@ -63,30 +63,36 @@ app.get('/data/newinstance/:id', function(req, res) {
         });
 
         response.on('end', function() {
+            response.setEncoding('utf8');
+
             section_data = JSON.parse(section_data);
-            var new_section_url = '/app/' + req.params.id;
+            section_data.template = false;
+            delete section_data._id;
+            delete section_data._rev;
 
-            new_section = rCommon.couchdb_request(req, res, new_section_url,
-                {
-                    "method" : "COPY",
-                    "request_params": {
-                        "Content-Type": "application/json",
-                        "Destination": uuid().replace(/-/g, '')
-                    } 
-                });
-            new_section.end();
+            if( section_data.author && section_data.author == req.session.username ) {
 
-            new_section.on('response', function(response) {
-                var new_section_data = '';
-                
-                response.on('data', function(chunk) {
-                    new_section_data += chunk;
-                });
+                var new_section_url = '/app/';
+                var new_section_request = rCommon.couchdb_request(req, res, new_section_url, {"method" : "POST"} );
+                new_section_request.write( JSON.stringify(section_data) );
+                new_section_request.end();
 
-                response.on('end', function() {
-                    res.send(JSON.parse(new_section_data));
+                new_section_request.on('response', function(response) {
+                    response.setEncoding('utf8');
+                    var new_section_data = '';
+                    
+                    response.on('data', function(chunk) {
+                        new_section_data += chunk;
+                    });
+
+                    response.on('end', function() {
+                        new_section_data = JSON.parse(new_section_data);
+                        res.redirect('/data/' + new_section_data.id);
+                    });
                 });
-            });
+            } else {
+                res.send({"error":"instance creation failed"}, 401);
+            }
         });
     });
 
@@ -109,7 +115,7 @@ app.get('/data/:id/:rev?', function(req, res) {
         response.on('end', function () {
             var parsed_data = JSON.parse(data);
 
-            if( parsed_data.author == req.session.username ) {
+            if( parsed_data.author && parsed_data.author == req.session.username ) {
                 res.send(parsed_data);
             } else {
                 console.log("DAMMIT HACKER!");
@@ -131,7 +137,26 @@ app.post('/data', function(req, res) {
         rCommon.couchdb_request(req, res, request_url, {"method" : req.method}) );
 });
 
+function archive_request(req, res, doc, request_url) {
+    doc.archived = true;
+    req.rawBody = JSON.stringify(doc);
 
+    var archive_request = rCommon.couchdb_request(req, res, request_url,
+        {"method" : "PUT"});
+    archive_request.end();
+
+    archive_request.on('response', function(response) {
+        var archive_data = '';
+
+        response.on('data', function(chunk) {
+            archive_data += chunk;
+        });
+
+        response.on('end', function(end) {
+           res.send(JSON.parse(archive_data)); 
+        });
+    });
+}
 
 function delete_request(req, res, request_url, return_value) {
     if( return_value == null )
@@ -175,13 +200,13 @@ app.delete('/data/:id/:rev?', function(req, res) {
                 var url = '/app/' + req.params.id + (req.params.rev ? "?rev=" + req.params.rev : "");
                 delete_request(req, res, url);
             } else {
-                res.send({"error":"delete failed", "reason":"Invalid users"}, 401);
+                res.send({"error":"delete failed"}, 401);
             }
         });
     });
 });
 
-//Delete the relationship
+/* Delete the relationship */
 app.delete('/delete/:controller/:id/:id2', function(req, res) {
     var request_url = '/app/_design/' + req.params.controller + "/_view/list?key=[\""+ req.params.id + "\",\""+ req.params.id2 +"\"]";
     var request = rCommon.couchdb_request(req, res, request_url,
@@ -225,9 +250,12 @@ app.delete('/delete/:controller/:id/:id2', function(req, res) {
                     response.on('end', function() {
                         data = JSON.parse(data);
                         // Only delete instances
-                        if( data.template && data.template == false ) {
-                            var del_url = '/app/' + data._id + '?rev=' + data._rev;
-                            delete_request(req, res, del_url, false);
+                        var url = '/app/' + data._id + '?rev=' + data._rev;
+                        if( !data.template ) {
+                            delete_request(req, res, url, false);
+                        } else {
+                            // Archive it.
+                            archive_request(req, res, data, url);
                         }
                     });
                 });
@@ -259,7 +287,7 @@ var generic_list_retrieve = function(req, res, request) {
         });
 
         response.on('end', function (){
-            res.send(data); 
+            res.send(JSON.parse(data)); 
         });
     });
 }
