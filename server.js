@@ -82,6 +82,34 @@ _.mixin({
     }
 });
 
+function emit_doc(req, res, id, rev) {
+    var database = '/app/';
+    var request_url = database + id + (rev ? "?rev=" + rev : "");
+    var request = rCommon.couchdb_request(req, res, request_url,
+        {"method" : "GET"});
+    request.end();
+    
+    request.on('response', function (response) {
+        response.setEncoding('utf8');
+        var data = '';
+
+        response.on('data', function(chunk) {
+            data += chunk;    
+        });
+
+        response.on('end', function () {
+            var parsed_data = _(data).to_json();
+
+            if( parsed_data.author && parsed_data.author == req.session.username ) {
+                res.send(parsed_data);
+            } else {
+                console.log("DAMMIT HACKER!");
+                res.send( {"redirect" : "/"}, 401 );
+            }
+        });
+    });
+}
+
 app.get('/data/newinstance/:id', function(req, res) {
     var section_url = '/app/' + req.params.id;
     var section_request = rCommon.couchdb_request(req, res, section_url, {"method" : "GET"});
@@ -243,6 +271,20 @@ app.delete('/data/:id/:rev', function(req, res) {
 
 /* Delete the relationship */
 app.delete('/delete/:controller/:id/:id2', function(req, res) {
+    /*
+    var db = new(cradle.Connection)().database('app');
+
+    var key = {"key" : [req.params.id, req.params.id2]};
+    db.view(req.params.controller + '/list', key, function(err, doc) {
+        if( err ) {
+            res.send(err, 500);
+        } else {
+            db.remove(
+        }
+    };
+    */
+
+    /*
     var request_url = '/app/_design/' + req.params.controller + "/_view/list?key=[\""+ req.params.id + "\",\""+ req.params.id2 +"\"]";
     var request = rCommon.couchdb_request(req, res, request_url,
         {"method" : "GET"});
@@ -257,7 +299,7 @@ app.delete('/delete/:controller/:id/:id2', function(req, res) {
         });
 
         response.on('end', function (){
-            /* Delete the relationship record. */
+            // Delete the relationship record.
             var parsed_data = _(data).to_json();
             console.log(parsed_data);
 
@@ -271,7 +313,7 @@ app.delete('/delete/:controller/:id/:id2', function(req, res) {
 
                 var child_request_url = '/app/' + childid;
 
-                /* Cascade the delete to the child record. */
+                // Cascade the delete to the child record.
                 var child_request = rCommon.couchdb_request(req, res, child_request_url,
                     {"method" : "GET"});
                 child_request.end();
@@ -303,6 +345,7 @@ app.delete('/delete/:controller/:id/:id2', function(req, res) {
             }
         });
     });
+    */
 });
 
 app.get('/related2/:view/:id', function( req, res ){
