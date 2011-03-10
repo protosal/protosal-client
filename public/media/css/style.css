@@ -89,10 +89,7 @@ body {
     margin-left: -480px;
     z-index: 3;
 	}
-		.proposalcontainer {
-			border: 1px solid #999;	
-			
-		}
+
 
 .logo {
     position: absolute;
@@ -698,11 +695,10 @@ font-weight: bold;
 	
 }
 .proposal_preview {
-z-index: 1;
-top: 222px;
- height:2000px;
-	width: 725px;
-	padding: 25px 25px 25px 25px;
+	z-index: 1;
+	top: 222px;
+	width: 705px;
+	padding: 25px 35px 25px 35px;
 	color: #444;
 }
 .proposal_preview .header {
@@ -740,7 +736,24 @@ top: 222px;
     margin-top: 50px;
 }
 .proposal_preview .section_heading.toc{
-	font-size: 2em;
+	font-size: 1.7em;
+}
+.proposal_preview .toc {
+	margin-top: 50px;
+	margin-bottom: 50px;
+	
+}
+.proposal_preview .toc ol{
+	margin-left: 75px;
+	margin-top: 20px;
+}
+.proposal_preview .toc ol li{
+	font-size: 1.3em;
+	cursor: pointer;
+	width: 590px;
+}
+.proposal_preview .toc ol li:hover{
+	background: #ffffcc url(../icons/direction.png) no-repeat right;
 }
 .proposal_preview .section {
     margin-bottom: 30px;
@@ -751,13 +764,15 @@ top: 222px;
 }
 .proposal_preview .section_content {
     font-size: 1em;
-    padding-left: 20px;
+    padding-left: 10px;
 }
 .proposal_preview .section_content ul {
     padding: 15px 0 0 40px;
     line-height: 28px;
+    margin-left: 100px;
 }
-#section_chooser_container ul {
+
+.section_temp ul {
 	
 	list-style: none;
 	width: 450px;
@@ -791,3 +806,5 @@ top: 222px;
 	background: #ffffcc;
 	
 }
+
+
