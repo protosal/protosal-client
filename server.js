@@ -11,6 +11,13 @@ var connect = require('connect');
 var _ = require('underscore');
 var uuid = require('node-uuid');
 var Exceptional = require('./exceptional').Exceptional;
+var cradle = require('cradle');
+
+cradle.setup({
+    host: '127.0.0.1',
+    port: 5984,
+    auth: { username: 'ryth', password: 'abCD--12' }
+});
 
 Exceptional.API_KEY = '05f3e5df3c4b21870836f019eff3d4e3fa49f0bb';
 
@@ -38,9 +45,19 @@ function BadJSON(msg) {
 
 BadJSON.prototype.__proto__ = Error.prototype;
 
+function AuthRequired(msg) {
+    this.name = 'AuthRequired';
+    Error.call(this, msg);
+    Error.captureStackTrace(this, arguments.callee);
+}
+
+AuthRequired.prototype.__proto__ = Error.prototype;
+
 app.error(function(err, req, res, next){
     if(err instanceof BadJSON) {
         res.send(err, 400);
+    } else if(err instanceof AuthRequired) {
+        res.send({"error":"authorization required"}, 401);
     }
 
     Exceptional.handle(err);
@@ -69,34 +86,6 @@ function app_db_handler(req, res, request) {
         });
         response.on('end', function () {
             res.send(_(data).to_json());
-        });
-    });
-}
-
-function emit_doc(req, res, id, rev) {
-    var database = '/app/';
-    var request_url = database + id + (rev ? "?rev=" + rev : "");
-    var request = rCommon.couchdb_request(req, res, request_url,
-        {"method" : "GET"});
-    request.end();
-    
-    request.on('response', function (response) {
-        response.setEncoding('utf8');
-        var data = '';
-
-        response.on('data', function(chunk) {
-            data += chunk;    
-        });
-
-        response.on('end', function () {
-            var parsed_data = _(data).to_json();
-
-            if( parsed_data.author && parsed_data.author == req.session.username ) {
-                res.send(parsed_data);
-            } else {
-                console.log("DAMMIT HACKER!");
-                res.send( {"redirect" : "/"}, 401 );
-            }
         });
     });
 }
@@ -150,20 +139,53 @@ app.get('/data/newinstance/:id', function(req, res) {
 
 });
 
-app.get('/data/:id/:rev?', function(req, res) {
-    emit_doc(req, res, req.params.id, req.params.rev);
+app.get('/data/:id', function(req, res) {
+    var db = new(cradle.Connection)().database('app');
+    db.get(req.params.id, function(err, doc) {
+        if( err ) {
+            res.send(err, 500);
+        } else {
+            if( doc.author == req.session.username ) {
+                res.send(doc);
+            } else {
+                res.send({"error": "authorization required"}, 401);
+            }
+        }
+    });
 });
 
-app.put('/data/:id/:rev?', function(req, res) {
-    var request_url = '/app/' + req.params.id + (req.params.rev ? "?rev=" + req.params.rev : "");
-    app_db_handler(req, res,
-        rCommon.couchdb_request(req, res, request_url, {"method" : req.method}) );
+app.put('/data/:id', function(req, res) {
+    var db = new(cradle.Connection)().database('app');
+
+    /* Set the author. */
+    req.body.author = req.session.username;
+
+    db.save(req.params.id, req.params.rev, req.body,
+        function(err, response) {
+            if( err ) {
+                res.send(err, 500);
+            } else {
+                res.send(response);
+            }
+        }
+    );
 });
 
 app.post('/data', function(req, res) {
-    var request_url = '/app';
-    app_db_handler(req, res,
-        rCommon.couchdb_request(req, res, request_url, {"method" : req.method}) );
+    var db = new(cradle.Connection)().database('app');
+
+    /* Set the author. */
+    req.body.author = req.session.username;
+
+    db.save(req.body,
+        function(err, response) {
+            if( err ) {
+                res.send(err, 500);
+            } else {
+                res.send(response);
+            }
+        }
+    );
 });
 
 function archive_request(req, res, doc, request_url) {
