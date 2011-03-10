@@ -39,9 +39,7 @@
             <a class="add_sections button ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" style="float:right;"><span class="ui-button-text">Add to Proposal</span></a><br />
         <div style="clear:both;"></div>
     </div>
-    <ul>
-    
-    </ul>
+    <ul></ul>
 </div>
 <jst>
 
@@ -108,7 +106,7 @@
 
         },
         addToPreview: function(section) {
-            console.log(section)
+            console.log(section);
             proposal_view.toc.addSection(section);
             proposal_view.section_container.addSection(section);
         },
@@ -142,12 +140,11 @@
         }
     });
     SectionChooser = Backbone.View.extend({
-        el: $("#section_chooser_container"),
+        el: $("body"),
+        activemodal: null,
         selectedSections: null,
         initialize: function(){
-            
-
-            
+    
         },
         events: {
             "click .section_list_item":    "toggleTick",  
@@ -165,28 +162,31 @@
             
         },
         addToPreview: function(){
-            $("#section_chooser_container li").each( function(){
+            $(".section_temp li").each( function(){
                 if( $(".tick", this).hasClass("ticked") ){
                     proposal_view.sections.add( { template_id: $(this).attr("section_id") , name: $(this).text() }  );
                 }    
             })
-            
-                proposal_view.section_chooser.el.dialog("close");
+            this.activemodal.dialog("destroy");
+            $(".section_temp").remove();
         },
         renderList: function( sections ){
+        
+                    
+            this.activemodal = $("<div class='section_temp'>").html( _.template( $("#section_chooser_list_template").html(), {sections: sections} ) )
             
-                $("ul",this.el).html( _.template( $("#section_chooser_list_template").html(), {sections: sections} ) );
-                this.el.dialog({
-                    autoOpen: false,
-                    draggable: false,
-                    resizable: false,
-                    closeOnEscape: false,
-                    title: "New Fee",
-                    modal: true, 
-                    hide: 'drop',
-                    width: "550px",
-                });
-                this.el.dialog("open");
+            this.activemodal.dialog({
+                autoOpen: false,
+                draggable: false,
+                resizable: false,
+                closeOnEscape: false,
+                title: "New Fee",
+                modal: true, 
+                hide: 'drop',
+                width: "550px",
+            }); 
+                
+            this.activemodal.dialog("open");
             console.log("Dialog created")
             
         }
@@ -202,11 +202,30 @@
             console.log(this);
             $("#toc_list").append( _.template( $("#toc_list_item").html(), { section: section } ) );
             $("#toc_list").sortable({
-                update: proposal_view.toc.updateOrder
+                update: function(event, ui) {
+                    console.log(arguments);
+                proposal_view.toc.updateOrder(event, ui)
+                }
             }); 
             proposal_view.toc.updateOrder();
         },
-        updateOrder: function(){
+        updateOrder: function(event,ui){
+            if( typeof ui != "undefined") {
+                
+                listitem = $(ui.item[0]);
+                console.log("hey")
+                console.log(listitem)
+                console.log($("#toc_list"));
+                position = ($("#toc_list li").index(listitem)) + 1;
+                cid = $(listitem).attr("id");
+                sec = $(".proposal_preview #section_container_test .section:nth-child("+position+")");
+                if( $(".proposal_preview #section_container_test .section:last").text() == sec.text() ){
+                    sec.after($(".section_"+cid))
+                } else {
+                    sec.before($(".section_"+cid))
+                }
+                
+            }
             sections = $("#toc_list").sortable('toArray').toString();
             console.log("Update order of sections");
             console.log(sections);
@@ -228,7 +247,6 @@
             
         },
         openModal: function(){
-            alert("clicked")
             proposal_view.addSectionRender();
             
         }
@@ -328,20 +346,27 @@
     </select>
 </script>
 <script type="text/template" id="section_chooser_list_template">
-<li class="section_list_item" style="margin-bottom: 25px;"><i>New Empty Section</i><div class="tick"></div></li>
-<% _.each( sections, function(section) {
-section = section.get("value");
-%>
-    <li class="section_list_item" section_id="<%= section._id %>"><%= section.name %><div class="tick"></div></li>
-<% }); %>
-
+    <div class="ui-widget-header">
+        <h3 style="text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);float: left;">Add Sections</h3>
+            <a class="add_sections button ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" style="float:right;"><span class="ui-button-text">Add to Proposal</span></a><br />
+        <div style="clear:both;"></div>
+    </div>
+    <ul>
+        <li class="section_list_item" style="margin-bottom: 25px;"><i>New Empty Section</i><div class="tick"></div></li>
+        <% _.each( sections, function(section) {
+        section = section.get("value");
+        %>
+            <li class="section_list_item" section_id="<%= section._id %>"><%= section.name %><div class="tick"></div></li>
+        <% }); %>
+    </ul>
+    </div>
 </script>
 <script type="text/template" id="proposal_preview_section">
     <div class="section section_<%= section.cid %>" template_id="<%= section.get("template_id") %>">
         <h3 class="section_heading"><%= section.get("name") %></h3>
         <div class="section_content">
                 <div class='loading' style="width: 32px; margin-left: 30px; margin-top: 10px;"> </div>
-          
+        
         </div>
     </div>
 </script>
@@ -372,8 +397,8 @@ section = section.get("value");
             <br />
             <p class="introduction">A This is a short but effective proposal template for a website redesign project. It clearly outlines the business challenges the client faces, how these challenges will be taken care of, and what the client must do to get the project started.</p>
             <br />
-            <div class="section toc">
-                <h3 class="section_heading toc">Table of contents</h3>
+            <div class="toc">
+                <h3 class="section_heading">Table of contents</h3>
                 <div id="proposal_preview_toc">
                     <ol id="toc_list"></ol>
                 </div>
@@ -382,7 +407,9 @@ section = section.get("value");
             <div id="section_container_test">
 
             </div>
+            <!--
             <div class="section_container">
+                
                 <div class="section">
                     <h3 class="section_heading">Overview</h3>
                     <div class="section_content">
@@ -426,6 +453,8 @@ section = section.get("value");
                         This agreement becomes effective only when signed by agents of Sample client Company and tyth.  This is the conclusion you better believe it.
                     </div>
                 </div>
-            </div>
-            <div style="clear: both;"></div>
+        </div>
+        -->
+        <div style="clear: both;"></div>
+        <div style="clear: both;"></div>
 </script>

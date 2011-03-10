@@ -142,14 +142,14 @@
                         url = GLOBALS.server_base + "/api/get" + location.hash.substr(1) + "/" + GLOBALS.route_id; 
                         
                         //We know the page is about to change so lets clean up any jckeditors hanging around before the dom changes and jckeditors internal reference is updated
-                        
+                        //CLEAN UP EVERYTHING
                         $(".jckeditor").each( function(){
                             $(this).ckeditor(function(){ // a hack to make jck editor work on page refresh
                             
                                 this.destroy();
                             });
                         });
-                        
+                        $(".ui-dialog").remove();
                         
                         var obj = {};
                         template = GLOBALS.controller + "_" + GLOBALS.action + "_view";
