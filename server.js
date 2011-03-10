@@ -30,10 +30,32 @@ app.configure(function() {
     app.use(rCommon.authCheck );
 });
 
+function BadJSON(msg) {
+    this.name = 'BadJSON';
+    Error.call(this, msg);
+    Error.captureStackTrace(this, arguments.callee);
+}
+
+BadJSON.prototype.__proto__ = Error.prototype;
+
 app.error(function(err, req, res, next){
+    if(err instanceof BadJSON) {
+        res.send(err, 400);
+    }
+
     Exceptional.handle(err);
     console.log(err);
 }); 
+
+_.mixin({
+    to_json: function (obj) {
+        try {
+            return JSON.parse(obj);
+        } catch(err) {
+            throw new BadJSON;
+        }
+    }
+});
 
 function app_db_handler(req, res, request) {
     req.body.author = req.session.username;
@@ -46,7 +68,7 @@ function app_db_handler(req, res, request) {
             data += chunk;
         });
         response.on('end', function () {
-            res.send(JSON.parse(data));
+            res.send(_(data).to_json());
         });
     });
 }
@@ -67,8 +89,7 @@ function emit_doc(req, res, id, rev) {
         });
 
         response.on('end', function () {
-            var parsed_data = JSON.parse(data);
-            console.log(parsed_data);
+            var parsed_data = _(data).to_json();
 
             if( parsed_data.author && parsed_data.author == req.session.username ) {
                 res.send(parsed_data);
@@ -94,7 +115,8 @@ app.get('/data/newinstance/:id', function(req, res) {
         response.on('end', function() {
             response.setEncoding('utf8');
 
-            section_data = JSON.parse(section_data);
+            section_data = _(section_data).to_json();
+
             section_data.template = false;
             delete section_data._id;
             delete section_data._rev;
@@ -115,9 +137,8 @@ app.get('/data/newinstance/:id', function(req, res) {
                     });
 
                     response.on('end', function() {
-                        new_section_data = JSON.parse(new_section_data);
-                        console.log(new_section_data);
-                        console.log("we good");
+                        new_section_data = _(new_section_data).to_json();
+
                         emit_doc(req, res, new_section_data.id);
                     });
                 });
@@ -161,7 +182,7 @@ function archive_request(req, res, doc, request_url) {
         });
 
         response.on('end', function(end) {
-           res.send(JSON.parse(archive_data)); 
+            res.send(_(archive_data).to_json());
         });
     });
 }
@@ -182,7 +203,7 @@ function delete_request(req, res, request_url, return_value) {
 
         response.on('end', function () {
             if( return_value ) {
-                res.send(JSON.parse(data));
+                res.send(_(data).to_json());
             }
         })
     });
@@ -203,7 +224,7 @@ app.delete('/data/:id/:rev?', function(req, res) {
         });
 
         response.on('end', function () {
-            data = JSON.parse(data);
+            data = _(data).to_json();
             if( data.author && req.session.username == data.author ) {
                 var url = '/app/' + req.params.id + (req.params.rev ? "?rev=" + req.params.rev : "");
                 delete_request(req, res, url);
@@ -231,7 +252,7 @@ app.delete('/delete/:controller/:id/:id2', function(req, res) {
 
         response.on('end', function (){
             /* Delete the relationship record. */
-            var parsed_data = JSON.parse(data);
+            var parsed_data = _(data).to_json();
             console.log(parsed_data);
 
             if( parsed_data && parsed_data.rows && parsed_data.rows[0] ) {
@@ -256,7 +277,7 @@ app.delete('/delete/:controller/:id/:id2', function(req, res) {
                     });
 
                     response.on('end', function() {
-                        data = JSON.parse(data);
+                        data = _(data).to_json();
                         // Only delete instances
                         var url = '/app/' + data._id + '?rev=' + data._rev;
                         if( !data.template ) {
@@ -295,7 +316,7 @@ var generic_list_retrieve = function(req, res, request) {
         });
 
         response.on('end', function (){
-            res.send(JSON.parse(data)); 
+            res.send(_(data).to_json()); 
         });
     });
 }
@@ -324,8 +345,8 @@ app.get('/related2/:view/:id', function( req, res ){
             data += chunk;
         });
         response.on('end', function (){
-            
-            keys = _.map(JSON.parse(data).rows, function( row ) {
+            data = _(data).to_json();
+            keys = _.map(data.rows, function( row ) {
                 var property = child + '_id';
                 return row.value[property];
             });
