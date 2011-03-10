@@ -29,7 +29,7 @@
     </div>
     <div id="sidemenu" style="">
     <a class="button delete ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button"><span class="ui-button-text">Contents</span></a><br />
-    <a class="button delete ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button"><span class="ui-button-text">Add Section</span></a><br />
+    <a id="side_add_section" class="delete ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button"><span class="ui-button-text">Add Section</span></a><br />
     <a class="button delete ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button"><span class="ui-button-text">View PDF</span></a>
     </div>
 </div>
@@ -107,8 +107,10 @@
             //this.bind("add", this.addEvent );
 
         },
-        addToTOC: function(section) {
-                proposal_view.toc.addSection(section);
+        addToPreview: function(section) {
+            console.log(section)
+            proposal_view.toc.addSection(section);
+            proposal_view.section_container.addSection(section);
         },
         getAllTemplates: function(){
             console.log("Start fetching the section templates");
@@ -121,8 +123,23 @@
             }); //When statement end
         }
     });
-    SectionsView = Backbone.View.extend({
-
+    SectionsContainer = Backbone.View.extend({
+        el: $("#section_container_test"),
+        initialize: function(){
+            console.log("Iniitalize sections container");
+            console.log(this.el)
+        },
+        addSection: function( section ){
+            console.log("Add to sections container")
+            console.log($("#proposal_preview_section").html())
+            $("#section_container_test").append( _.template( $("#proposal_preview_section").html(), { section: section } ) );
+            $.ajax({
+                url: "http://localhost:3000/data/newinstance/" + section.get("template_id"),
+                success: function( response ){
+                    $(".section_content", ".section_" + section.cid).html( _.template( $("#proposal_preview_section_content").html(), response ) );
+                }
+            });
+        }
     });
     SectionChooser = Backbone.View.extend({
         el: $("#section_chooser_container"),
@@ -150,8 +167,7 @@
         addToPreview: function(){
             $("#section_chooser_container li").each( function(){
                 if( $(".tick", this).hasClass("ticked") ){
-                    
-                    console.log("woot")
+                    proposal_view.sections.add( { template_id: $(this).attr("section_id") , name: $(this).text() }  );
                 }    
             })
             
@@ -184,7 +200,7 @@
         addSection: function( section ){
             console.log("Add section to the ordered list");
             console.log(this);
-            $("#toc_list").append( _.template( $("#toc_list_item").html(), section.get("value") ) );
+            $("#toc_list").append( _.template( $("#toc_list_item").html(), { section: section } ) );
             $("#toc_list").sortable({
                 update: proposal_view.toc.updateOrder
             }); 
@@ -205,6 +221,18 @@
         }
     
     });
+    SideMenu = Backbone.View.extend({
+        el: $("#sidemenu"),
+        events: {
+            "click #side_add_section": "openModal"
+            
+        },
+        openModal: function(){
+            alert("clicked")
+            proposal_view.addSectionRender();
+            
+        }
+    });
     ProposalView = Backbone.View.extend({
     
         el: $("#proposal_form_container"),
@@ -224,7 +252,7 @@
                 console.log("Get the proposal id");
                 
                 this.sections = new SectionCollection;
-                this.sections.bind("add", this.sections.addToTOC);
+                this.sections.bind("add", this.sections.addToPreview);
 
                 this.allsections = new SectionCollection;
                 this.allsections.getAllTemplates();
@@ -235,6 +263,8 @@
                 this.fees = new FeeCollection;
             
                 this.toc = new TOCView;
+                this.section_container = new SectionsContainer;
+                this.sidemenu = new SideMenu;
                 this.section_chooser = new SectionChooser;
                 
             }, this)
@@ -246,47 +276,11 @@
             var sections = this.allsections.models;
             // Now that we have all the section templates, populate the section choose
             proposal_view.section_chooser.renderList(sections);
-            
-            /*
-            sections = _.map( sections, function( section ){
-                section = section.get("value");
-                return {
-                    "id" : section._id,
-                    "label" : section.name,
-                    "value" : section.name,
-                    "rev" : section._rev,
-                };
-            }); //Map function end
-            console.log( "Mapped sections: " + sections.length );
-            $("#add_section_input").autocomplete({
-                        source: sections,
-                        minLength: 1,
-                        delay: 0,
-                        select: function( event, ui ) {
-                            console.log("TODO - Instantiate a new section and return the id");
-                            function getInstance(){
-                                    return $.Deferred(function(dfd){
-                                        var instance = proposal_view.allsections.get( ui.item.id ).clone();
-                                        instance.set({ "id": "newid" });
-                                        console.log("Changed id of the new instance");
-                                        dfd.resolve( instance );
-                                    }).promise();
 
-                            }
-                            $.when( getInstance() )
-                            .then( function( section_instance) {
-                                    console.log( "Section instantiated with id " + section_instance);
-                                    proposal_view.sections.add(section_instance);
-                            });
-                            $( this ).val("").focus();
-                            return false;
-                        }
-            }); //Auto complete end
-            */
         },
         get_id: function(){
             if( GLOBALS.route_id == "" ){
-                // Get the empty form fields and serialize them so we can insert into the database
+                // Get the empty form fields and serialize them sresponseo we can insert into the database
                 formdata = $(".edit_proposal_form").serializeObject();
                 // Add the type of form to the form object
                 formdata.type = "proposal";
@@ -316,7 +310,7 @@
 </jst>
 </script>
 <script type="text/template" id="toc_list_item">
-    <li id="<%= _id %>"><%= name %></li>
+    <li id="<%= section.cid %>" template_id="<%= section.get("template_id") %>"><%= section.get("name") %></li>
 </script>
 <script type="text/template" id="clients_combo_form_element">
     <select name="client_id">                $("body").append("<div style='' class='proposalcontainer proposal_preview container'>Yo</div>");
@@ -342,6 +336,20 @@ section = section.get("value");
 <% }); %>
 
 </script>
+<script type="text/template" id="proposal_preview_section">
+    <div class="section section_<%= section.cid %>" template_id="<%= section.get("template_id") %>">
+        <h3 class="section_heading"><%= section.get("name") %></h3>
+        <div class="section_content">
+                <div class='loading' style="width: 32px; margin-left: 30px; margin-top: 10px;"> </div>
+          
+        </div>
+    </div>
+</script>
+<script type="text/template" id="proposal_preview_section_content">
+        <div class="section_content">
+                <%= description %>
+        </div>
+</script>
 <script type="text/template" id="proposal_preview">
             <div class="header">
                 <div class="details">
@@ -352,7 +360,7 @@ section = section.get("value");
                     <strong>Fx</strong>: (07) 4723 1780
                 </div>
                 <div class="userlogo">
-                <img src="/media/userimages/logo.jpg" />
+                <img src="/media/userimages/logo.jpg" rks/>
                 </div>
                 
             </div>
@@ -364,13 +372,16 @@ section = section.get("value");
             <br />
             <p class="introduction">A This is a short but effective proposal template for a website redesign project. It clearly outlines the business challenges the client faces, how these challenges will be taken care of, and what the client must do to get the project started.</p>
             <br />
-            <div class="section">
-                <h3 class="section_heading">Table of contents</h3>
+            <div class="section toc">
+                <h3 class="section_heading toc">Table of contents</h3>
                 <div id="proposal_preview_toc">
                     <ol id="toc_list"></ol>
                 </div>
             </div>
 
+            <div id="section_container_test">
+
+            </div>
             <div class="section_container">
                 <div class="section">
                     <h3 class="section_heading">Overview</h3>
@@ -394,7 +405,7 @@ section = section.get("value");
                 
                 <div class="section">
                     <h3 class="section_heading">Section with a Fee</h3>
-                    <div class="section_content">
+                    <div class="section_content">notifications@getexceptional.com
                         This section is an example of what a section with a fee table looks like.  This is going to be tricky but we can do it. Because we da best.
                         <table>
                             <tr>
@@ -416,4 +427,5 @@ section = section.get("value");
                     </div>
                 </div>
             </div>
+            <div style="clear: both;"></div>
 </script>

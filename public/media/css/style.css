@@ -728,16 +728,19 @@ top: 222px;
 }
 .proposal_preview .details {
     float: left;
-    font-size: 0.95em;
+    font-size: 1em;
     line-height: 1.1em;
 }
 
 .proposal_preview .introduction {
-    font-size: 0.9em;
+    font-size: 1em;
 }
 
 .proposal_preview .section_container{ 
     margin-top: 50px;
+}
+.proposal_preview .section_heading.toc{
+	font-size: 2em;
 }
 .proposal_preview .section {
     margin-bottom: 30px;
@@ -747,7 +750,7 @@ top: 222px;
     line-height: 1.9em;
 }
 .proposal_preview .section_content {
-    font-size: 0.9em;
+    font-size: 1em;
     padding-left: 20px;
 }
 .proposal_preview .section_content ul {
@@ -761,6 +764,8 @@ top: 222px;
 	margin: auto;
 	margin-top: 20px;
 	margin-bottom: 20px;
+	height: 400px;
+	overflow: auto;
 }
 .section_list_item {
 	cursor:pointer;
@@ -780,4 +785,9 @@ top: 222px;
 }
 .section_list_item:hover {
 	background: #f7f7f7;
+}
+.section:hover {
+	cursor: pointer;
+	background: #ffffcc;
+	
 }
