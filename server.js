@@ -180,7 +180,7 @@ function delete_request(req, res, request_url, return_value) {
             data += chunk;
         });
 
-        response.on('end', function (data) {
+        response.on('end', function () {
             if( return_value ) {
                 res.send(JSON.parse(data));
             }
