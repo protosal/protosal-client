@@ -36,15 +36,7 @@ app.configure(function() {
     app.use(connect.session({ secret: 'foobar' }));
     app.use(rCommon.authCheck );
 });
-
-function couch_response(err, doc, res) {
-    if( err ) {
-        res.send(err, 500);
-    } else {
-        res.send(doc);
-    }
-}
-
+ 
 function BadJSON(msg) {
     this.name = 'BadJSON';
     Error.call(this, msg);
@@ -61,16 +53,61 @@ function AuthRequired(msg) {
 
 AuthRequired.prototype.__proto__ = Error.prototype;
 
+function ServerError(msg) {
+    this.name = 'ServerError';
+    Error.call(this, msg);
+    Error.captureStackTrace(this, arguments.callee);
+}
+
+ServerError.prototype.__proto__ = Error.prototype;
+
+
 app.error(function(err, req, res, next){
     if(err instanceof BadJSON) {
         res.send(err, 400);
     } else if(err instanceof AuthRequired) {
         res.send({"error":"authorization required"}, 401);
+    } else if(err instanceof ServerError) {
+        res.send({"error":"internal server error"}, 500);
     }
 
     Exceptional.handle(err);
     console.log(err);
 }); 
+
+function couch_response(err, doc, res) {
+    if( err ) {
+        res.send(err, 500);
+    } else {
+        res.send(doc);
+    }
+}
+
+function couch_remove(db, doc, res) {
+    if( doc.template ) {
+        doc.merge(doc._id, {archived: true}, function(err, doc) {
+            if( !res ) {
+                if( err )
+                    console.log("error archiving template");
+                    throw new ServerError;
+            } else {
+                couch_response(err, doc, res);
+            }
+        });
+    } else {
+        db.remove(doc._id, doc._rev,
+            function(err, doc) {
+                if( !res ) {
+                    if( err )
+                        console.log("error removing instance");
+                        throw new ServerError;
+                } else {
+                    couch_response(err, doc, res);
+                }
+            }
+        );
+    }
+}
 
 _.mixin({
     to_json: function (obj) {
@@ -251,17 +288,7 @@ app.delete('/data/:id/:rev', function(req, res) {
             res.send(err, 500);
         } else {
             if( doc.author == req.session.username ) {
-                if( doc.template ) {
-                    doc.merge(doc._id, {archived: true}, function(err, doc) {
-                        couch_response(err, doc, res);
-                    });
-                } else {
-                    db.remove(req.params.id, req.params.rev,
-                        function(err, doc) {
-                            couch_response(err, doc, res);
-                        }
-                    );
-                }
+                couch_remove(db, doc, res);
             } else {
                 res.send({"error": "delete failed"}, 401);
             }
@@ -271,18 +298,31 @@ app.delete('/data/:id/:rev', function(req, res) {
 
 /* Delete the relationship */
 app.delete('/delete/:controller/:id/:id2', function(req, res) {
-    /*
     var db = new(cradle.Connection)().database('app');
 
-    var key = {"key" : [req.params.id, req.params.id2]};
-    db.view(req.params.controller + '/list', key, function(err, doc) {
+    var key = {key: [req.params.id, req.params.id2]};
+    db.view(req.params.controller + '/list', key, function(err, rel_doc) {
         if( err ) {
+            console.log(key);
+            console.log("error getting relationship");
             res.send(err, 500);
+            return;
         } else {
-            db.remove(
+            couch_remove(db, rel_doc);
+
+            /* Delete foreign relation. This is always id2. */
+            db.get(req.params.id2, function(err, doc) {
+                if( err ) {
+                    console.log("error getting foreign relation");
+                    res.send(err, 500);
+                    return;
+                } else {
+                    couch_remove(db, doc, res);
+                }
+            });
         }
-    };
-    */
+    });
+});
 
     /*
     var request_url = '/app/_design/' + req.params.controller + "/_view/list?key=[\""+ req.params.id + "\",\""+ req.params.id2 +"\"]";
@@ -346,7 +386,6 @@ app.delete('/delete/:controller/:id/:id2', function(req, res) {
         });
     });
     */
-});
 
 app.get('/related2/:view/:id', function( req, res ){
     var db = new(cradle.Connection)().database('app');
