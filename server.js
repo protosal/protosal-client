@@ -51,6 +51,35 @@ function app_db_handler(req, res, request) {
     });
 }
 
+function emit_doc(req, res, id, rev) {
+    var database = '/app/';
+    var request_url = database + id + (rev ? "?rev=" + rev : "");
+    var request = rCommon.couchdb_request(req, res, request_url,
+        {"method" : "GET"});
+    request.end();
+    
+    request.on('response', function (response) {
+        response.setEncoding('utf8');
+        var data = '';
+
+        response.on('data', function(chunk) {
+            data += chunk;    
+        });
+
+        response.on('end', function () {
+            var parsed_data = JSON.parse(data);
+            console.log(parsed_data);
+
+            if( parsed_data.author && parsed_data.author == req.session.username ) {
+                res.send(parsed_data);
+            } else {
+                console.log("DAMMIT HACKER!");
+                res.send( {"redirect" : "/"}, 401 );
+            }
+        });
+    });
+}
+
 app.get('/data/newinstance/:id', function(req, res) {
     var section_url = '/app/' + req.params.id;
     var section_request = rCommon.couchdb_request(req, res, section_url, {"method" : "GET"});
@@ -87,7 +116,9 @@ app.get('/data/newinstance/:id', function(req, res) {
 
                     response.on('end', function() {
                         new_section_data = JSON.parse(new_section_data);
-                        res.redirect('/data/' + new_section_data.id);
+                        console.log(new_section_data);
+                        console.log("we good");
+                        emit_doc(req, res, new_section_data.id);
                     });
                 });
             } else {
@@ -99,30 +130,7 @@ app.get('/data/newinstance/:id', function(req, res) {
 });
 
 app.get('/data/:id/:rev?', function(req, res) {
-    var request_url = '/app/' + req.params.id + (req.params.rev ? "?rev=" + req.params.rev : "");
-    var request = rCommon.couchdb_request(req, res, request_url,
-        {"method" : req.method});
-    request.end();
-    
-    request.on('response', function (response) {
-        response.setEncoding('utf8');
-        var data = '';
-
-        response.on('data', function(chunk) {
-            data += chunk;    
-        });
-
-        response.on('end', function () {
-            var parsed_data = JSON.parse(data);
-
-            if( parsed_data.author && parsed_data.author == req.session.username ) {
-                res.send(parsed_data);
-            } else {
-                console.log("DAMMIT HACKER!");
-                res.send( {"redirect" : "/"}, 401 );
-            }
-        });
-    });
+    emit_doc(req, res, req.params.id, req.params.rev);
 });
 
 app.put('/data/:id/:rev?', function(req, res) {
