@@ -321,88 +321,47 @@ app.delete('/delete/:controller/:id/:id2', function(req, res) {
     });
 });
 
-var generic_list_retrieve = function(req, res, request) {
-    if( req.method == "POST" ) {
-        // Used for selecting multiple keys on POST.
-        request.end(req.rawBody);
-    } else {
-        request.end();
-    }
-    
-    request.on('response', function (response) {
-        response.setEncoding('utf8');
-        data = "";
-
-        response.on('data', function (chunk) {
-            data += chunk;
-        });
-
-        response.on('end', function (){
-            res.send(_(data).to_json()); 
-        });
-    });
-}
-
-app.get('/related/:view/:id', function( req, res ){
-    var request_url = '/app/_design/' + req.params.view + "/_view/list_by_parent?key=\"" + req.params.id + "\"";
-    generic_list_retrieve(req, res, rCommon.couchdb_request(req, res, request_url,
-            {"method" : req.method}));
-});
-
 app.get('/related2/:view/:id', function( req, res ){
-    var request_url = '/app/_design/' + req.params.view + "/_view/list_by_parent?key=\"" + req.params.id + "\"";
-    var request = rCommon.couchdb_request(req, res, request_url,
-        {"method" : req.method});
-    request.end();
-    /* The relationship request format is now parent_child.
-     * The script figures out how to call the right views.
-     */
-     
+    var db = new(cradle.Connection)().database('app');
+
     var child = req.params.view.split('_')[1];
 
-    request.on('response', function (response) {
-        response.setEncoding('utf8');
-        data = "";
-        response.on('data', function (chunk) {
-            data += chunk;
-        });
-        response.on('end', function (){
-            data = _(data).to_json();
-            keys = _.map(data.rows, function( row ) {
-                var property = child + '_id';
-                return row.value[property];
-            });
-            
-            req.rawBody = JSON.stringify({
-                "keys": keys
-            });
+    db.view(req.params.view + '/list_by_parent',
+        { key: req.params.id },
+        function(err, doc) {
+            if( err ) {
+                res.send(err, 500);
+            } else {
+                var keys = _.map(doc.rows, function( row ) {
+                    var property = child + '_id';
+                    return row.value[property];
+                });    
 
-            req.method = "POST";
-            
-            var request_url2 = '/app/_design/' + child + "/_view/list_by_id";
-            generic_list_retrieve(req, res, rCommon.couchdb_request(req, res,
-                    request_url2, {"method" : req.method}));
-        });
-    });
+                db.view(child + '/list_by_id', {'keys': keys}, function(err, doc) {
+                    if( err ) {
+                        res.send(err, 500);
+                    } else {
+                        res.send(doc); 
+                    }
+                });
+            }
+        }
+    );
 });
 
-app.all('/:list_type/:view', function(req, res) {
-    var request_url = '/app/_design/' + req.params.view + "/_view/" + req.params.list_type;
+app.get('/:list_type/:view', function(req, res) {
+    var db = new(cradle.Connection)().database('app');
 
-    switch(req.method) {
-        case "GET":
-            request_url += "?key=\"" + req.session.username + "\"";
-            break;
-        case "POST":
-            /* The request URL is already correct. */
-            break;
-        default:
-            res.send({"error": "Only GET and POST are supported for " + req.params.list_type + "/" + req.params.view});
-            return;
-    }
-
-    generic_list_retrieve(req, res, rCommon.couchdb_request(req, res, request_url,
-            {"method" : req.method}));
+    db.view(req.params.view + '/' + req.params.list_type,
+        { key: req.session.username },
+        function(err, response) {
+            if( err ) {
+                res.send(err, 500);        
+            } else {
+                res.send(response);
+            }
+        }
+    );
 });
 
 app.listen(3000);
