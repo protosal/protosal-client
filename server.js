@@ -12,7 +12,6 @@ var _ = require('underscore');
 var uuid = require('node-uuid');
 var Exceptional = require('./exceptional').Exceptional;
 
-
 Exceptional.API_KEY = '05f3e5df3c4b21870836f019eff3d4e3fa49f0bb';
 
 app.configure(function() {
@@ -42,9 +41,12 @@ function app_db_handler(req, res, request) {
     request.end();
     
     request.on('response', function (response) {
-        response.on('data', function (data) {
-            res.header('Content-Type', 'application/json');
-            res.send(data);
+        var data = '';
+        response.on('data', function(chunk) {
+            data += chunk;
+        });
+        response.on('end', function () {
+            res.send(JSON.parse(data));
         });
     });
 }
@@ -106,18 +108,12 @@ app.get('/data/:id/:rev?', function(req, res) {
 
         response.on('end', function () {
             var parsed_data = JSON.parse(data);
+
             if( parsed_data.author == req.session.username ) {
-                res.header('Content-Type', 'application/json');
-                
-                res.send(data);
+                res.send(parsed_data);
             } else {
-                res.writeHead(401);
                 console.log("DAMMIT HACKER!");
-                redirect = {
-                    redirect: "/"
-                }
-                res.end( JSON.stringify( redirect ) );
-                return;
+                res.send( {"redirect" : "/"}, 401 );
             }
         });
     });
@@ -145,10 +141,15 @@ function delete_request(req, res, request_url, return_value) {
     deleterequest.end();
     
     deleterequest.on('response', function (response) {
-        response.on('data', function (data) {
+        var data = '';
+
+        response.on('data', function(chunk) {
+            data += chunk;
+        });
+
+        response.on('end', function (data) {
             if( return_value ) {
-                res.header('Content-Type', 'application/json');
-                res.send(data);
+                res.send(JSON.parse(data));
             }
         })
     });
@@ -169,10 +170,12 @@ app.delete('/data/:id/:rev?', function(req, res) {
         });
 
         response.on('end', function () {
-            author = JSON.parse(data).author;
-            if( req.session.username == author ) {
+            data = JSON.parse(data);
+            if( data.author && req.session.username == data.author ) {
                 var url = '/app/' + req.params.id + (req.params.rev ? "?rev=" + req.params.rev : "");
                 delete_request(req, res, url);
+            } else {
+                res.send({"error":"delete failed", "reason":"Invalid users"}, 401);
             }
         });
     });
@@ -305,18 +308,17 @@ app.get('/related2/:view/:id', function( req, res ){
 });
 
 app.all('/:list_type/:view', function(req, res) {
-    var request_url = "";
+    var request_url = '/app/_design/' + req.params.view + "/_view/" + req.params.list_type;
 
     switch(req.method) {
         case "GET":
-            request_url = '/app/_design/' + req.params.view + "/_view/" + req.params.list_type + "?key=\"" + req.session.username + "\"";
+            request_url += "?key=\"" + req.session.username + "\"";
             break;
         case "POST":
-            var request_url = '/app/_design/' + req.params.view + "/_view/" + req.params.list_type;
+            /* The request URL is already correct. */
             break;
         default:
-            res.header('Content-Type', 'application/json');
-            res.send(JSON.stringify({"error": "Only GET and POST are supported for " + req.params.list_type + "/" + req.params.view}));
+            res.send({"error": "Only GET and POST are supported for " + req.params.list_type + "/" + req.params.view});
             return;
     }
 
