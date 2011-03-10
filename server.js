@@ -37,6 +37,14 @@ app.configure(function() {
     app.use(rCommon.authCheck );
 });
 
+function couch_response(err, doc, res) {
+    if( err ) {
+        res.send(err, 500);
+    } else {
+        res.send(doc);
+    }
+}
+
 function BadJSON(msg) {
     this.name = 'BadJSON';
     Error.call(this, msg);
@@ -73,22 +81,6 @@ _.mixin({
         }
     }
 });
-
-function app_db_handler(req, res, request) {
-    req.body.author = req.session.username;
-    request.write( JSON.stringify(req.body) );
-    request.end();
-    
-    request.on('response', function (response) {
-        var data = '';
-        response.on('data', function(chunk) {
-            data += chunk;
-        });
-        response.on('end', function () {
-            res.send(_(data).to_json());
-        });
-    });
-}
 
 app.get('/data/newinstance/:id', function(req, res) {
     var section_url = '/app/' + req.params.id;
@@ -141,6 +133,7 @@ app.get('/data/newinstance/:id', function(req, res) {
 
 app.get('/data/:id', function(req, res) {
     var db = new(cradle.Connection)().database('app');
+
     db.get(req.params.id, function(err, doc) {
         if( err ) {
             res.send(err, 500);
@@ -161,12 +154,8 @@ app.put('/data/:id', function(req, res) {
     req.body.author = req.session.username;
 
     db.save(req.params.id, req.params.rev, req.body,
-        function(err, response) {
-            if( err ) {
-                res.send(err, 500);
-            } else {
-                res.send(response);
-            }
+        function(err, doc) {
+            couch_response(err, doc, res);
         }
     );
 });
@@ -178,12 +167,8 @@ app.post('/data', function(req, res) {
     req.body.author = req.session.username;
 
     db.save(req.body,
-        function(err, response) {
-            if( err ) {
-                res.send(err, 500);
-            } else {
-                res.send(response);
-            }
+        function(err, doc) {
+            couch_response(err, doc, res);
         }
     );
 });
@@ -231,29 +216,28 @@ function delete_request(req, res, request_url, return_value) {
     });
 }
 
-app.delete('/data/:id/:rev?', function(req, res) {
-    var request_url = '/app/' + req.params.id + (req.params.rev ? "?rev=" + req.params.rev : "");
-    var authorcheck = rCommon.couchdb_request(req, res, request_url,
-        {"method" : "GET"});
-    authorcheck.end();
-    
-    authorcheck.on('response', function (response) {
-        response.setEncoding('utf8');
-        data = "";
-
-        response.on('data', function (chunk) {
-            data += chunk;
-        });
-
-        response.on('end', function () {
-            data = _(data).to_json();
-            if( data.author && req.session.username == data.author ) {
-                var url = '/app/' + req.params.id + (req.params.rev ? "?rev=" + req.params.rev : "");
-                delete_request(req, res, url);
+app.delete('/data/:id/:rev', function(req, res) {
+    var db = new(cradle.Connection)().database('app');
+    db.get(req.params.id, function(err, doc) {
+        if( err ) {
+            res.send(err, 500);
+        } else {
+            if( doc.author == req.session.username ) {
+                if( doc.template ) {
+                    doc.merge(doc._id, {archived: true}, function(err, doc) {
+                        couch_response(err, doc, res);
+                    });
+                } else {
+                    db.remove(req.params.id, req.params.rev,
+                        function(err, doc) {
+                            couch_response(err, doc, res);
+                        }
+                    );
+                }
             } else {
-                res.send({"error":"delete failed"}, 401);
+                res.send({"error": "delete failed"}, 401);
             }
-        });
+        }
     });
 });
 
@@ -338,11 +322,7 @@ app.get('/related2/:view/:id', function( req, res ){
                 });    
 
                 db.view(child + '/list_by_id', {'keys': keys}, function(err, doc) {
-                    if( err ) {
-                        res.send(err, 500);
-                    } else {
-                        res.send(doc); 
-                    }
+                    couch_response(err, doc, res);
                 });
             }
         }
@@ -354,12 +334,8 @@ app.get('/:list_type/:view', function(req, res) {
 
     db.view(req.params.view + '/' + req.params.list_type,
         { key: req.session.username },
-        function(err, response) {
-            if( err ) {
-                res.send(err, 500);        
-            } else {
-                res.send(response);
-            }
+        function(err, doc) {
+            couch_response(err, doc, res);
         }
     );
 });
