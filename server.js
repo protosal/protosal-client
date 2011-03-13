@@ -85,7 +85,7 @@ function couch_response(err, doc, res) {
 
 function couch_remove(db, doc, res) {
     if( doc.template ) {
-        doc.merge(doc._id, {archived: true}, function(err, doc) {
+        db.merge(doc._id, {archived: true}, function(err, doc) {
             if( !res ) {
                 if( err )
                     console.log("error archiving template");
@@ -298,6 +298,7 @@ app.delete('/data/:id/:rev', function(req, res) {
 
 /* Delete the relationship */
 app.delete('/delete/:controller/:id/:id2', function(req, res) {
+    console.log("What I don't even...");
     var db = new(cradle.Connection)().database('app');
 
     var key = {key: [req.params.id, req.params.id2]};
