@@ -1,6 +1,7 @@
 <script type="text/template" id="common_edit_view_template">
 
 <% typeof success == "undefined" ? success = function() { redirect(GLOBALS.controller + "/list"); } : success = success; %>
+<% typeof templateid == "undefined" ? templateid = "" : templateid = templateid; %>
 <%  
     if( typeof documentid == "undefined") {
         /* if you have nested edits then the document id can only be valid
@@ -57,6 +58,7 @@ _rev = ""
                 If this template receives a document id user that instead
                 */
                 id = "<%= current_doc_id %>";
+                templateid = "<%= templateid %>";
                 if( id ){
                     var url = GLOBALS.server_base + "/data/" + id;
                     $.ajax( url, {
@@ -73,6 +75,7 @@ _rev = ""
                             $(".<%= controller %>_save").click({
                                 _rev: _rev,
                                 _id: id,
+                                templateid: templateid,
                                 success: <%= success %>
                             }, window.saveclickHandler );
                              
@@ -86,6 +89,7 @@ _rev = ""
                     $(".<%= controller %>_save").click({
                         _rev: "",
                         _id: "",
+                        templateid: "",
                         success: <%= success %>
                     }, window.saveclickHandler );
                 }
