@@ -1,15 +1,10 @@
 // Require the orm and framework
 var express = require('express');
 var http = require('http');
-var Base64 = require('base64');
-var Buffer = require('buffer').Buffer;
 var rCommon = require('./common')
-var fs = require('fs');
-var sys = require('sys');
 var app = express.createServer();
 var connect = require('connect');
 var _ = require('underscore');
-var uuid = require('node-uuid');
 var Exceptional = require('./exceptional').Exceptional;
 var cradle = require('cradle');
 
@@ -73,7 +68,7 @@ app.error(function(err, req, res, next){
 
 function couch_response(err, doc, res) {
     if( err ) {
-        res.send(err, 500);
+        throw new ServerError(err);
     } else {
         res.send(doc);
     }

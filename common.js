@@ -1,6 +1,6 @@
 var Base64 = require('base64');
 var Buffer = require('buffer').Buffer;
-var urlpaser = require('url');
+var urlparser = require('url');
 var http = require('http');
 var Hash = require('./sha1');
 var fs = require('fs');
@@ -142,7 +142,7 @@ function auth_error(res) {
 }
 
 exports.authCheck = function (req, res, next) {
-    url = req.urlp = urlpaser.parse(req.url, true);
+    url = req.urlp = urlparser.parse(req.url, true);
 
     // ####
     // Logout
