@@ -84,6 +84,7 @@ function couch_response(err, doc, res) {
 }
 
 function couch_remove(db, doc, res) {
+    /* TODO: Fix this silliness. How can I make this nice? */
     var docid = "";
     if( typeof doc.id != "undefined" ) {
         docid = doc.id;
@@ -103,6 +104,7 @@ function couch_remove(db, doc, res) {
             }
         });
     } else {
+        /* TODO: Fix this silliness. How can I make this nice? */
         var revid = "";
         if( typeof doc.rev != "undefined" ) {
             revid = doc.rev;
@@ -255,49 +257,6 @@ app.post('/data', function(req, res) {
     );
 });
 
-function archive_request(req, res, doc, request_url) {
-    doc.archived = true;
-    req.rawBody = JSON.stringify(doc);
-
-    var archive_request = rCommon.couchdb_request(req, res, request_url,
-        {"method" : "PUT"});
-    archive_request.end();
-
-    archive_request.on('response', function(response) {
-        var archive_data = '';
-
-        response.on('data', function(chunk) {
-            archive_data += chunk;
-        });
-
-        response.on('end', function(end) {
-            res.send(_(archive_data).to_json());
-        });
-    });
-}
-
-function delete_request(req, res, request_url, return_value) {
-    if( return_value == null )
-        return_value = true;
-    var deleterequest = rCommon.couchdb_request(req, res, request_url,
-            {"method" : "DELETE"});
-    deleterequest.end();
-    
-    deleterequest.on('response', function (response) {
-        var data = '';
-
-        response.on('data', function(chunk) {
-            data += chunk;
-        });
-
-        response.on('end', function () {
-            if( return_value ) {
-                res.send(_(data).to_json());
-            }
-        })
-    });
-}
-
 app.delete('/data/:id/:rev', function(req, res) {
     var db = new(cradle.Connection)().database('app');
     db.get(req.params.id, function(err, doc) {
@@ -340,69 +299,6 @@ app.delete('/delete/:controller/:id/:id2', function(req, res) {
         }
     });
 });
-
-    /*
-    var request_url = '/app/_design/' + req.params.controller + "/_view/list?key=[\""+ req.params.id + "\",\""+ req.params.id2 +"\"]";
-    var request = rCommon.couchdb_request(req, res, request_url,
-        {"method" : "GET"});
-    request.end();
-    
-    request.on('response', function (response) {
-        response.setEncoding('utf8');
-        data = ""
-
-        response.on('data', function (chunk) {
-            data += chunk;
-        });
-
-        response.on('end', function (){
-            // Delete the relationship record.
-            var parsed_data = _(data).to_json();
-            console.log(parsed_data);
-
-            if( parsed_data && parsed_data.rows && parsed_data.rows[0] ) {
-                var relationshipid = (parsed_data.rows[0].id);
-                var relationshiprev = (parsed_data.rows[0].value._rev);
-                var relationship_url = '/app/' + relationshipid + '?rev=' + relationshiprev;
-                delete_request(req, res, relationship_url);
-
-                var childid = (parsed_data.rows[0].key[1]);
-
-                var child_request_url = '/app/' + childid;
-
-                // Cascade the delete to the child record.
-                var child_request = rCommon.couchdb_request(req, res, child_request_url,
-                    {"method" : "GET"});
-                child_request.end();
-                child_request.on('response', function(response) {
-                    data = '';
-
-                    response.on('data', function(chunk) {
-                        data += chunk;
-                    });
-
-                    response.on('end', function() {
-                        data = _(data).to_json();
-                        // Only delete instances
-                        var url = '/app/' + data._id + '?rev=' + data._rev;
-                        if( !data.template ) {
-                            delete_request(req, res, url, false);
-                        } else {
-                            // Archive it.
-                            archive_request(req, res, data, url);
-                        }
-                    });
-                });
-            } else {
-                if( parsed_data ) {
-                    res.send( parsed_data, 400 );
-                } else {
-                    res.send({"error":"deleted failed"}, 400);
-                }
-            }
-        });
-    });
-    */
 
 app.get('/related2/:view/:id', function( req, res ){
     var db = new(cradle.Connection)().database('app');
