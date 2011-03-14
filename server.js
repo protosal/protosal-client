@@ -126,23 +126,13 @@ function couch_remove(db, doc, res) {
     }
 }
 
-_.mixin({
-    to_json: function (obj) {
-        try {
-            return JSON.parse(obj);
-        } catch(err) {
-            throw new BadJSON;
-        }
-    }
-});
-
 function emit_doc(id, res) {
     if( res != null ) {
         var db = new(cradle.Connection)().database('app');
 
         db.get(id,  function(err, doc) {
             if( err ) {
-                res.send(err, 500);
+                throw new ServerError(err);
             } else {
                 res.send(doc);
             }
@@ -157,21 +147,35 @@ app.get('/data/newinstance/:id', function(req, res) {
 
     db.get(req.params.id, function(err, doc) {
         if( err ) {
-            res.send(err, 500);
+            throw new ServerError(err);
         } else {
             if( doc.author && doc.author == req.session.username ) {
                 /* Remove the _id and _rev from the document
                  * as we are going to clone it.
                  */
+                var docid = doc._id;
                 doc.template = false;
                 delete doc._id;
                 delete doc._rev;
 
                 db.save(doc, function(err, new_doc) {
                     if( err ) {
-                        res.send(err, 500);
+                        throw new ServerError(err);
                     } else {
                         emit_doc(new_doc._id, res);
+                        db.view('section_fee/list_by_parent', { key: docid }, function(err, res_arr) {
+                            if( err ) {
+                                throw new ServerError(err);
+                            } else {
+                                res_arr.forEach(function(row) {
+                                    db.save(row, function(err, response) {
+                                        if( err ) {
+                                            throw new ServerError(err);
+                                        }
+                                    });
+                                });
+                            } 
+                        });
                     }
                 });
             } else {
@@ -186,7 +190,7 @@ app.get('/data/:id', function(req, res) {
 
     db.get(req.params.id, function(err, doc) {
         if( err ) {
-            res.send(err, 500);
+            throw new ServerError(err);
         } else {
             if( doc.author == req.session.username ) {
                 res.send(doc);
@@ -227,7 +231,7 @@ app.delete('/data/:id/:rev', function(req, res) {
     var db = new(cradle.Connection)().database('app');
     db.get(req.params.id, function(err, doc) {
         if( err ) {
-            res.send(err, 500);
+            throw new ServerError(err);
         } else {
             if( doc.author == req.session.username ) {
                 couch_remove(db, doc, res);
@@ -245,19 +249,8 @@ app.delete('/delete/:controller/:id/:id2', function(req, res) {
     var key = {key: [req.params.id, req.params.id2]};
     db.view(req.params.controller + '/list', key, function(err, rel_doc) {
         if( err ) {
-            res.send(err, 500);
-            return;
+            throw new ServerError(err);
         } else {
-            /* Delete foreign relation. This is always id2. */
-            db.get(req.params.id2, function(err, doc) {
-                if( err ) {
-                    res.send(err, 500);
-                    return;
-                } else {
-                    couch_remove(db, doc, res);
-                }
-            });
-
             /* Delete the relationship document.
              * Views always return an array of objects.
              */
@@ -275,7 +268,7 @@ app.get('/related2/:view/:id', function( req, res ){
         { key: req.params.id },
         function(err, doc) {
             if( err ) {
-                res.send(err, 500);
+                throw new ServerError(err);
             } else {
                 var keys = _.map(doc.rows, function( row ) {
                     var property = child + '_id';
