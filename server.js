@@ -83,16 +83,26 @@ function couch_response(err, doc, res) {
     }
 }
 
-function couch_remove(db, doc, res) {
-    /* TODO: Fix this silliness. How can I make this nice? */
-    var docid = "";
-    if( typeof doc.id != "undefined" ) {
-        docid = doc.id;
-    } else if( typeof doc._id != "undefined" ) {
-        docid = doc._id;
-    } else if( typeof doc.value != "undefined" && typeof doc.value._id != "undefined" ) {
-        docid = doc.value._id
+function get_property(doc, prop_name) {
+    /* Get a property from a couchdb document.
+     * This function is only design for getting
+     * the id or rev of a document.
+     */
+    var property = "";
+    if( typeof doc[prop_name] != "undefined" ) {
+        property = doc[prop_name];
+    } else if( typeof doc['_' + prop_name] != "undefined" ) {
+        property = doc['_' + prop_name];
+    } else if( typeof doc.value != "undefined"
+            && typeof doc.value['_' + prop_name] != "undefined" ) {
+        property = doc.value['_' + prop_name];
     }
+    
+    return property;
+}
+
+function couch_remove(db, doc, res) {
+    var docid = get_property(doc, 'id');
 
     if( doc.template ) {
         db.merge(docid, {archived: true}, function(err, doc) {
@@ -104,15 +114,7 @@ function couch_remove(db, doc, res) {
             }
         });
     } else {
-        /* TODO: Fix this silliness. How can I make this nice? */
-        var revid = "";
-        if( typeof doc.rev != "undefined" ) {
-            revid = doc.rev;
-        } else if( typeof doc._rev != "undefined" ) {
-            revid = doc._rev;
-        } else if( typeof doc.value != "undefined" && typeof doc.value._rev != "undefined" ) {
-            revid = doc.value._rev;
-        }
+        var revid = get_property(doc, 'rev');
 
         db.remove(docid, revid,
             function(err, doc) {
@@ -165,6 +167,10 @@ function emit_doc(req, res, id, rev) {
         });
     });
 }
+
+app.get('/data/newinstance/:id', function(req, res) {
+
+});
 
 app.get('/data/newinstance/:id', function(req, res) {
     var section_url = '/app/' + req.params.id;
