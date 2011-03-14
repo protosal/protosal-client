@@ -167,6 +167,7 @@ app.get('/data/newinstance/:id', function(req, res) {
                 /* Remove the _id and _rev from the document
                  * as we are going to clone it.
                  */
+                doc.template = false;
                 delete doc._id;
                 delete doc._rev;
 
