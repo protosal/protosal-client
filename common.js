@@ -5,9 +5,18 @@ var http = require('http');
 var Hash = require('./sha1');
 var fs = require('fs');
 var sys = require('sys');
+var cradle = require('cradle');
 
 var couchdb_host = '127.0.0.1';
 var couchdb_port = 5984;
+
+exports.cradle_config = {
+    host: '127.0.0.1',
+    port: 5984,
+    auth: { username: 'ryth', password: 'abCD--12' }
+}
+
+cradle.setup(exports.cradle_config);
 
 function base64_encode(enc_string) {
     return Base64.encode( new Buffer(enc_string) );
@@ -47,8 +56,7 @@ exports.couchdb_request = function(req, res, request_url, options) {
 }
 
 function register(req, res) {
-    var request = exports.couchdb_request(req, res, '/_users', {"method" :"POST"});
-        
+    console.log("we are registering.");
     var newUser = {
         _id: "org.couchdb.user:" + req.body.email,
         name: req.body.email,
@@ -57,13 +65,15 @@ function register(req, res) {
         type: "user",
         roles: []
     }
-    
-    request.end( JSON.stringify(newUser) );
-    request.on('response', function (response) {
-        response.on('data', function (data) {
-            res.header('Content-Type', 'application/json');
-            res.send(data);
-        });
+
+    var db = new(cradle.Connection)().database('_users');
+
+    db.save(newUser, function(err, doc) {
+        if( err ) {
+            res.send(err, 500);
+        } else {
+            res.send(doc);
+        }
     });
 }
 

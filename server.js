@@ -13,11 +13,7 @@ var uuid = require('node-uuid');
 var Exceptional = require('./exceptional').Exceptional;
 var cradle = require('cradle');
 
-cradle.setup({
-    host: '127.0.0.1',
-    port: 5984,
-    auth: { username: 'ryth', password: 'abCD--12' }
-});
+cradle.setup(rCommon.cradle_config);
 
 Exceptional.API_KEY = '05f3e5df3c4b21870836f019eff3d4e3fa49f0bb';
 
