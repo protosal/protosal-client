@@ -57,11 +57,7 @@
             console.log("New Client Model created");
         }
     });
-    SectionModel = Backbone.Model.extend({
-        initialize: function() {
-            console.log("New Section Model created");
-        }
-    });
+
 
     FeeCollection = Backbone.Collection.extend({
         model: FeeModel,
@@ -99,7 +95,11 @@
             }); //When statement end
         }
     });
-
+    SectionModel = Backbone.Model.extend({
+        initialize: function() {
+            console.log("New Section Model created");
+        }
+    });
     SectionCollection = Backbone.Collection.extend({
         model: SectionModel,
         initialize: function(){
@@ -136,7 +136,7 @@
             console.log($("#proposal_preview_section").html())
             $("#section_container_test ol").append( _.template( $("#proposal_preview_section").html(), { section: section } ) );
             $.ajax({
-                url: "http://localhost:3000/data/newinstance/" + section.get("template_id"),
+                url: "data/newinstance/" + section.get("template_id"),
                 success: function( response ){
                     $(".section_content", ".section_" + section.cid).html( _.template( $("#proposal_preview_section_content").html(), response ) );
                     section.set({ id: response._id})
@@ -146,14 +146,23 @@
         openEdit: function( event ) {   
             sectionEl = $(event.currentTarget);
             cid = sectionEl.attr("cid");
+            template_id = sectionEl.attr("template_id");
             section = (proposal_view.sections.getByCid(cid));
-            var temp = $("<div>");
+            var temp = $("#atestform");
             $("body").append(temp);
             _.jstTemplate( temp, $("#common_edit_view_template"), { 
                 controller: "section",
                 documentid: section.id,
+                templateid: template_id,
                 success: function(data){
                      $("#atestform").dialog("close");
+                         $.ajax({
+                            url: "http://localhost:3000/data/" + section.id,
+                            success: function( response ){
+                                $(".section_content", ".section_" + cid).html( _.template( $("#proposal_preview_section_content").html(), response ) );
+                                $(".section_heading", ".section_" + cid).text(response.name);
+                            }
+                        });
                 },
                 buttons: [
 			            { text: "Close", class: "close" }
@@ -171,7 +180,6 @@
 			});
 			mydialog.dialog("destroy");
 			
-						temp.remove();
         },
         beforeClose: function(){
 				

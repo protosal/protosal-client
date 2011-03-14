@@ -199,7 +199,9 @@
                 formdata = $(".edit_" + savebuttoncontroller + "_form").serializeObject();
                 
                 formdata.type = savebuttoncontroller;
-                formdata.template    = true;
+                if(event.data.templateid == "") {
+                    formdata.template    = true;
+                }
                 var url = GLOBALS.couch_server + "/data";
                 type = "POST";
                 
