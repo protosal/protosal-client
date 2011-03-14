@@ -140,85 +140,48 @@ _.mixin({
     }
 });
 
-function emit_doc(req, res, id, rev) {
-    var database = '/app/';
-    var request_url = database + id + (rev ? "?rev=" + rev : "");
-    var request = rCommon.couchdb_request(req, res, request_url,
-        {"method" : "GET"});
-    request.end();
-    
-    request.on('response', function (response) {
-        response.setEncoding('utf8');
-        var data = '';
+function emit_doc(id, res) {
+    if( res != null ) {
+        var db = new(cradle.Connection)().database('app');
 
-        response.on('data', function(chunk) {
-            data += chunk;    
-        });
-
-        response.on('end', function () {
-            var parsed_data = _(data).to_json();
-
-            if( parsed_data.author && parsed_data.author == req.session.username ) {
-                res.send(parsed_data);
+        db.get(id,  function(err, doc) {
+            if( err ) {
+                res.send(err, 500);
             } else {
-                console.log("DAMMIT HACKER!");
-                res.send( {"redirect" : "/"}, 401 );
+                res.send(doc);
             }
         });
-    });
+    } else {
+        return false;
+    }
 }
 
 app.get('/data/newinstance/:id', function(req, res) {
+    var db = new(cradle.Connection)().database('app');
 
-});
+    db.get(req.params.id, function(err, doc) {
+        if( err ) {
+            res.send(err, 500);
+        } else {
+            if( doc.author && doc.author == req.session.username ) {
+                /* Remove the _id and _rev from the document
+                 * as we are going to clone it.
+                 */
+                delete doc._id;
+                delete doc._rev;
 
-app.get('/data/newinstance/:id', function(req, res) {
-    var section_url = '/app/' + req.params.id;
-    var section_request = rCommon.couchdb_request(req, res, section_url, {"method" : "GET"});
-    section_request.end();
-
-    section_request.on('response', function(response) {
-        var section_data = '';
-        response.on('data', function(chunk) {
-            section_data += chunk;
-        });
-
-        response.on('end', function() {
-            response.setEncoding('utf8');
-
-            section_data = _(section_data).to_json();
-
-            section_data.template = false;
-            delete section_data._id;
-            delete section_data._rev;
-
-            if( section_data.author && section_data.author == req.session.username ) {
-
-                var new_section_url = '/app/';
-                var new_section_request = rCommon.couchdb_request(req, res, new_section_url, {"method" : "POST"} );
-                new_section_request.write( JSON.stringify(section_data) );
-                new_section_request.end();
-
-                new_section_request.on('response', function(response) {
-                    response.setEncoding('utf8');
-                    var new_section_data = '';
-                    
-                    response.on('data', function(chunk) {
-                        new_section_data += chunk;
-                    });
-
-                    response.on('end', function() {
-                        new_section_data = _(new_section_data).to_json();
-
-                        emit_doc(req, res, new_section_data.id);
-                    });
+                db.save(doc, function(err, new_doc) {
+                    if( err ) {
+                        res.send(err, 500);
+                    } else {
+                        emit_doc(new_doc._id, res);
+                    }
                 });
             } else {
-                res.send({"error":"instance creation failed"}, 401);
+                res.send({"error":"unauthorized", "reason":"incorrect user"}, 401);
             }
-        });
+        }
     });
-
 });
 
 app.get('/data/:id', function(req, res) {
