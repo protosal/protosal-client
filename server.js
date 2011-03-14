@@ -84,23 +84,40 @@ function couch_response(err, doc, res) {
 }
 
 function couch_remove(db, doc, res) {
+    var docid = "";
+    if( typeof doc.id != "undefined" ) {
+        docid = doc.id;
+    } else if( typeof doc._id != "undefined" ) {
+        docid = doc._id;
+    } else if( typeof doc.value != "undefined" && typeof doc.value._id != "undefined" ) {
+        docid = doc.value._id
+    }
+
     if( doc.template ) {
-        db.merge(doc._id, {archived: true}, function(err, doc) {
+        db.merge(docid, {archived: true}, function(err, doc) {
             if( !res ) {
                 if( err )
-                    console.log("error archiving template");
                     throw new ServerError;
             } else {
                 couch_response(err, doc, res);
             }
         });
     } else {
-        db.remove(doc._id, doc._rev,
+        var revid = "";
+        if( typeof doc.rev != "undefined" ) {
+            revid = doc.rev;
+        } else if( typeof doc._rev != "undefined" ) {
+            revid = doc._rev;
+        } else if( typeof doc.value != "undefined" && typeof doc.value._rev != "undefined" ) {
+            revid = doc.value._rev;
+        }
+
+        db.remove(docid, revid,
             function(err, doc) {
                 if( !res ) {
-                    if( err )
-                        console.log("error removing instance");
+                    if( err ) {
                         throw new ServerError;
+                    }
                 } else {
                     couch_response(err, doc, res);
                 }
@@ -298,29 +315,28 @@ app.delete('/data/:id/:rev', function(req, res) {
 
 /* Delete the relationship */
 app.delete('/delete/:controller/:id/:id2', function(req, res) {
-    console.log("What I don't even...");
     var db = new(cradle.Connection)().database('app');
 
     var key = {key: [req.params.id, req.params.id2]};
     db.view(req.params.controller + '/list', key, function(err, rel_doc) {
         if( err ) {
-            console.log(key);
-            console.log("error getting relationship");
             res.send(err, 500);
             return;
         } else {
-            couch_remove(db, rel_doc);
-
             /* Delete foreign relation. This is always id2. */
             db.get(req.params.id2, function(err, doc) {
                 if( err ) {
-                    console.log("error getting foreign relation");
                     res.send(err, 500);
                     return;
                 } else {
                     couch_remove(db, doc, res);
                 }
             });
+
+            /* Delete the relationship document.
+             * Views always return an array of objects.
+             */
+            couch_remove(db, rel_doc[0]);
         }
     });
 });
