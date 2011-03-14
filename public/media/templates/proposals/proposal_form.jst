@@ -40,6 +40,9 @@
         <div style="clear:both;"></div>
     </div>
     <ul></ul>
+    <div id="atestform">
+
+</div>
 </div>
 <jst>
 
@@ -126,6 +129,7 @@
         initialize: function(){
             console.log("Iniitalize sections container");
             console.log(this.el)
+            $(".cid").live( "click", this.openEdit );
         },
         addSection: function( section ){
             console.log("Add to sections container")
@@ -135,8 +139,55 @@
                 url: "http://localhost:3000/data/newinstance/" + section.get("template_id"),
                 success: function( response ){
                     $(".section_content", ".section_" + section.cid).html( _.template( $("#proposal_preview_section_content").html(), response ) );
+                    section.set({ id: response._id})
                 }
             });
+        },
+        openEdit: function( event ) {   
+            sectionEl = $(event.currentTarget);
+            cid = sectionEl.attr("cid");
+            section = (proposal_view.sections.getByCid(cid));
+            var temp = $("<div>");
+            $("body").append(temp);
+            _.jstTemplate( temp, $("#common_edit_view_template"), { 
+                controller: "section",
+                documentid: section.id,
+                success: function(data){
+                     $("#atestform").dialog("close");
+                },
+                buttons: [
+			            { text: "Close", class: "close" }
+			            ]
+            });    
+                var mydialog = $(temp).dialog({
+		autoOpen: false,
+        draggable: false,
+        resizable: false,
+        closeOnEscape: true,
+        close: function(){
+				cked.ckeditor(function(){ // a hack to make jck editor work on page refresh
+						
+						this.destroy();
+			});
+			mydialog.dialog("destroy");
+			
+						temp.remove();
+        },
+        beforeClose: function(){
+				
+				
+		},
+        open: function(){
+			console.log($("#jckeditor"));
+			setTimeout( function(){ cked.ckeditor(ckeditor_options);  }, 200);
+			console.log($("#jckeditor")); 
+			$("form input").focus();      
+        },
+        modal: true, 
+        hide: 'drop',
+        width: "850px",
+        position: ["50%",100]
+    }).dialog("open");
         }
     });
     SectionChooser = Backbone.View.extend({
@@ -362,7 +413,7 @@
     </div>
 </script>
 <script type="text/template" id="proposal_preview_section">
-    <li class="section_<%= section.cid %> cid" template_id="<%= section.get("template_id") %>">
+    <li class="section_<%= section.cid %> cid" cid="<%= section.cid %>" template_id="<%= section.get("template_id") %>">
         <div class="section">
             <h3 class="section_heading"><%= section.get("name") %></h3>
             <div class="section_content">
