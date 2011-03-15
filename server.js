@@ -60,6 +60,8 @@ app.error(function(err, req, res, next){
         res.send({"error":"authorization required"}, 401);
     } else if(err instanceof ServerError) {
         res.send({"error":"internal server error"}, 500);
+    } else {
+        console.log("shiiiiiiiiiiiiiit, what is this new error?");
     }
 
     Exceptional.handle(err);
@@ -68,7 +70,7 @@ app.error(function(err, req, res, next){
 
 function couch_response(err, doc, res) {
     if( err ) {
-        throw new ServerError(err);
+        throw err;
     } else {
         res.send(doc);
     }
@@ -76,7 +78,7 @@ function couch_response(err, doc, res) {
 
 function get_property(doc, prop_name) {
     /* Get a property from a couchdb document.
-     * This function is only design for getting
+     * This function is only designed for getting
      * the id or rev of a document.
      */
     var property = "";
@@ -93,25 +95,30 @@ function get_property(doc, prop_name) {
 }
 
 function couch_remove(db, doc, res) {
+    console.log("Before docid");
     var docid = get_property(doc, 'id');
+    console.log("Doc Id: " + docid);
 
     if( doc.template ) {
+        console.log("archive it");
         db.merge(docid, {archived: true}, function(err, doc) {
             if( !res ) {
                 if( err )
-                    throw new ServerError;
+                    throw err;
             } else {
                 couch_response(err, doc, res);
             }
         });
     } else {
+        console.log("REMOVE IT!");
         var revid = get_property(doc, 'rev');
 
         db.remove(docid, revid,
             function(err, doc) {
                 if( !res ) {
                     if( err ) {
-                        throw new ServerError;
+                        //throw new ServerError( err.message );
+                        throw err;
                     }
                 } else {
                     couch_response(err, doc, res);
@@ -127,7 +134,7 @@ function emit_doc(id, res) {
 
         db.get(id,  function(err, doc) {
             if( err ) {
-                throw new ServerError(err);
+                throw err;
             } else {
                 res.send(doc);
             }
@@ -137,14 +144,27 @@ function emit_doc(id, res) {
     }
 }
 
-app.get('/data/newinstance/:id', function(req, res) {
+app.get('/data/newinstance/:proposal_id/:section_id', function(req, res) {
     var db = new(cradle.Connection)().database('app');
 
-    db.get(req.params.id, function(err, doc) {
+    var new_proposal_section = {
+        'proposal_id' : proposal_id,
+        'section_id' : section_id,
+        'type' : 'proposal_section',
+        'author' : req.session.username
+    }
+
+    db.save(new_proposal_section, function(err, doc) {
+        if( err ) {
+            throw err;
+        }
+    });
+
+    db.get(req.params.section_id, function(err, doc) {
         if( err ) {
             throw new ServerError(err);
         } else {
-            if( doc.author && doc.author == req.session.username ) {
+            if( doc.author == req.session.username ) {
                 /* Remove the _id and _rev from the document
                  * as we are going to clone it.
                  */
@@ -155,17 +175,17 @@ app.get('/data/newinstance/:id', function(req, res) {
 
                 db.save(doc, function(err, new_doc) {
                     if( err ) {
-                        throw new ServerError(err);
+                        throw err;
                     } else {
                         emit_doc(new_doc._id, res);
                         db.view('section_fee/list_by_parent', { key: docid }, function(err, res_arr) {
                             if( err ) {
-                                throw new ServerError(err);
+                                throw err;
                             } else {
                                 res_arr.forEach(function(row) {
                                     db.save(row, function(err, response) {
                                         if( err ) {
-                                            throw new ServerError(err);
+                                            throw err;
                                         }
                                     });
                                 });
@@ -185,7 +205,7 @@ app.get('/data/:id', function(req, res) {
 
     db.get(req.params.id, function(err, doc) {
         if( err ) {
-            throw new ServerError(err);
+            throw err;
         } else {
             if( doc.author == req.session.username ) {
                 res.send(doc);
@@ -199,14 +219,22 @@ app.get('/data/:id', function(req, res) {
 app.put('/data/:id', function(req, res) {
     var db = new(cradle.Connection)().database('app');
 
-    /* Set the author. */
-    req.body.author = req.session.username;
-
-    db.save(req.params.id, req.params.rev, req.body,
-        function(err, doc) {
-            couch_response(err, doc, res);
+    db.get(req.params.id, function(err, doc) {
+        if( err ) {
+            throw err;
+        } else if( doc.author == req.session.username ) {
+            /* Only save if the author of the document is
+             * trying to update it.
+             */
+            db.merge(req.params.id, req.body, function(err, doc) {
+                    couch_response(err, doc, res);
+                }
+            );        
+        } else {
+            throw new AuthError;
         }
-    );
+    });
+    
 });
 
 app.post('/data', function(req, res) {
@@ -226,7 +254,7 @@ app.delete('/data/:id/:rev', function(req, res) {
     var db = new(cradle.Connection)().database('app');
     db.get(req.params.id, function(err, doc) {
         if( err ) {
-            throw new ServerError(err);
+            throw err;
         } else {
             if( doc.author == req.session.username ) {
                 couch_remove(db, doc, res);
@@ -238,13 +266,13 @@ app.delete('/data/:id/:rev', function(req, res) {
 });
 
 /* Delete the relationship */
-app.delete('/delete/:controller/:id/:id2', function(req, res) {
+app.delete('/delete/:controller/:parent_id/:child_id', function(req, res) {
     var db = new(cradle.Connection)().database('app');
 
-    var key = {key: [req.params.id, req.params.id2]};
+    var key = {key: [req.params.parent_id, req.params.child_id]};
     db.view(req.params.controller + '/list', key, function(err, rel_doc) {
         if( err ) {
-            throw new ServerError(err);
+            throw err;
         } else {
             /* Delete the relationship document.
              * Views always return an array of objects.
@@ -263,7 +291,7 @@ app.get('/related2/:view/:id', function( req, res ){
         { key: req.params.id },
         function(err, doc) {
             if( err ) {
-                throw new ServerError(err);
+                throw err;
             } else {
                 var keys = _.map(doc.rows, function( row ) {
                     var property = child + '_id';
@@ -292,6 +320,7 @@ app.get('/:list_type/:view', function(req, res) {
 app.listen(3000);
 
 process.on('uncaughtException', function (err) {
+    console.log("shiiiiiiiiit, uncaught exception");
     console.log(err);
     Exceptional.handle(err);
 });
