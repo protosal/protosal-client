@@ -129,7 +129,7 @@
             console.log("Get related sections")
             var that = this;
             $.ajax({
-                url: "related2/proposal_section/" + "a976a74d284d2dc0de042430b20550da",
+                url: "related2/proposal_section/" + "77673ab7de2302d423f0fb3fc9295e00",
                 success: function(resp){
                     console.log("Found related sections");
                     console.log(resp);
@@ -172,11 +172,13 @@
             cid = sectionEl.attr("cid");
             template_id = sectionEl.attr("template_id");
             section = (proposal_view.sections.getByCid(cid));
+            console.log("opening edit screen")
+            console.log(section)
             var temp = $("#atestform");
             $("body").append(temp);
             _.jstTemplate( temp, $("#common_edit_view_template"), { 
                 controller: "section",
-                documentid: section.id,
+                documentid: section.get("_id"),
                 templateid: template_id,
                 success: function(data){
                      $("#atestform").dialog("close");
