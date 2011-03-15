@@ -158,8 +158,30 @@ app.put('/user', function(req, res) {
         db.merge(docid, req.body, function(err, doc) {
             couch_response(err, doc, res); 
         });
+    } else {
+        throw new AuthError;
     }
 });
+
+function create_new_proposal_section(proposal_id, section_id, author) {
+    /* Create a relationship between the proposal and the
+     * section instance.
+     */
+    var db = new(cradle.Connection)().database('app');
+
+    var new_proposal_section = {
+        'proposal_id' : proposal_id,
+        'section_id' : section_id,
+        'type' : 'proposal_section',
+        'author' : author 
+    }
+
+    db.save(new_proposal_section, function(err, doc) {
+        if( err ) {
+            throw new ServerError( err );
+        }
+    });
+}
 
 app.get('/data/newinstance/:proposal_id/:section_id', function(req, res) {
     var db = new(cradle.Connection)().database('app');
@@ -174,6 +196,7 @@ app.get('/data/newinstance/:proposal_id/:section_id', function(req, res) {
                  */
                 var docid = doc._id;
                 doc.template = false;
+                doc.template_id = req.params.section_id;
                 delete doc._id;
                 delete doc._rev;
 
@@ -181,21 +204,11 @@ app.get('/data/newinstance/:proposal_id/:section_id', function(req, res) {
                     if( err ) {
                         throw new ServerError( err );
                     } else {
-                        /* Create a relationship between the proposal and the
-                         * section instance.
-                         */
-                        var new_proposal_section = {
-                            'proposal_id' : req.params.proposal_id,
-                            'section_id' : new_doc._id,
-                            'type' : 'proposal_section',
-                            'author' : req.session.username
-                        }
-
-                        db.save(new_proposal_section, function(err, doc) {
-                            if( err ) {
-                                throw new ServerError( err );
-                            }
-                        });
+                       create_new_proposal_section(
+                           req.params.proposal_id,
+                           new_doc._id,
+                           req.session.username
+                        ); 
 
                         /* Instantiate all fees related to the section. */
                         db.view('section_fee/list_by_parent', { key: docid }, function(err, res_arr) {
@@ -203,6 +216,7 @@ app.get('/data/newinstance/:proposal_id/:section_id', function(req, res) {
                                 throw new ServerError( err );
                             } else {
                                 res_arr.forEach(function(row) {
+                                    console.log(row);
                                     db.save(row, function(err, response) {
                                         if( err ) {
                                             throw new ServerError( err );
