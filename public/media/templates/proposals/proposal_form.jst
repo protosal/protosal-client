@@ -104,11 +104,13 @@
         model: SectionModel,
         initialize: function(){
             console.log("Initialise the Section collection");
-            this.bind("refresh", function() { proposal_view.addSectionRender(); });
+            //this.bind("refresh", function() { proposal_view.addSectionRender(); });
             //this.bind("add", this.addEvent );
 
         },
         addToPreview: function(section) {
+            console.log("adding to preview");
+
             console.log(section);
             proposal_view.toc.addSection(section);
             proposal_view.section_container.addSection(section);
@@ -122,6 +124,21 @@
                     console.log("Template sections received, send them to collection");
                     proposal_view.allsections.refresh(data);
             }); //When statement end
+        },
+        getRelated: function(){
+            console.log("Get related sections")
+            var that = this;
+            $.ajax({
+                url: "related2/proposal_section/" + "a976a74d284d2dc0de042430b20550da",
+                success: function(resp){
+                    console.log("Found related sections");
+                    console.log(resp);
+                    _.each( resp, function(model) {
+                        that.add(model.value)
+                    })
+                }
+            })
+            
         }
     });
     SectionsContainer = Backbone.View.extend({
@@ -134,14 +151,21 @@
         addSection: function( section ){
             console.log("Add to sections container")
             console.log($("#proposal_preview_section").html())
-            $("#section_container_test ol").append( _.template( $("#proposal_preview_section").html(), { section: section } ) );
-            $.ajax({
-                url: "data/newinstance/" + proposal_view.proposalid + "/" + section.get("template_id"),
-                success: function( response ){
-                    $(".section_content", ".section_" + section.cid).html( _.template( $("#proposal_preview_section_content").html(), response ) );
-                    section.set({ id: response._id})
-                }
-            });
+            if( typeof section.attributes.description != "undefined" ) {
+                 $("#section_container_test ol").append( _.template( $("#proposal_preview_section").html(), { section: section } ) );
+   
+                        $(".section_content", ".section_" + section.cid).html( _.template( $("#proposal_preview_section_content").html(), section.attributes ) );
+                
+            } else {
+                $("#section_container_test ol").append( _.template( $("#proposal_preview_section").html(), { section: section } ) );
+                $.ajax({
+                    url: "data/newinstance/" + proposal_view.proposalid + "/" + section.get("template_id"),
+                    success: function( response ){
+                        $(".section_content", ".section_" + section.cid).html( _.template( $("#proposal_preview_section_content").html(), response ) );
+                        section.set({ id: response._id})
+                    }
+                });
+            }
         },
         openEdit: function( event ) {   
             sectionEl = $(event.currentTarget);
@@ -330,9 +354,13 @@
                 console.log(arguments);
                 console.log("Get the proposal id");
                 that.proposalid = data.id;
+                
+                
                 this.sections = new SectionCollection;
+                
                 this.sections.bind("add", this.sections.addToPreview);
-
+                this.sections.getRelated();
+                
                 this.allsections = new SectionCollection;
                 this.allsections.getAllTemplates();
 
@@ -385,7 +413,6 @@
             }
         }
     });
-
     proposal_view = new ProposalView;
 </jst>
 </script>
@@ -436,7 +463,7 @@
 </script>
 <script type="text/template" id="proposal_preview_section_content">
         <div class="section_content">
-                <%= description %>
+                <%= typeof description != "undefined" ? description : "" %>
         </div>
 </script>
 <script type="text/template" id="proposal_preview">

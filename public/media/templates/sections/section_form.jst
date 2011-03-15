@@ -19,6 +19,7 @@
                 <div class="ui-widget">
 
                 <input type="text" id="fees" /><button type="button" id="add-fee">Addd</button> 
+                 <h3>Fees</h3>
                 <ul id="sortablefees"></ul>
                 </div>
             </fieldset>
@@ -38,14 +39,12 @@
 
 
             <div id="fee_form_modal"></div>
-:3000/data/newinstance/77673ab7de2302d423f0fb3fc92520e0/3e2629f496a7fcea289ac87456068f46
-Request Headers
 
             <br />
             <br />
             <br />
             <input type="hidden" name="feelist" id="feelist" value="" />
-            <h3>Fees</h3>
+           
     <jst>
 
 	
@@ -183,7 +182,7 @@ Request Headers
                     
                      $( "#fees" ).autocomplete({
                         source: fees,
-                        minLength: 1,
+                        minLength: 0,
                         delay: 0,
                         select: function( event, ui ) {
                             console.log(ui);
@@ -260,7 +259,7 @@ Request Headers
             },
             addFee: function (model) {
                 console.log(model);
-                $("#sortablefees").append("<li id='" + model.id + "'><span style='float: left;' class='ui-icon ui-icon-arrowthick-2-n-s'></span><p>" + model.get("name") + "</p><span class='edit_fee'>Edit</span><span class='delete_fee'>Delete</span></li>")
+                $("#sortablefees").append("<li id='" + model.id + "'><span style='float: left;'></span><p>" + model.get("name") + "</p><span class='edit_fee'>Edit</span><span class='delete_fee'>Delete</span></li>")
                 $( "#sortablefees" ).sortable({
                     update: section_backbone.updateFeeValues
                 });
