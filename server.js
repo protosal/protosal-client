@@ -149,21 +149,20 @@ function emit_doc(id, res) {
     }
 }
 
+app.put('/user', function(req, res) {
+    /* Updated the supplied user record. */
+    if( req.session && typeof req.session.username != 'undefined' ) {
+        var db = new(cradle.Connection)().database('_users');
+        var docid = 'org.couchdb.user:' + req.session.username;
+
+        db.merge(docid, req.body, function(err, doc) {
+            couch_response(err, doc, res); 
+        });
+    }
+});
+
 app.get('/data/newinstance/:proposal_id/:section_id', function(req, res) {
     var db = new(cradle.Connection)().database('app');
-
-    var new_proposal_section = {
-        'proposal_id' : req.params.proposal_id,
-        'section_id' : req.params.section_id,
-        'type' : 'proposal_section',
-        'author' : req.session.username
-    }
-
-    db.save(new_proposal_section, function(err, doc) {
-        if( err ) {
-            throw new ServerError( err );
-        }
-    });
 
     db.get(req.params.section_id, function(err, doc) {
         if( err ) {
@@ -182,7 +181,23 @@ app.get('/data/newinstance/:proposal_id/:section_id', function(req, res) {
                     if( err ) {
                         throw new ServerError( err );
                     } else {
-                        emit_doc(new_doc._id, res);
+                        /* Create a relationship between the proposal and the
+                         * section instance.
+                         */
+                        var new_proposal_section = {
+                            'proposal_id' : req.params.proposal_id,
+                            'section_id' : new_doc._id,
+                            'type' : 'proposal_section',
+                            'author' : req.session.username
+                        }
+
+                        db.save(new_proposal_section, function(err, doc) {
+                            if( err ) {
+                                throw new ServerError( err );
+                            }
+                        });
+
+                        /* Instantiate all fees related to the section. */
                         db.view('section_fee/list_by_parent', { key: docid }, function(err, res_arr) {
                             if( err ) {
                                 throw new ServerError( err );
@@ -196,6 +211,9 @@ app.get('/data/newinstance/:proposal_id/:section_id', function(req, res) {
                                 });
                             } 
                         });
+
+                        /* Return a value to the client. */
+                        emit_doc(new_doc._id, res);
                     }
                 });
             } else {
