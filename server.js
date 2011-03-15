@@ -216,7 +216,6 @@ app.get('/data/newinstance/:proposal_id/:section_id', function(req, res) {
                                 throw new ServerError( err );
                             } else {
                                 res_arr.forEach(function(row) {
-                                    console.log(row);
                                     db.save(row, function(err, response) {
                                         if( err ) {
                                             throw new ServerError( err );
