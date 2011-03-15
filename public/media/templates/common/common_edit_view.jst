@@ -78,24 +78,24 @@ _rev = ""
                                 templateid: templateid,
                                 success: <%= success %>
                             }, window.saveclickHandler );
-                             
                         }
                     });
                 } else {
-					_.jstTemplate( $("#<%= controller %>_formc"), $("#<%= controller %>_form_template"), { success: <%= success %> } );  
-                 
-                    
-                    
                     $(".<%= controller %>_save").click({
                         _rev: "",
                         _id: "",
                         templateid: "",
                         success: <%= success %>
                     }, window.saveclickHandler );
+					_.jstTemplate( $("#<%= controller %>_formc"), $("#<%= controller %>_form_template"), { success: <%= success %> } );  
+                 
+                    
+                    
+
                 }
                 
                 cked = "";
-                setTimeout( function() { cked = ($(".jckeditor", $("#<%= controller %>_formc") )); cked.ckeditor(ckeditor_options); }, 100);
+                setTimeout( function() { cked = ($(".jckeditor", $("#<%= controller %>_formc") )); cked.ckeditor(ckeditor_options); }, 300);
                 
             },
 

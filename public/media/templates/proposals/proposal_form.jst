@@ -371,6 +371,7 @@
                             //Unbind the default click handler and attach a new one now that we have created a new proposal
                             $('.proposal_save').unbind('click');
                             $(".proposal_save").click({
+                                templateid: "",
                                 _rev: resp.rev,
                                 _id: resp.id,
                                 success: <%= success %>

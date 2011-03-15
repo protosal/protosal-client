@@ -1,0 +1,42 @@
+<script type="text/template" id="settings_form_template">
+    <div id="proposal_form_container">
+
+        <form id="add_settings_form" class="edit_settings_form" enctype="multipart/form-data" method="post">
+           <br />
+
+            <div style="">
+                <div class="megaform" style=" float: left;">
+
+                <fieldset>
+                    <label for="">
+                        Name
+                    </label>
+                    <input name="name" id="" type="text" value="<%= typeof name != "undefined" ? name : "" %>" />
+
+                </fieldset>
+                
+                </div>
+            </div>
+        
+        </form>
+    </div>
+<jst>
+    SettingsView = Backbone.View.extend({
+    
+        el: $("body"),
+
+
+        initialize: function(){
+            console.log("Initialize the setting view");
+            $('.settings_save').unbind('click');
+            $(".settings_save").click({
+                templateid: "",
+                _id: "sameold",
+                success: function(){ alert("yo"); }
+            }, window.saveclickHandler );
+     
+        }
+    });
+    settings_view = new SettingsView;
+</jst>
+</script>
