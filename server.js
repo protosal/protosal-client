@@ -46,6 +46,10 @@ AuthRequired.prototype.__proto__ = Error.prototype;
 
 function ServerError(msg) {
     this.name = 'ServerError';
+    if( typeof msg == "object" ) {
+        /* Stringify couchdb error objects. */
+        this.message = "Error: " + msg.error + ". Reason: " + msg.reason;
+    }
     Error.call(this, msg);
     Error.captureStackTrace(this, arguments.callee);
 }
@@ -70,7 +74,7 @@ app.error(function(err, req, res, next){
 
 function couch_response(err, doc, res) {
     if( err ) {
-        throw err;
+        throw new ServerError( err );
     } else {
         res.send(doc);
     }
@@ -104,7 +108,7 @@ function couch_remove(db, doc, res) {
         db.merge(docid, {archived: true}, function(err, doc) {
             if( !res ) {
                 if( err )
-                    throw err;
+                    throw new ServerError( err );
             } else {
                 couch_response(err, doc, res);
             }
@@ -117,8 +121,9 @@ function couch_remove(db, doc, res) {
             function(err, doc) {
                 if( !res ) {
                     if( err ) {
-                        //throw new ServerError( err.message );
-                        throw err;
+                        console.log("Real Error Message: ");
+                        console.log(err);
+                        throw new ServerError( err );
                     }
                 } else {
                     couch_response(err, doc, res);
@@ -134,7 +139,7 @@ function emit_doc(id, res) {
 
         db.get(id,  function(err, doc) {
             if( err ) {
-                throw err;
+                throw new ServerError( err );
             } else {
                 res.send(doc);
             }
@@ -156,13 +161,13 @@ app.get('/data/newinstance/:proposal_id/:section_id', function(req, res) {
 
     db.save(new_proposal_section, function(err, doc) {
         if( err ) {
-            throw err;
+            throw new ServerError( err );
         }
     });
 
     db.get(req.params.section_id, function(err, doc) {
         if( err ) {
-            throw new ServerError(err);
+            throw new ServerError( err );
         } else {
             if( doc.author == req.session.username ) {
                 /* Remove the _id and _rev from the document
@@ -175,17 +180,17 @@ app.get('/data/newinstance/:proposal_id/:section_id', function(req, res) {
 
                 db.save(doc, function(err, new_doc) {
                     if( err ) {
-                        throw err;
+                        throw new ServerError( err );
                     } else {
                         emit_doc(new_doc._id, res);
                         db.view('section_fee/list_by_parent', { key: docid }, function(err, res_arr) {
                             if( err ) {
-                                throw err;
+                                throw new ServerError( err );
                             } else {
                                 res_arr.forEach(function(row) {
                                     db.save(row, function(err, response) {
                                         if( err ) {
-                                            throw err;
+                                            throw new ServerError( err );
                                         }
                                     });
                                 });
@@ -205,7 +210,7 @@ app.get('/data/:id', function(req, res) {
 
     db.get(req.params.id, function(err, doc) {
         if( err ) {
-            throw err;
+            throw new ServerError( err );
         } else {
             if( doc.author == req.session.username ) {
                 res.send(doc);
@@ -221,7 +226,7 @@ app.put('/data/:id', function(req, res) {
 
     db.get(req.params.id, function(err, doc) {
         if( err ) {
-            throw err;
+            throw new ServerError( err );
         } else if( doc.author == req.session.username ) {
             /* Only save if the author of the document is
              * trying to update it.
@@ -254,7 +259,7 @@ app.delete('/data/:id/:rev', function(req, res) {
     var db = new(cradle.Connection)().database('app');
     db.get(req.params.id, function(err, doc) {
         if( err ) {
-            throw err;
+            throw new ServerError( err );
         } else {
             if( doc.author == req.session.username ) {
                 couch_remove(db, doc, res);
@@ -272,7 +277,7 @@ app.delete('/delete/:controller/:parent_id/:child_id', function(req, res) {
     var key = {key: [req.params.parent_id, req.params.child_id]};
     db.view(req.params.controller + '/list', key, function(err, rel_doc) {
         if( err ) {
-            throw err;
+            throw new ServerError( err );
         } else {
             /* Delete the relationship document.
              * Views always return an array of objects.
@@ -291,7 +296,7 @@ app.get('/related2/:view/:id', function( req, res ){
         { key: req.params.id },
         function(err, doc) {
             if( err ) {
-                throw err;
+                throw new ServerError( err );
             } else {
                 var keys = _.map(doc.rows, function( row ) {
                     var property = child + '_id';
@@ -320,7 +325,6 @@ app.get('/:list_type/:view', function(req, res) {
 app.listen(3000);
 
 process.on('uncaughtException', function (err) {
-    console.log("shiiiiiiiiit, uncaught exception");
     console.log(err);
     Exceptional.handle(err);
 });
