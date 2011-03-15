@@ -136,7 +136,7 @@
             console.log($("#proposal_preview_section").html())
             $("#section_container_test ol").append( _.template( $("#proposal_preview_section").html(), { section: section } ) );
             $.ajax({
-                url: "data/newinstance/" + section.get("template_id"),
+                url: "data/newinstance/" + proposal_view.proposalid + "/" + section.get("template_id"),
                 success: function( response ){
                     $(".section_content", ".section_" + section.cid).html( _.template( $("#proposal_preview_section_content").html(), response ) );
                     section.set({ id: response._id})
@@ -157,7 +157,7 @@
                 success: function(data){
                      $("#atestform").dialog("close");
                          $.ajax({
-                            url: "http://localhost:3000/data/" + section.id,
+                            url: "data/" + section.id,
                             success: function( response ){
                                 $(".section_content", ".section_" + cid).html( _.template( $("#proposal_preview_section_content").html(), response ) );
                                 $(".section_heading", ".section_" + cid).text(response.name);
@@ -321,13 +321,15 @@
         client_id: "<%= typeof client_id != 'undefined' ? client_id : '' %>",
         
         initialize: function(){
+                var that = this;
             console.log("Initialize the proposal view");
             $("body").append("<div style='' class='proposalcontainer proposal_preview container'>Yo</div>");
             $(".proposalcontainer").html( _.template( $("#proposal_preview").html(), {} ) );
-            $.when( this.get_id() ).then( $.proxy( function(){
+            $.when( this.get_id() ).then( $.proxy( function(data){
+                
                 console.log(arguments);
                 console.log("Get the proposal id");
-                
+                that.proposalid = data.id;
                 this.sections = new SectionCollection;
                 this.sections.bind("add", this.sections.addToPreview);
 
