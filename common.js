@@ -92,6 +92,11 @@ function login(req, res) {
         return;    
     }
 
+    var con = new(cradle.Connection)();
+    con.request('GET', '/_session', {}, {}, {"function(nothing, doc) {
+        console.log(doc);
+    });
+
     // Map the POST login request to a get request using the HTTP Authorization header
     var request = exports.couchdb_request(req, res, '/_session',
             {"method" : "GET", "credentials" : credentials});
