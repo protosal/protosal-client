@@ -282,7 +282,7 @@ app.delete('/delete/:controller/:parent_id/:child_id', function(req, res) {
             /* Delete the relationship document.
              * Views always return an array of objects.
              */
-            couch_remove(db, rel_doc[0]);
+            couch_remove(db, rel_doc[0], res);
         }
     });
 });
