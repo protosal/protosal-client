@@ -153,8 +153,8 @@ app.get('/data/newinstance/:proposal_id/:section_id', function(req, res) {
     var db = new(cradle.Connection)().database('app');
 
     var new_proposal_section = {
-        'proposal_id' : proposal_id,
-        'section_id' : section_id,
+        'proposal_id' : req.params.proposal_id,
+        'section_id' : req.params.section_id,
         'type' : 'proposal_section',
         'author' : req.session.username
     }
