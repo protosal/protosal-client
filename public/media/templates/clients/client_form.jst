@@ -6,18 +6,26 @@
     <div class="megaform" style=" float: left;">
 
     <fieldset>
-        <label for="">
-            Name</label>
-        <input name="name" id="" type="text" value="<%= typeof name != "undefined" ? name : ""  %>" />
-        <label for="">
-            Email</label>
-        <input name="email" id="" type="text" value="<%= typeof email != "undefined" ? email : "" %>" />
-        <label for="">
-            Website</label>
-        <input name="website" id="" type="text" value="<%= typeof website != "undefined" ? website : ""  %>" />
-        <label for="">
-            Comment</label>
-        <textarea id="" rows="4" name="comment" cols="30"><%= typeof comment != "undefined" ? comment : ""  %></textarea>
+        <table style="border: 1px solid #000">
+            <tr>
+                <td>
+                    <label for="">
+                        Name</label>
+                    <input name="name" id="" type="text" value="<%= typeof name != "undefined" ? name : ""  %>" />
+                    <label for="">
+                        Email</label>
+                    <input name="email" id="" type="text" value="<%= typeof email != "undefined" ? email : "" %>" />
+                    <label for="">
+                        Website</label>
+                    <input name="website" id="" type="text" value="<%= typeof website != "undefined" ? website : ""  %>" />
+                </td>
+                <td>
+                    <label for="">
+                        Comment</label>
+                    <textarea id="" rows="4" name="comment" cols="30"><%= typeof comment != "undefined" ? comment : ""  %></textarea>
+                </td>
+            </tr>
+        </table>
     </fieldset>
      
     </form>
