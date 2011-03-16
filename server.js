@@ -110,7 +110,7 @@ function couch_remove(db, doc, res) {
 
     if( doc.template ) {
         console.log("archive it");
-        db.merge(docid, {archived: true}, function(err, doc) {
+        db.merge(docid, {archived: true, last_modified: Date.now()}, function(err, doc) {
             if( !res ) {
                 if( err )
                     throw new ServerError( err );
@@ -154,20 +154,6 @@ function emit_doc(id, res) {
     }
 }
 
-app.put('/user', function(req, res) {
-    /* Updated the supplied user record. */
-    if( req.session && typeof req.session.username != 'undefined' ) {
-        var db = new(cradle.Connection)().database('_users');
-        var docid = 'org.couchdb.user:' + req.session.username;
-
-        db.merge(docid, req.body, function(err, doc) {
-            couch_response(err, doc, res); 
-        });
-    } else {
-        throw new AuthError;
-    }
-});
-
 function create_new_proposal_section(proposal_id, section_id, author) {
     /* Create a relationship between the proposal and the
      * section instance.
@@ -202,6 +188,8 @@ app.get('/data/newinstance/:proposal_id/:section_id', function(req, res) {
                 var docid = doc._id;
                 doc.template = false;
                 doc.template_id = req.params.section_id;
+                doc.created_at = Date.now();
+                doc.last_modified = Date.now();
                 delete doc._id;
                 delete doc._rev;
 
@@ -257,6 +245,56 @@ app.get('/data/:id', function(req, res) {
     });
 });
 
+app.get('/related2/:view/:id', function( req, res ){
+    var db = new(cradle.Connection)().database('app');
+
+    var child = req.params.view.split('_')[1];
+
+    db.view(req.params.view + '/list_by_parent',
+        { key: req.params.id },
+        function(err, doc) {
+            if( err ) {
+                throw new ServerError( err );
+            } else {
+                var keys = _.map(doc.rows, function( row ) {
+                    var property = child + '_id';
+                    return row.value[property];
+                });    
+
+                db.view(child + '/list_by_id', {'keys': keys}, function(err, doc) {
+                    couch_response(err, doc, res);
+                });
+            }
+        }
+    );
+});
+
+app.get('/:list_type/:view', function(req, res) {
+    var db = new(cradle.Connection)().database('app');
+
+    db.view(req.params.view + '/' + req.params.list_type,
+        { key: req.session.username },
+        function(err, doc) {
+            couch_response(err, doc, res);
+        }
+    );
+});
+
+app.put('/user', function(req, res) {
+    /* Updated the supplied user record. */
+    if( req.session && typeof req.session.username != 'undefined' ) {
+        var db = new(cradle.Connection)().database('_users');
+        var docid = 'org.couchdb.user:' + req.session.username;
+        req.body.last_modified = Date.now();
+
+        db.merge(docid, req.body, function(err, doc) {
+            couch_response(err, doc, res); 
+        });
+    } else {
+        throw new AuthError;
+    }
+});
+
 app.put('/data/:id', function(req, res) {
     var db = new(cradle.Connection)().database('app');
 
@@ -267,6 +305,8 @@ app.put('/data/:id', function(req, res) {
             /* Only save if the author of the document is
              * trying to update it.
              */
+
+            req.body.last_modified = Date.now();
             db.merge(req.params.id, req.body, function(err, doc) {
                     couch_response(err, doc, res);
                 }
@@ -283,6 +323,8 @@ app.post('/data', function(req, res) {
 
     /* Set the author. */
     req.body.author = req.session.username;
+    req.body.created_at = Date.now();
+    req.body.last_modified = Date.now();
 
     db.save(req.body,
         function(err, doc) {
@@ -321,41 +363,6 @@ app.delete('/delete/:controller/:parent_id/:child_id', function(req, res) {
             couch_remove(db, rel_doc[0], res);
         }
     });
-});
-
-app.get('/related2/:view/:id', function( req, res ){
-    var db = new(cradle.Connection)().database('app');
-
-    var child = req.params.view.split('_')[1];
-
-    db.view(req.params.view + '/list_by_parent',
-        { key: req.params.id },
-        function(err, doc) {
-            if( err ) {
-                throw new ServerError( err );
-            } else {
-                var keys = _.map(doc.rows, function( row ) {
-                    var property = child + '_id';
-                    return row.value[property];
-                });    
-
-                db.view(child + '/list_by_id', {'keys': keys}, function(err, doc) {
-                    couch_response(err, doc, res);
-                });
-            }
-        }
-    );
-});
-
-app.get('/:list_type/:view', function(req, res) {
-    var db = new(cradle.Connection)().database('app');
-
-    db.view(req.params.view + '/' + req.params.list_type,
-        { key: req.session.username },
-        function(err, doc) {
-            couch_response(err, doc, res);
-        }
-    );
 });
 
 app.listen(3000);
