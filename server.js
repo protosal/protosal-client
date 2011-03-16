@@ -84,6 +84,11 @@ function get_property(doc, prop_name) {
     /* Get a property from a couchdb document.
      * This function is only designed for getting
      * the id or rev of a document.
+     *
+     * We want to search in this order:
+     * doc.id
+     * doc._id
+     * doc.value._id
      */
     var property = "";
     if( typeof doc[prop_name] != "undefined" ) {
