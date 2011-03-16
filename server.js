@@ -110,7 +110,7 @@ function couch_remove(db, doc, res) {
 
     if( doc.template ) {
         console.log("archive it");
-        db.merge(docid, {archived: true}, function(err, doc) {
+        db.merge(docid, {archived: true, last_modified: Date.now()}, function(err, doc) {
             if( !res ) {
                 if( err )
                     throw new ServerError( err );
