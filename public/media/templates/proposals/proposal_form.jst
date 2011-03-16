@@ -7,21 +7,16 @@
                     <td>
                         <label for="">
                             Name</label>
-                        <input name="name" id="" type="text" value="<%= typeof name != "undefined" ? name : "" %>" />
+                        <input name="name" id="proposal_name" type="text" value="<%= typeof name != "undefined" ? name : "" %>" />
                     </td>
                     <td>
                         <label for="">
                             Client</label>
                         <div id="clients_combo_container"></div>
                     </td>
-                    <td>
-                        <label for="">
-                            Autocomplete</label>
-                        <input type="text" id="add_section_input" />
-                    </td>
                 </tr>
             </table>
-            <input type="hidden" id="toc_order" name="toc_order" />
+            <input style="width: 800px; font-size: 9px" type="text" id="toc_order" name="toc_order" />
             </fieldset>
 
         </fieldset>
@@ -128,13 +123,19 @@
         getRelated: function(){
             console.log("Get related sections")
             var that = this;
+            console.log("get related that");
+            console.log(that);
             $.ajax({
-                url: "related2/proposal_section/" + "77673ab7de2302d423f0fb3fc9295e00",
+                url: "related2/proposal_section/" + that.proposalid,
                 success: function(resp){
                     console.log("Found related sections");
                     console.log(resp);
-                    _.each( resp, function(model) {
-                        that.add(model.value)
+                    
+                    var toc_order = "<%= typeof toc_order != "undefined" ? toc_order : "" %>";
+                    var sorted = _.sortBy( resp, function( row ) { return toc_order.indexOf(row.value._id); } );
+                    _.each( sorted, function(model) {
+                        model.value.id = model.value._id;
+                        that.sections.add(model.value)
                     })
                 }
             })
@@ -162,7 +163,9 @@
                     url: "data/newinstance/" + proposal_view.proposalid + "/" + section.get("template_id"),
                     success: function( response ){
                         $(".section_content", ".section_" + section.cid).html( _.template( $("#proposal_preview_section_content").html(), response ) );
-                        section.set({ id: response._id})
+                        section.set({ id: response._id});
+                        $("li[id='" + section.cid + "']").attr("id", response._id);
+                        proposal_view.toc.updateOrder();
                     }
                 });
             }
@@ -292,6 +295,7 @@
                 proposal_view.toc.updateOrder(event, ui)
                 }
             }); 
+            // If this item is being added at page load don't do that shit above
             proposal_view.toc.updateOrder();
         },
         updateOrder: function(event,ui){
@@ -336,6 +340,7 @@
             
         }
     });
+    
     ProposalView = Backbone.View.extend({
     
         el: $("#proposal_form_container"),
@@ -347,12 +352,12 @@
         client_id: "<%= typeof client_id != 'undefined' ? client_id : '' %>",
         
         initialize: function(){
-                var that = this;
+            var that = this;
             console.log("Initialize the proposal view");
             $("body").append("<div style='' class='proposalcontainer proposal_preview container'>Yo</div>");
-            $(".proposalcontainer").html( _.template( $("#proposal_preview").html(), {} ) );
+
             $.when( this.get_id() ).then( $.proxy( function(data){
-                
+                $(".proposalcontainer").html( _.template( $("#proposal_preview").html(), { name: $("#proposal_name").val() } ) );
                 console.log(arguments);
                 console.log("Get the proposal id");
                 that.proposalid = data.id;
@@ -361,7 +366,7 @@
                 this.sections = new SectionCollection;
                 
                 this.sections.bind("add", this.sections.addToPreview);
-                this.sections.getRelated();
+                this.sections.getRelated.apply(this);
                 
                 this.allsections = new SectionCollection;
                 this.allsections.getAllTemplates();
@@ -380,6 +385,13 @@
 
             )
         },
+        events: {
+            "keyup #proposal_name": "updatePreview" //Wrong should update model and model should listen for changes
+            
+        },
+        updatePreview: function( event ){
+            $("#preview_proposal_name").text($(event.currentTarget).val())  
+        },  
         addSectionRender: function(){
             console.log( "Render the add section modal window" );
             var sections = this.allsections.models;
@@ -419,7 +431,7 @@
 </jst>
 </script>
 <script type="text/template" id="toc_list_item">
-    <li id="<%= section.cid %>" template_id="<%= section.get("template_id") %>"><%= section.get("name") %></li>
+    <li id="<%= typeof section.id != "undefined" ? section.id : section.cid %>" template_id="<%= section.get("template_id") %>"><%= section.get("name") %></li>
 </script>
 <script type="text/template" id="clients_combo_form_element">
     <select name="client_id">                $("body").append("<div style='' class='proposalcontainer proposal_preview container'>Yo</div>");
@@ -485,7 +497,7 @@
             <br />
             
             <br />
-            <h2>Sample Proposal - Waterworks</h2>
+            <h2 id="preview_proposal_name"><%= name %></h2>
             <h2 class="company">Sample Company</h2>
             <br />
             <p class="introduction">A This is a short but effective proposal template for a website redesign project. It clearly outlines the business challenges the client faces, how these challenges will be taken care of, and what the client must do to get the project started.</p>
