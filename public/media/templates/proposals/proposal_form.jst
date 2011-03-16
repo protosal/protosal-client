@@ -4,19 +4,29 @@
         <fieldset>
             <table>
                 <tr>
-                    <td>
+                    <td style="padding-left: 20px;">
                         <label for="">
                             Name</label>
                         <input name="name" id="proposal_name" type="text" value="<%= typeof name != "undefined" ? name : "" %>" />
                     </td>
-                    <td>
+                    <td style="padding-left: 20px;">
                         <label for="">
                             Client</label>
                         <div id="clients_combo_container"></div>
                     </td>
+                    <td style="padding-left: 20px;">
+                        <label for="">
+                            Status</label>
+                    	<div id="radio">
+                    	
+		                <input type="radio" id="radio1" name="status" value="pending" /><label for="radio1">Pending</label>
+		                <input type="radio" id="radio2" name="status" value="accepted" /><label for="radio2">Accepted</label>
+		                <input type="radio" id="radio3" name="status" value="declined" /><label for="radio3">Declined</label>
+	                    </div>
+	                </td>
                 </tr>
             </table>
-            <input style="width: 800px; font-size: 9px" type="text" id="toc_order" name="toc_order" />
+            <input style="width: 800px; font-size: 9px" type="hidden" id="toc_order" name="toc_order" />
             </fieldset>
 
         </fieldset>
@@ -222,7 +232,7 @@
         },
         modal: true, 
         hide: 'drop',
-        width: "850px",
+        width: "960px",
         position: ["50%",100]
     }).dialog("open");
         }
@@ -428,6 +438,11 @@
         }
     });
     proposal_view = new ProposalView;
+    $( "#radio" ).buttonset();
+    thechecked = "<%= typeof status != "undefined" && status != "" ? status : 'pending' %>";
+    $("input[value='"+thechecked+"']").attr("checked", "checked")
+    
+    $( "#radio" ).buttonset('refresh');
 </jst>
 </script>
 <script type="text/template" id="toc_list_item">
@@ -473,6 +488,7 @@
             
             </div>
         </div>
+        <div class="delete_section" style="color: #ff0000;">Delete</div>
     </li>
 </script>
 <script type="text/template" id="proposal_preview_section_content">
