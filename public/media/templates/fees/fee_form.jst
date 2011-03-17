@@ -2,11 +2,10 @@
     <form id="add_fee_form" class="edit_fee_form" enctype="multipart/form-data" method="post">
        <br />
 
-        <div style="">
-            <div class="megaform" style=" float: left;">
-
-            <fieldset>
-                <label for="">
+<p class="pagedesc">Fees are attached to sections and can be useful for adding money to your pool of money.  Today the water is cold.</p>
+        <div class="stack1of3" style="margin-left: 120px;">
+            <div class="stackContent">
+                  <label for="">
                     Name
                 </label>
                 <input name="name" id="" type="text" value="<%= typeof name != "undefined" ? name : "" %>" />
@@ -15,28 +14,23 @@
                 </label>
                 <input name="price" id="" type="text" value="<%= typeof price != "undefined" ? price : "" %>" />
 
-                <p id="setquantityb">set quantity</p>
-                <div id="setquantity" style="display: none;">
                     <label for="">
                         Default Quantity
                     </label>
-                    <input name="quantity" id="" type="text" value="<%= typeof quantity != "undefined" ? quantity : "" %>" />
-                </div>
+                    <input name="quantity" id="" type="text" value="<%= typeof quantity != "undefined" ? quantity : "1" %>" />
+           
+            </div>
+        </div>
+        <div class="stack1of3">
+            <div class="stackContent">
                 <label for="">
                     Description</label>
                 <textarea rows="4" name="description" cols="30"><%= typeof description != "undefined" ? description : "" %></textarea>
-            </fieldset>
-            
-            </div>
+          </div>
         </div>
-    
     </form>
 
-<jst>
-    $("#setquantityb").click( function(){
-        $("#setquantity").toggle();
-    });
-</jst>
+
 
 </script>
 
