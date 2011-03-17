@@ -30,7 +30,8 @@
             
         </div>
 
-
+            <input  style="float: left; width: 600px; margin-left: 30px;" type="text" name="feelist" id="feelist" value="" />
+           
 
     
     </form>
@@ -43,8 +44,7 @@
             <br />
             <br />
             <br />
-            <input type="hidden" name="feelist" id="feelist" value="" />
-           
+
     <jst>
 
 	
@@ -286,7 +286,7 @@
                         success: function( data ){
                             
                             console.log(data);
-                          
+                            section_backbone.updateFeeValues();
                         
                         }
                     })
@@ -338,7 +338,7 @@
         $(".delete_fee").die("click");
         $(".delete_fee").live("click", function() {
             var id = $(this).parents("li").attr("id")
-            console.log("hey bro you mad?" + id)
+            $(this).parents("li").remove();
              section_backbone.removeFee(id);
             // $(this).parents("li").remove();
             return false;

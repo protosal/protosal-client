@@ -163,6 +163,23 @@
             
         }
     });
+    FeeTableView = Backbone.View.extend({
+        initialize: function( section ){
+            console.log("build the table");
+            console.log(section);
+            var feelist = section.get("feelist").split(",");
+            var obj = {
+                   keys: feelist
+            };
+            console.log(obj);
+            $.when( $.ajax("data/bulk_docs", { type: "post", dataType: "json", contentType: "application/json", data: $.toJSON(obj) }) )
+            .then( function(data) {
+                //Update this collections sections
+                console.log("received fee data");
+                $(".section_table", $(".section_" + section.cid) ).html( _.template( $("#section_fee_table_template").html(), { fees: data} ) );
+            }); //When statement end
+        }
+    })
     SectionsContainer = Backbone.View.extend({
         el: $("#section_container_test"),
         initialize: function(){
@@ -186,8 +203,8 @@
             console.log($("#proposal_preview_section").html())
             if( typeof section.attributes.description != "undefined" ) {
                  $("#section_container_test ol").append( _.template( $("#proposal_preview_section").html(), { section: section } ) );
-   
-                        $(".section_content", ".section_" + section.cid).html( _.template( $("#proposal_preview_section_content").html(), section.attributes ) );
+                 var feetable = new FeeTableView( section );
+                $(".section_content", ".section_" + section.cid).html( _.template( $("#proposal_preview_section_content").html(), section.attributes ) );
                 
             } else {
                 $("#section_container_test ol").append( _.template( $("#proposal_preview_section").html(), { section: section } ) );
@@ -196,6 +213,8 @@
                     success: function( response ){
                         $(".section_content", ".section_" + section.cid).html( _.template( $("#proposal_preview_section_content").html(), response ) );
                         section.set({ id: response._id});
+                        section.set(response);
+                        var feetable = new FeeTableView( section );
                         $("li[id='" + section.cid + "']").attr("id", response._id);
                         proposal_view.toc.updateOrder();
                     }
@@ -219,10 +238,12 @@
                      $("#atestform").dialog("close");
                          $.ajax({
                             url: "data/" + section.id,
-                            success: function( response ){
+                            success: function( response ){section_fee_table_template
                                 $(".section_content", ".section_" + cid).html( _.template( $("#proposal_preview_section_content").html(), response ) );
                                 $(".section_heading", ".section_" + cid).text(response.name);
                                 $("#"+section.id).text(response.name); // set the toc name
+                                section.set(response);
+                                var feetable = new FeeTableView( section );
                             }
                         });
                 },
@@ -358,7 +379,12 @@
         el: $("#clients_combo"),
         initialize: function(){
             console.log("Initializing the clients view");
-            
+                        $.when( $.ajax("list_by_author_templates/section", { dataType: "json" }) )
+                .then( function(data) {
+                    //Update this collections sections
+                    console.log("Template sections received, send them to collection");
+                    proposal_view.allsections.refresh(data);
+            }); //When statement end
         }
     
     });
@@ -510,9 +536,31 @@
                     <div class='loading' style="width: 32px; margin-left: 30px; margin-top: 10px;"> </div>
             
             </div>
+            <div class="section_table">
+            No fees
+            </div>
         </div>
+        
         <div class="delete_section" style="color: #ff0000;">Delete</div>
     </li>
+</script>
+<script type="text/template"" id="section_fee_table_template">
+<table id="hor-minimalist-b">
+    <thead>
+        <tr>
+            <th>Fee Name</th>
+            <th>Fee Price</th>
+        </tr>
+    </thead>
+    <tbody>
+        <% _.each( fees, function(fee) { %>
+            <tr>
+                <td><%= fee.doc.name %></td>
+                <td><%= fee.doc.price %></td>
+            </tr>
+        <% }); %>
+    </tbody>
+</table>
 </script>
 <script type="text/template" id="proposal_preview_section_content">
         <div class="section_content">
