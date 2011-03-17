@@ -129,6 +129,15 @@
                   window.location = "#/dashboard/login"
                 },
               defaultRoute: function(controller, action, vid) {
+                    /* Redirect people to the home page if they try
+                       to access the login page when they are already
+                       authenticated.
+                    */
+                    if( GLOBALS.session && controller == "dashboard" && action == "login" ) {
+                        redirect("dashboard/home");
+                        return;
+                    }
+
                     if( GLOBALS.session || action == "login") {
                         if( vid == null) vid = "";
                         GLOBALS.controller = controller;
