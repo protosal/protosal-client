@@ -1,5 +1,3 @@
-var Base64 = require('base64');
-var Buffer = require('buffer').Buffer;
 var urlparser = require('url');
 var http = require('http');
 var Hash = require('./sha1');

@@ -56,7 +56,6 @@ function ServerError(msg) {
 
 ServerError.prototype.__proto__ = Error.prototype;
 
-
 app.error(function(err, req, res, next){
     if(err instanceof BadJSON) {
         res.send(err, 400);
