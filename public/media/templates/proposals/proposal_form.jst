@@ -111,8 +111,19 @@
             console.log("Initialise the Section collection");
             //this.bind("refresh", function() { proposal_view.addSectionRender(); });
             //this.bind("add", this.addEvent );
-
+			this.bind("remove", this.deleteRelation );
         },
+        deleteRelation: function( model ){
+			console.log("delete triggered");
+			console.log(model);
+			id = model.id;
+			proposalid = proposal_view.proposalid;
+			$.ajax("delete/proposal_section/" + proposalid + "/" + id, 
+			{ type: "DELETE",
+				success: function( resp ) {
+				}
+			})
+		},
         addToPreview: function(section) {
             console.log("adding to preview");
 
@@ -158,7 +169,18 @@
             console.log("Iniitalize sections container");
             console.log(this.el)
             $(".cid").live( "click", this.openEdit );
+            $(".delete_section").live( "click", this.deleteSection );
         },
+        deleteSection: function( event ) {
+			cid = $(event.currentTarget).parents("li").attr("cid");
+			model = proposal_view.sections.getByCid(cid);
+			id = model.get("id");
+			proposal_view.sections.remove(model);
+			$("#" + id ).remove();
+			$("li[cid='" + cid + "']").remove();
+            proposal_view.toc.updateOrder();
+			return false;
+		},
         addSection: function( section ){
             console.log("Add to sections container")
             console.log($("#proposal_preview_section").html())
@@ -200,6 +222,7 @@
                             success: function( response ){
                                 $(".section_content", ".section_" + cid).html( _.template( $("#proposal_preview_section_content").html(), response ) );
                                 $(".section_heading", ".section_" + cid).text(response.name);
+                                $("#"+section.id).text(response.name); // set the toc name
                             }
                         });
                 },
@@ -316,7 +339,7 @@
                 console.log(listitem)
                 console.log($("#toc_list"));
                 position = ($("#toc_list li").index(listitem)) + 1;
-                cid = $(listitem).attr("id");
+                cid = proposal_view.sections.get($(listitem).attr("id")).cid;
                 sec = $(".proposal_preview #section_container_test li.cid:nth-child("+position+")");
                 if( $(".proposal_preview #section_container_test li.cid:last").text() == sec.text() ){
                     sec.after($(".section_"+cid))
