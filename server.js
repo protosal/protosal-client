@@ -317,6 +317,28 @@ app.put('/data/:id', function(req, res) {
     
 });
 
+app.post('/data/bulk_docs', function(req, res) {
+    var db = new(cradle.Connection)().database('app');
+
+    db.get(req.body.keys, function(err, doc) {
+        if( err ) {
+            throw new ServerError( err );
+        } else {
+            /* Ensure all documents are owned by the
+             * user who requested them.
+             */
+            doc.forEach(function(row) {
+                if( row.author != req.session.username ) {
+                    throw new AuthRequired;
+                }
+            });
+
+            /* If they are, return the documents. */
+            res.send(doc);
+        }
+    });
+});
+
 app.post('/data', function(req, res) {
     var db = new(cradle.Connection)().database('app');
 
