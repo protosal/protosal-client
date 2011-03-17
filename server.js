@@ -181,18 +181,27 @@ app.get('/data/newinstance/:proposal_id/:section_id', function(req, res) {
             throw new ServerError( err );
         } else {
             if( doc.author == req.session.username ) {
-                /* Remove the _id and _rev from the document
-                 * as we are going to clone it.
-                 */
+                /* Save a copy of the doc._id as we will delete it. */
                 var docid = doc._id;
-                doc.template = false;
-                doc.template_id = req.params.section_id;
-                doc.created_at = Date.now();
-                doc.last_modified = Date.now();
+
+                /* Delete _id and _rev so we create a new record. */
                 delete doc._id;
                 delete doc._rev;
 
+                /* Indicate the new document is an instance. */
+                doc.template = false;
+                /* Record the template this document was generated from. */
+                doc.template_id = req.params.section_id;
+
+                /* Set the new created and modified times. */
+                doc.created_at = Date.now();
+                doc.last_modified = Date.now();
+
+                /* Create the new section document. */
                 db.save(doc, function(err, new_doc) {
+                    console.log("new section document");
+                    console.log(new_doc);
+
                     if( err ) {
                         throw new ServerError( err );
                     } else {
@@ -202,26 +211,101 @@ app.get('/data/newinstance/:proposal_id/:section_id', function(req, res) {
                            req.session.username
                         ); 
 
-                        /* Instantiate all fees related to the section. */
+                        /* Get all section_fee records associated with the section. */
                         db.view('section_fee/list_by_parent', { key: docid }, function(err, res_arr) {
                             if( err ) {
                                 throw new ServerError( err );
                             } else {
-                                res_arr.forEach(function(row) {
-                                    /* Delete _id and _rev so we create a new record. */
-                                    row.created_at = Date.now();
-                                    row.last_modified = Date.now();
-                                    delete row._id;
-                                    delete row._rev;
+                                console.log("res_arr");
+                                console.log(res_arr);
 
-                                    db.save(row, function(err, response) {
+                                /* Loop through section_fee records. */
+                                res_arr.forEach(function(row) {
+
+                                    /* Get the fee record. */
+                                    db.get(row.fee_id, function(err, doc1) {
+                                        console.log("Fee Document:");
+                                        console.log(doc1);
+
                                         if( err ) {
                                             throw new ServerError( err );
+                                        } else {
+                                            /* Delete _id and _rev so we create a new record. */
+                                            delete doc1._id;
+                                            delete doc1._rev;
+
+                                            /* Indicate the new document is an instance. */
+                                            doc1.template = false;
+                                            /* Record the template this document was generated from. */
+                                            doc1.template_id = row.fee_id;
+
+                                            /* Set the new created and modified times. */
+                                            doc1.created_at = Date.now();
+                                            doc1.last_modified = Date.now();
+                                            
+                                            /* Create the new fee record. */
+                                            db.save(doc1, function(err, doc2) {
+                                                console.log("New Fee Document:");
+                                                console.log(doc2);
+
+                                                if( err ) {
+                                                    throw new ServerError( err );
+                                                }
+
+                                                /* Generate the new section_fee document. */
+                                                var new_section_fee = {
+                                                    section_id: new_doc._id,
+                                                    fee_id: doc2._id,
+                                                    created_at: Date.now(),
+                                                    last_modified: Date.now(),
+                                                    type: 'sectionfee',
+                                                    author: req.session.author
+                                                }
+                                                
+                                                /* Finally, create the new section_fee document. */
+                                                db.save(new_section_fee, function(err, doc3) {
+                                                    console.log("New section_fee:");
+                                                    console.log(doc3);
+
+                                                    if( err ) {
+                                                        throw new ServerError( err );
+                                                    } else {
+                                                        /* Now, we build the new feelist. */
+                                                        db.view('section_fee/list_by_parent', { key: new_doc._id }, function(err, res_arr) {
+                                                            console.log("building new feelist");
+                                                            console.log(res_arr);
+                                                            if( err ) {
+                                                                throw new ServerError( err );
+                                                            } else {
+                                                                /* Calculate the new feelist. */
+                                                                var new_feelist = _.map(res_arr, function(row) {
+                                                                    return row.value.fee_id;
+                                                                });
+                                                                new_feelist = new_feelist.join(",");
+                                                                console.log("new feelist");
+                                                                console.log(new_feelist);
+
+                                                                /* Update the section instance with the new feelist. */
+                                                                db.merge(new_doc._id, {feelist: new_feelist}, function(err, doc4) {
+                                                                    if( err ) {
+                                                                        throw new ServerError( err );
+                                                                    } else {
+                                                                        console.log("This makes me want to vomit.");
+                                                                        console.log(doc4);
+                                                                    }
+                                                                });
+                                                            }
+                                                        });
+                                                    }
+                                                }); 
+                                            });
                                         }
                                     });
                                 });
                             } 
                         });
+
+                        
 
                         /* Return a value to the client. */
                         emit_doc(new_doc._id, res);
