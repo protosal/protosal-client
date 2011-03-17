@@ -166,6 +166,7 @@
     FeeTableView = Backbone.View.extend({
         initialize: function( section ){
             console.log("build the table");
+            console.log(section);
             var feelist = section.get("feelist").split(",");
             var obj = {
                    keys: feelist
@@ -175,7 +176,7 @@
             .then( function(data) {
                 //Update this collections sections
                 console.log("received fee data");
-                console.log(data);
+                $(".section_table", $(".section_" + section.cid) ).html( _.template( $("#section_fee_table_template").html(), { fees: data} ) );
             }); //When statement end
         }
     })
@@ -212,6 +213,8 @@
                     success: function( response ){
                         $(".section_content", ".section_" + section.cid).html( _.template( $("#proposal_preview_section_content").html(), response ) );
                         section.set({ id: response._id});
+                        section.set(response);
+                        var feetable = new FeeTableView( section );
                         $("li[id='" + section.cid + "']").attr("id", response._id);
                         proposal_view.toc.updateOrder();
                     }
@@ -235,10 +238,12 @@
                      $("#atestform").dialog("close");
                          $.ajax({
                             url: "data/" + section.id,
-                            success: function( response ){
+                            success: function( response ){section_fee_table_template
                                 $(".section_content", ".section_" + cid).html( _.template( $("#proposal_preview_section_content").html(), response ) );
                                 $(".section_heading", ".section_" + cid).text(response.name);
                                 $("#"+section.id).text(response.name); // set the toc name
+                                section.set(response);
+                                var feetable = new FeeTableView( section );
                             }
                         });
                 },
@@ -538,6 +543,24 @@
         
         <div class="delete_section" style="color: #ff0000;">Delete</div>
     </li>
+</script>
+<script type="text/template"" id="section_fee_table_template">
+<table id="hor-minimalist-b">
+    <thead>
+        <tr>
+            <th>Fee Name</th>
+            <th>Fee Price</th>
+        </tr>
+    </thead>
+    <tbody>
+        <% _.each( fees, function(fee) { %>
+            <tr>
+                <td><%= fee.doc.name %></td>
+                <td><%= fee.doc.price %></td>
+            </tr>
+        <% }); %>
+    </tbody>
+</table>
 </script>
 <script type="text/template" id="proposal_preview_section_content">
         <div class="section_content">
