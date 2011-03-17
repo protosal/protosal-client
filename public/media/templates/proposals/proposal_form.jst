@@ -163,6 +163,22 @@
             
         }
     });
+    FeeTableView = Backbone.View.extend({
+        initialize: function( section ){
+            console.log("build the table");
+            var feelist = section.get("feelist").split(",");
+            var obj = {
+                   keys: feelist
+            };
+            console.log(obj);
+            $.when( $.ajax("data/bulk_docs", { type: "post", dataType: "json", contentType: "application/json", data: $.toJSON(obj) }) )
+            .then( function(data) {
+                //Update this collections sections
+                console.log("received fee data");
+                console.log(data);
+            }); //When statement end
+        }
+    })
     SectionsContainer = Backbone.View.extend({
         el: $("#section_container_test"),
         initialize: function(){
@@ -186,8 +202,8 @@
             console.log($("#proposal_preview_section").html())
             if( typeof section.attributes.description != "undefined" ) {
                  $("#section_container_test ol").append( _.template( $("#proposal_preview_section").html(), { section: section } ) );
-   
-                        $(".section_content", ".section_" + section.cid).html( _.template( $("#proposal_preview_section_content").html(), section.attributes ) );
+                 var feetable = new FeeTableView( section );
+                $(".section_content", ".section_" + section.cid).html( _.template( $("#proposal_preview_section_content").html(), section.attributes ) );
                 
             } else {
                 $("#section_container_test ol").append( _.template( $("#proposal_preview_section").html(), { section: section } ) );
@@ -358,7 +374,12 @@
         el: $("#clients_combo"),
         initialize: function(){
             console.log("Initializing the clients view");
-            
+                        $.when( $.ajax("list_by_author_templates/section", { dataType: "json" }) )
+                .then( function(data) {
+                    //Update this collections sections
+                    console.log("Template sections received, send them to collection");
+                    proposal_view.allsections.refresh(data);
+            }); //When statement end
         }
     
     });
@@ -510,7 +531,11 @@
                     <div class='loading' style="width: 32px; margin-left: 30px; margin-top: 10px;"> </div>
             
             </div>
+            <div class="section_table">
+            No fees
+            </div>
         </div>
+        
         <div class="delete_section" style="color: #ff0000;">Delete</div>
     </li>
 </script>
