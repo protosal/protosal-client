@@ -208,6 +208,12 @@ app.get('/data/newinstance/:proposal_id/:section_id', function(req, res) {
                                 throw new ServerError( err );
                             } else {
                                 res_arr.forEach(function(row) {
+                                    /* Delete _id and _rev so we create a new record. */
+                                    row.created_at = Date.now();
+                                    row.last_modified = Date.now();
+                                    delete row._id;
+                                    delete row._rev;
+
                                     db.save(row, function(err, response) {
                                         if( err ) {
                                             throw new ServerError( err );

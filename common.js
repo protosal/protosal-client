@@ -65,7 +65,7 @@ function login(req, res) {
                 req.session.auth = true;
                 req.session.username = req.body.username;
             }
-            console.log(doc);
+
             res.send( { redirect: 'dashboard/home'} );
         });
 
