@@ -4,10 +4,11 @@
 
         <br />
 
-     
-        <div style=" float: left; width: 250px; margin-left: 30px;">
-
-            <fieldset>
+         <div class="stack1of3" style="margin-left: 120px;">
+            <div class="stackContent">
+      <label for="">
+                    Name
+                </label>
                 <input name="name" id="" type="text" value="<%= typeof name != "undefined" ? name : "" %>" />
 
 
@@ -16,34 +17,30 @@
 
                 <h3>Add Fees</h3>
 
-                <div class="ui-widget">
-
+          
                 <input type="text" id="fees" /><button type="button" id="add-fee">Addd</button> 
                  <h3>Fees</h3>
                 <ul id="sortablefees"></ul>
-                </div>
-            </fieldset>
-        </div> <!-- width 200px -->
-        <div style="float: left; width: 600px; margin-left: 30px;">
-  
+                   </div>
+        </div>
+        <div class="stack1of2">
+        
+            <div class="stackContent">
+        <label for="">
+                    Content
+                </label>
             <textarea  class="jckeditor" rows="4" name="description" cols="20"><%= typeof description != "undefined" ? description : "" %></textarea>
             
-        </div>
-
-            <input  style="float: left; width: 600px; margin-left: 30px;" type="text" name="feelist" id="feelist" value="" />
+     
+            <input  style="float: left; width: 600px; margin-left: 30px;" type="hidden" name="feelist" id="feelist" value="" />
            
-
+             </div>
+        </div>
     
     </form>
-    <div style="clear:both;"></div>
-</div>
-
 
             <div id="fee_form_modal"></div>
 
-            <br />
-            <br />
-            <br />
 
     <jst>
 
