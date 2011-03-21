@@ -629,7 +629,7 @@ font-size: 11px  !important;
 .list_view .int {
 text-align: center;
 }
-.list_view .edit:hover {
+.edit:hover {
   outline: none;
     color: #1c4257; border: 1px solid #da7c0c !important;
     background: url(images/bg_fallback.png) 0 -50px repeat-x;
@@ -648,7 +648,7 @@ text-align: center;
     -webkit-box-shadow: none;
     -moz-box-shadow: none;
 }
-.list_view .delete:hover{
+.delete:hover{
   outline: none;
     color: #1c4257; border: 1px solid #FF8080 !important;
     background: url(images/bg_fallback.png) 0 -50px repeat-x;
@@ -938,4 +938,21 @@ font-weight: bold;
 	font-size: 14px;
 	
 	
+}
+#sortablefees{
+	list-style:none;
+	padding: 5px;
+}
+#sortablefees li {
+	padding-right: 10px;
+display: block;
+}
+#sortablefees li span{
+	font-size: 10px;
+	float: right;
+}
+#sortablefees li p{
+	float: left;
+	height: 25px;
+	width: 170px;
 }

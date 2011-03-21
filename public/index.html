@@ -198,10 +198,10 @@
             });
             
             $(".back-button").live("click", function() { history.go(-1); return false; });
-            $(".close-button").live("click", function() { $(".ui-dialog-content").dialog("close"); return false; });
+            $(".close-button").live("click", function(event) { console.log(event); $(event.currentTarget).parents(".ui-dialog-content").dialog("close"); return false; });
             window.saveclickHandler =  function(event){
 
-                formdata = null;
+                var formdata = null;
 
                 //Serialize the form associated with the save button
                 savebutton = event.currentTarget;

@@ -93,9 +93,10 @@ _rev = ""
                         _rev: "",
                         _id: "",
                         templateid: "",
+                        documentid: "",
                         success: <%= success %>
                     }, window.saveclickHandler );
-					_.jstTemplate( $("#<%= controller %>_formc"), $("#<%= controller %>_form_template"), { success: <%= success %> } );  
+					_.jstTemplate( $("#<%= controller %>_formc"), $("#<%= controller %>_form_template"), { success: <%= success %>, documentid: "" } );  
                  
                     
                     
