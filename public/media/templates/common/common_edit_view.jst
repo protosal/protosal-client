@@ -30,6 +30,13 @@ _rev = ""
             el: $("#<%=controller %>_edit_view_container"),
 
             initialize: function () {
+                exitAction = "Back";
+                exitActionClass = "back-button";
+                if( "<%= typeof modal != 'undefined' ? modal : '' %>" == "yes" ){
+                    exitAction = "Close";
+                    exitActionClass = "close-button";
+                    
+                }
                 options = {
                     'title': '<%= _(controller).capitalize() %> Edit',
                     'buttons': [{
@@ -37,8 +44,8 @@ _rev = ""
                                     'classes': '<%= controller %>_save',
                                     'controller': '<%= controller %>'
                         },{
-                                    'text': 'Back',
-                                    'classes': 'back-button'
+                                    'text': exitAction,
+                                    'classes': exitActionClass
                         }
                         <% if( typeof buttons != "undefined" ){ _.each( buttons, function(button){  %>
 							,{
@@ -65,6 +72,7 @@ _rev = ""
                         dataType: "json",
                         success: function(data){
                             data.success = <%= success %>;
+                            data.documentid = "<%= current_doc_id %>";
                             $("#<%= controller %>_formc").append( _.template( $("#<%= controller %>_form_template").jsthtml(), data ) );
                             
 

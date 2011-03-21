@@ -159,6 +159,7 @@
                             });
                         });
                         $(".ui-dialog").remove();
+                        $(".modal_window").remove();
                         
                         var obj = {};
                         template = GLOBALS.controller + "_" + GLOBALS.action + "_view";
@@ -197,7 +198,7 @@
             });
             
             $(".back-button").live("click", function() { history.go(-1); return false; });
-
+            $(".close-button").live("click", function() { $(".ui-dialog-content").dialog("close"); return false; });
             window.saveclickHandler =  function(event){
 
                 formdata = null;

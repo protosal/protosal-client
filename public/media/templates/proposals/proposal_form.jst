@@ -171,13 +171,17 @@
             var obj = {
                    keys: feelist
             };
-            console.log(obj);
-            $.when( $.ajax("data/bulk_docs", { type: "post", dataType: "json", contentType: "application/json", data: $.toJSON(obj) }) )
-            .then( function(data) {
-                //Update this collections sections
-                console.log("received fee data");
-                $(".section_table", $(".section_" + section.cid) ).html( _.template( $("#section_fee_table_template").html(), { fees: data} ) );
-            }); //When statement end
+            if( obj.keys != "" ){
+                $.when( $.ajax("data/bulk_docs", { type: "post", dataType: "json", contentType: "application/json", data: $.toJSON(obj) }) )
+                .then( function(data) {
+                    //Update this collections sections
+                    console.log("received fee data");
+                    $(".section_table", $(".section_" + section.cid) ).html( _.template( $("#section_fee_table_template").html(), { fees: data} ) );
+                }); //When statement end
+            } else {
+                $(".section_table", $(".section_" + section.cid) ).html("");
+                
+            }
         }
     })
     SectionsContainer = Backbone.View.extend({
@@ -217,7 +221,7 @@
                         var feetable = new FeeTableView( section );
                         $("li[id='" + section.cid + "']").attr("id", response._id);
                         proposal_view.toc.updateOrder();
-                    }
+                    }x
                 });
             }
         },
@@ -234,6 +238,7 @@
                 controller: "section",
                 documentid: section.get("_id"),
                 templateid: template_id,
+                modal: "yes",
                 success: function(data){
                      $("#atestform").dialog("close");
                          $.ajax({
@@ -246,39 +251,37 @@
                                 var feetable = new FeeTableView( section );
                             }
                         });
-                },
-                buttons: [
-			            { text: "Close", class: "close" }
-			            ]
+                }
             });    
-                var mydialog = $(temp).dialog({
-		autoOpen: false,
-        draggable: false,
-        resizable: false,
-        closeOnEscape: true,
-        close: function(){
-				cked.ckeditor(function(){ // a hack to make jck editor work on page refresh
+            var mydialog = $(temp).dialog({
+		        autoOpen: false,
+                draggable: false,
+                resizable: false,
+                closeOnEscape: true,
+                close: function(){
+				        cked.ckeditor(function(){ // a hack to make jck editor work on page refresh
 						
-						this.destroy();
-			});
-			mydialog.dialog("destroy");
+						        this.destroy();
+			        });
+			        mydialog.dialog("destroy");
 			
-        },
-        beforeClose: function(){
+                },
+                beforeClose: function(){
 				
 				
-		},
-        open: function(){
-			console.log($("#jckeditor"));
-			setTimeout( function(){ cked.ckeditor(ckeditor_options);  }, 200);
-			console.log($("#jckeditor")); 
-			$("form input").focus();      
-        },
-        modal: true, 
-        hide: 'drop',
-        width: "960px",
-        position: ["50%",100]
-    }).dialog("open");
+		        },
+                open: function(){
+			        console.log($("#jckeditor"));
+			        setTimeout( function(){ cked.ckeditor(ckeditor_options);  }, 200);
+			        console.log($("#jckeditor")); 
+			        $("form input").focus();      
+                },
+                modal: true, 
+                hide: 'drop',
+                width: "960px",
+                position: ["50%",100],
+                height: "500"
+            }).dialog("open");
         }
     });
     SectionChooser = Backbone.View.extend({
