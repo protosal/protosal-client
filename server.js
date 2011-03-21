@@ -369,19 +369,24 @@ app.get('/:list_type/:view', function(req, res) {
     );
 });
 
+app.get('/user', function(req, res) {
+    var db = new(cradle.Connection)().database('app');
+    var docid = 'org.couchdb.user:' + req.session.username;
+
+    db.get(docid, function(err, doc) {
+        couch_response(err, doc, res); 
+    });
+});
+
 app.put('/user', function(req, res) {
     /* Updated the supplied user record. */
-    if( req.session && typeof req.session.username != 'undefined' ) {
-        var db = new(cradle.Connection)().database('_users');
-        var docid = 'org.couchdb.user:' + req.session.username;
-        req.body.last_modified = Date.now();
-
-        db.merge(docid, req.body, function(err, doc) {
-            couch_response(err, doc, res); 
-        });
-    } else {
-        throw new AuthError;
-    }
+    var db = new(cradle.Connection)().database('app');
+    var docid = 'org.couchdb.user:' + req.session.username;
+    req.body.last_modified = Date.now();
+    
+    db.merge(docid, req.body, function(err, doc) {
+        couch_response(err, doc, res); 
+    });
 });
 
 app.put('/data/:id', function(req, res) {
