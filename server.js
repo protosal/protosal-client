@@ -69,6 +69,7 @@ app.error(function(err, req, res, next){
 
     Exceptional.handle(err);
     console.log(err);
+    console.log(err.stack);
 }); 
 
 function couch_response(err, doc, res) {
@@ -383,8 +384,18 @@ app.put('/user', function(req, res) {
     var db = new(cradle.Connection)().database('app');
     var docid = 'org.couchdb.user:' + req.session.username;
     req.body.last_modified = Date.now();
+
+    var new_contents = {};
+    new_contents.author = req.session.username;
+
+    if( typeof req.body.name != "undefined" ) {
+        new_contents.name = req.body.name;
+    }
+    if( typeof req.body.address != "undefined" ) {
+        new_contents.address = req.body.address;
+    }
     
-    db.merge(docid, req.body, function(err, doc) {
+    db.merge(docid, new_contents, function(err, doc) {
         couch_response(err, doc, res); 
     });
 });
@@ -485,5 +496,6 @@ app.listen(3000);
 
 process.on('uncaughtException', function (err) {
     console.log(err);
+    console.log(err.stack);
     Exceptional.handle(err);
 });
