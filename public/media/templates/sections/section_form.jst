@@ -14,12 +14,15 @@
 
                 <br />
                 <br />
-
-                <h3>Add Fees</h3>
-
+      <label for="">
+                    Attach fees 
+                </label>
           
                 <input type="text" id="fees" /><button type="button" id="add-fee">Addd</button> 
-                 <h3>Fees</h3>
+                <div style="clear:both;"></div>
+                               <label for="">
+                    Current fees
+                </label>
                 <ul id="sortablefees"></ul>
                    </div>
         </div>
@@ -62,6 +65,7 @@
           }
         });
         //Make relationships !TODO
+        cur_doc_id = "<%= documentid %>";
         SectionBackboneView = Backbone.View.extend({
             
             el: $("#section_form_container"),
@@ -82,7 +86,7 @@
                             data: $.toJSON(formdata),
                             success: function(resp){
 								$('.section_save').unbind('click');
-                            
+                                cur_doc_id = resp.id
                                 $(".section_save").click({
                                     templateid: "",
                                     _rev: resp.rev,
@@ -269,7 +273,7 @@
                 // this.fees.url = "delete/section_fee/get_section";
                  $.ajax({
                     type: "DELETE",
-                    url: "delete/section_fee/<%= documentid %>/" + id,
+                    url: "delete/section_fee/"+cur_doc_id +"/" + id,
                     dataType: "json",
                     contentType: "application/json",
                         success: function( data ){
