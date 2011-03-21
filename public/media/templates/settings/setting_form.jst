@@ -1,4 +1,4 @@
-<script type="text/template" id="settings_form_template">
+<script type="text/template" id="user_form_template">
     <div id="proposal_form_container">
 
         <form id="add_settings_form" class="edit_settings_form" enctype="multipart/form-data" method="post">
@@ -12,31 +12,38 @@
                         Name
                     </label>
                     <input name="name" id="" type="text" value="<%= typeof name != "undefined" ? name : "" %>" />
-
                 </fieldset>
-                
+
+                <fieldset>
+                    <label for="">
+                        Address
+                    </label>
+                    <input name="address" id="" type="text" value="<%= typeof address != "undefined" ? address : "" %>" />
+                </fieldset>
+
                 </div>
             </div>
         
         </form>
     </div>
 <jst>
-    SettingsView = Backbone.View.extend({
     
-        el: $("body"),
+    $('.user_save').unbind('click');
 
-
-        initialize: function(){
-            console.log("Initialize the setting view");
-            $('.settings_save').unbind('click');
-            $(".settings_save").click({
-                templateid: "",
-                _id: "org.couchdb.user:mya",
-                success: function(){ alert("yo"); }
-            }, window.saveclickHandler );
-     
-        }
+    $('.user_save').click(function() {
+        var formdata = $(".edit_settings_form").serializeObject();
+        console.log(formdata);
+        $.ajax( '/user', {
+            dataType: "json",
+            type: "PUT",
+            contentType: "application/json",
+            data: $.toJSON(formdata),
+            success: function(data) {
+                console.log(data);
+                console.log("success, yeah buddy!");
+            }
+        });
+        return false;
     });
-    settings_view = new SettingsView;
 </jst>
 </script>
