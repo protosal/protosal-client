@@ -88,6 +88,14 @@ _rev = ""
                             }, window.saveclickHandler );
                         }
                     });
+                } else if("<%= controller %>" == "user") {
+                    var url = '/user';
+                    $.ajax( url, {
+                        dataType: "json",
+                        success: function(data){
+                            $("#<%= controller %>_formc").append( _.template( $("#<%= controller %>_form_template").jsthtml(), data ) );
+                        }
+                    });
                 } else {
                     $(".<%= controller %>_save").click({
                         _rev: "",

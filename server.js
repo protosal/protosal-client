@@ -69,6 +69,7 @@ app.error(function(err, req, res, next){
 
     Exceptional.handle(err);
     console.log(err);
+    console.log(err.stack);
 }); 
 
 function couch_response(err, doc, res) {
@@ -369,19 +370,34 @@ app.get('/:list_type/:view', function(req, res) {
     );
 });
 
+app.get('/user', function(req, res) {
+    var db = new(cradle.Connection)().database('app');
+    var docid = 'org.couchdb.user:' + req.session.username;
+
+    db.get(docid, function(err, doc) {
+        couch_response(err, doc, res); 
+    });
+});
+
 app.put('/user', function(req, res) {
     /* Updated the supplied user record. */
-    if( req.session && typeof req.session.username != 'undefined' ) {
-        var db = new(cradle.Connection)().database('_users');
-        var docid = 'org.couchdb.user:' + req.session.username;
-        req.body.last_modified = Date.now();
+    var db = new(cradle.Connection)().database('app');
+    var docid = 'org.couchdb.user:' + req.session.username;
+    req.body.last_modified = Date.now();
 
-        db.merge(docid, req.body, function(err, doc) {
-            couch_response(err, doc, res); 
-        });
-    } else {
-        throw new AuthError;
+    var new_contents = {};
+    new_contents.author = req.session.username;
+
+    if( typeof req.body.name != "undefined" ) {
+        new_contents.name = req.body.name;
     }
+    if( typeof req.body.address != "undefined" ) {
+        new_contents.address = req.body.address;
+    }
+    
+    db.merge(docid, new_contents, function(err, doc) {
+        couch_response(err, doc, res); 
+    });
 });
 
 app.put('/data/:id', function(req, res) {
@@ -480,5 +496,6 @@ app.listen(3000);
 
 process.on('uncaughtException', function (err) {
     console.log(err);
+    console.log(err.stack);
     Exceptional.handle(err);
 });
