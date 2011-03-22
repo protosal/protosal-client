@@ -631,7 +631,7 @@ text-align: center;
 .edit:hover {
   outline: none;
     color: #1c4257; border: 1px solid #da7c0c !important;
-    background: url(images/bg_fallback.png) 0 -50px repeat-x;
+    background: #faa51a url(images/bg_fallback.png) 0 -50px repeat-x;
     background: -webkit-gradient(
     linear,
     left bottom,
@@ -650,7 +650,7 @@ text-align: center;
 .delete:hover{
   outline: none;
     color: #1c4257; border: 1px solid #FF8080 !important;
-    background: url(images/bg_fallback.png) 0 -50px repeat-x;
+    background: rgb(255,130,130) url(images/bg_fallback.png) 0 -50px repeat-x;
     background: -webkit-gradient(
     linear,
     left bottom,
@@ -757,13 +757,13 @@ font-weight: bold;
 	filter:  progid:DXImageTransform.Microsoft.gradient(startColorstr='#00ccff', endColorstr='#0066ff');
 }
 .blue:hover {
-	background: #f47c20;
+	background: #00ccff;
 	background: -webkit-gradient(linear, left top, left bottom, from(#00ccff), to(#0033ff));
 	background: -moz-linear-gradient(top,  #00ccff,  #0033ff);
 	filter:  progid:DXImageTransform.Microsoft.gradient(startColorstr='#00ccff  ', endColorstr='#0033ff');
 }
 .blue:active {
-	background: #f47c20;
+	background: #00ccff;
 	background: -webkit-gradient(linear, left top, left bottom, from(#00ccff), to(#0033ff));
 	background: -moz-linear-gradient(top,  #00ccff,  #0033ff);
 	filter:  progid:DXImageTransform.Microsoft.gradient(startColorstr='#00ccff  ', endColorstr='#0033ff');
