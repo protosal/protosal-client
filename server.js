@@ -69,7 +69,7 @@ app.error(function(err, req, res, next){
     if(err instanceof BadJSON) {
         res.send(err, 400);
     } else if(err instanceof AuthRequired) {
-        res.send({"error":"authorization required"}, 401);
+        rCommon.auth_error(res);
     } else if(err instanceof ServerError) {
         res.send({"error":"internal server error"}, 500);
     } else {
@@ -322,7 +322,7 @@ app.get('/data/newinstance/:proposal_id/:section_id', function(req, res) {
                     }
                 });
             } else {
-                res.send({"error":"unauthorized", "reason":"incorrect user"}, 401);
+                rCommon.auth_error(res);
             }
         }
     });
@@ -338,7 +338,7 @@ app.get('/data/:id', function(req, res) {
             if( doc.author == req.session.username ) {
                 res.send(doc);
             } else {
-                res.send({"error": "authorization required"}, 401);
+                rCommon.auth_error(res);
             }
         }
     });
@@ -524,7 +524,7 @@ app.delete('/data/:id/:rev', function(req, res) {
             if( doc.author == req.session.username ) {
                 couch_remove(db, doc, res);
             } else {
-                res.send({"error": "delete failed"}, 401);
+                rCommon.auth_error(res);
             }
         }
     });

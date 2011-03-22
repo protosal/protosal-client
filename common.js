@@ -12,8 +12,10 @@ function get_master_auth() {
 }
 
 function auth_error(res) {
-    res.send( {}, 401 ); 
+    res.send( {error: "unauthorized", reason: "incorrect user" }, 401 ); 
 }
+
+exports.auth_error = auth_error;
 
 exports.cradle_config = {
     host: '127.0.0.1',
