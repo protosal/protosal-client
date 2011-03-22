@@ -167,7 +167,7 @@ body {
 	padding: 0;
 	color: #333;
 	-webkit-tap-highlight-color: rgb(255,255,0);
-	
+	font-family: Helvetica, Arial, sans-serif;
 }
 
 ::selection 	 {background: rgb(255,255,0);}
@@ -294,7 +294,6 @@ display: none;
 .modalbox input[type=text]{
 padding: 5px;
 height: 25px;
-font-family: Arial, Sans-Serif;
 font-size: 18px;
 
 display: block;
@@ -394,7 +393,7 @@ form input[type=text],input[type=password], textarea, .dataTables_filter input {
 	padding: 9px;
 	border: solid 1px #E5E5E5;
 	outline: 0;
-	font: normal 14px/100% Verdana, Tahoma, sans-serif;
+	font: normal 14px/100% Helvetica, Tahoma, sans-serif;
 	background: #FFFFFF url('bg_form.png') left top repeat-x;
 	background: -webkit-gradient(linear, left top, left 25, from(#FFFFFF), color-stop(4%, #EEEEEE), to(#FFFFFF));
 	background: -moz-linear-gradient(top, #FFFFFF, #EEEEEE 1px, #FFFFFF 25px);
@@ -409,7 +408,7 @@ form input[type=text].error,input[type=password].error, textarea.error {
 	padding: 9px;
 	border: solid 1px #e5e5e5;
 	outline: 0;
-	font: normal 13px/100% Verdana, Tahoma, sans-serif;
+	font: normal 13px/100% Helvetica, Tahoma, sans-serif;
 	background: #ff0000  left top repeat-x;
 	background: -webkit-gradient(linear, left top, left 25, from(#FFFFFF), color-stop(4%, #EEEEEE), to(#FFFFFF));
 	background: -moz-linear-gradient(top, #FFFFFF, #EEEEEE 1px, #FFFFFF 25px);
@@ -430,7 +429,7 @@ form select {
 	padding: 9px;
 	border: solid 1px #E5E5E5;
 	outline: 0;
-	font: normal 14px/100% Verdana, Tahoma, sans-serif;
+	font: normal 14px/100% Helvetica, Tahoma, sans-serif;
 	box-shadow: rgba(0,0,0, 0.1) 0px 0px 8px;
 	-moz-box-shadow: rgba(0,0,0, 0.1) 0px 0px 8px;
 	-webkit-box-shadow: rgba(0,0,0, 0.1) 0px 0px 8px;
@@ -480,7 +479,7 @@ ul.datatable-filter li {
     clear: both;
 }
 
-ul.datatable-filter p {
+ul.datatable-filter p {table
     float: left;
     color: #000 !important;
 }
@@ -642,8 +641,8 @@ text-align: center;
     );
     background: -moz-linear-gradient(
         center top,
-        rgb(185,224,245),
-        rgb(146,189,214)
+        #faa51a,
+        #f47a20
     );
     -webkit-box-shadow: none;
     -moz-box-shadow: none;
@@ -661,8 +660,8 @@ text-align: center;
     );
     background: -moz-linear-gradient(
         center top,
-        rgb(185,224,245),
-        rgb(146,189,214)
+        rgb(255,130,130),
+        rgb(230,95,95)
     );
     -webkit-box-shadow: none;
     -moz-box-shadow: none;
@@ -712,7 +711,7 @@ font-weight: bold;
 	cursor: pointer;
 	text-align: center;
 	text-decoration: none;
-	font: 14px/100% Arial, Helvetica, sans-serif;
+	font: 14px/100% Helvetica, sans-serif;
 	padding: .5em 2em .55em;
 	text-shadow: 0 1px 1px rgba(0,0,0,.3);
 	-webkit-border-radius: .5em;
@@ -902,7 +901,6 @@ font-weight: bold;
 }
 #hor-minimalist-b
 {
-	font-family: "Lucida Sans Unicode", "Lucida Grande", Sans-Serif;
 	font-size: 12px;
 	margin: 45px;
 	margin-left: 90px;

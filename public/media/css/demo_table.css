@@ -577,7 +577,6 @@ div.box {
 
 .dataTables_wrapper thead th {
 padding: 8px !important;
-font-family: Ubuntu;
 font-size: 17px;
 cursor: pointer;
 text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);
@@ -586,6 +585,5 @@ text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);
 
 .dataTables_wrapper td {
 padding: 8px !important;
-font-family: Ubuntu;
 font-size: 14px;
 }
