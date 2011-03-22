@@ -10,7 +10,7 @@
             }
             });
         %>
-        <th style="width:102px;">Actions</th>
+        <th>Actions</th>
    </tr>
    </thead>
    <tbody>
@@ -33,7 +33,7 @@
                 }
                 });
                 %>
-               <td><a class="wrenchbutton edit ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button"><span class="ui-button-text">Edit</span></a><a class="button delete ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button"><span class="ui-button-text">Delete</span></a></td>
+               <td style="width: 108px; overflow: none;"><span  style="width:112px; "><a class="edit ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button"><span class="ui-button-text">Edit</span></a><a class="delete ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button"><span class="ui-button-text">Delete</span></a></span></td>
            </tr>
         <%
         
@@ -53,8 +53,7 @@ $(".list_view").dataTable({
     },
     "bJQueryUI": true,
     "sDom": 'frti',
+    "bAutoWidth": false
 });
-//$("td .delete").button();
-//$("td .edit").button();
 </jst>
 </script>

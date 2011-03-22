@@ -42,7 +42,8 @@
                 'https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.9/jquery-ui.min.js',
                 '/media/js/backbone.js',
                 '/media/js/jgrowl.min.js',
-                '/media/js/jquery/plugins/ryth/rythbutton.js'
+                '/media/js/jquery/plugins/ryth/rythbutton.js',
+                '/media/js/jquery.dataTables.js',
                 ],
             
              function(){
@@ -52,7 +53,6 @@
                     '/media/ckeditor/ckeditor.js',
                     '/media/js/jquery.json-2.2.min.js',
                     '/media/js/jquery.defaultvalue.js',
-                    '/media/js/jquery.dataTables.js',
                 ], function(){ 
                     $script('/media/ckeditor/adapters/jquery.js', function(){})
         })
@@ -158,6 +158,7 @@
                                 this.destroy();
                             });
                         });
+                        
                         $(".ui-dialog").remove();
                         $(".modal_window").remove();
                         
@@ -198,10 +199,10 @@
             });
             
             $(".back-button").live("click", function() { history.go(-1); return false; });
-            $(".close-button").live("click", function() { $(".ui-dialog-content").dialog("close"); return false; });
+            $(".close-button").live("click", function(event) { console.log(event); $(event.currentTarget).parents(".ui-dialog-content").dialog("close"); return false; });
             window.saveclickHandler =  function(event){
 
-                formdata = null;
+                var formdata = null;
 
                 //Serialize the form associated with the save button
                 savebutton = event.currentTarget;

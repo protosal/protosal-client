@@ -33,9 +33,9 @@
     </form>
     </div>
     <div id="sidemenu" style="">
-    <a class="button delete ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button"><span class="ui-button-text">Contents</span></a><br />
-    <a id="side_add_section" class="delete ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button"><span class="ui-button-text">Add Section</span></a><br />
-    <a class="button delete ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button"><span class="ui-button-text">View PDF</span></a>
+    <a class="button  ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button"><span class="ui-button-text">Contents</span></a><br />
+    <a id="side_add_section" class=" ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button"><span class="ui-button-text">Add Section</span></a><br />
+    <a class="button  ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button"><span class="ui-button-text">View PDF</span></a>
     </div>
 </div>
 <div id="section_chooser_container" style="display:none;">
@@ -45,7 +45,7 @@
         <div style="clear:both;"></div>
     </div>
     <ul></ul>
-    <div id="atestform">
+    <div id="atestform" class="modal_window">
 
 </div>
 </div>
@@ -189,6 +189,7 @@
         initialize: function(){
             console.log("Iniitalize sections container");
             console.log(this.el)
+            $(".cid").die( "click" );
             $(".cid").live( "click", this.openEdit );
             $(".delete_section").live( "click", this.deleteSection );
         },
@@ -221,7 +222,7 @@
                         var feetable = new FeeTableView( section );
                         $("li[id='" + section.cid + "']").attr("id", response._id);
                         proposal_view.toc.updateOrder();
-                    }x
+                    }
                 });
             }
         },
@@ -232,8 +233,11 @@
             section = (proposal_view.sections.getByCid(cid));
             console.log("opening edit screen")
             console.log(section)
+            $("#atestform").html(" ");
             var temp = $("#atestform");
+            temp.hide();
             $("body").append(temp);
+             
             _.jstTemplate( temp, $("#common_edit_view_template"), { 
                 controller: "section",
                 documentid: section.get("_id"),
@@ -261,7 +265,7 @@
                 close: function(){
 				        cked.ckeditor(function(){ // a hack to make jck editor work on page refresh
 						
-						        this.destroy();
+				        this.destroy();
 			        });
 			        mydialog.dialog("destroy");
 			

@@ -3,8 +3,8 @@
     <form id="add_section_form"  class="edit_section_form" enctype="multipart/form-data" >
 
         <br />
-
-         <div class="stack1of3" style="margin-left: 120px;">
+<div class="stack">
+         <div class="stack1of3" style="">
             <div class="stackContent">
       <label for="">
                     Name
@@ -14,16 +14,19 @@
 
                 <br />
                 <br />
-
-                <h3>Add Fees</h3>
-
+      <label for="">
+                    Attach fees 
+                </label>
           
                 <input type="text" id="fees" /><button type="button" id="add-fee">Addd</button> 
-                 <h3>Fees</h3>
+                <div style="clear:both;"></div>
+                               <label for="">
+                    Current fees
+                </label>
                 <ul id="sortablefees"></ul>
                    </div>
         </div>
-        <div class="stack1of2">
+        <div class="stack2of3">
         
             <div class="stackContent">
         <label for="">
@@ -36,7 +39,7 @@
            
              </div>
         </div>
-    
+</div>
     </form>
 
             <div id="fee_form_modal" class="modal_window"></div>
@@ -62,6 +65,7 @@
           }
         });
         //Make relationships !TODO
+        cur_doc_id = "<%= documentid %>";
         SectionBackboneView = Backbone.View.extend({
             
             el: $("#section_form_container"),
@@ -82,7 +86,7 @@
                             data: $.toJSON(formdata),
                             success: function(resp){
 								$('.section_save').unbind('click');
-                            
+                                cur_doc_id = resp.id
                                 $(".section_save").click({
                                     templateid: "",
                                     _rev: resp.rev,
@@ -150,16 +154,7 @@
                                 } else {
                                  console.log("no rows");
                                 }
-                                
-                                
-                                
-                                
-                                
-                                
-                                
-                                
-                                
-                                
+                         
                                   $.ajax({
                    type: "GET",
                    url: "list_by_author_templates/fee",
@@ -255,7 +250,9 @@
             },
             addFee: function (model) {
                 console.log(model);
-                $("#sortablefees").append("<li id='" + model.id + "'><span style='float: left;'></span><p>" + model.get("name") + "</p><span class='edit_fee'>Edit</span><span class='delete_fee'>Delete</span></li>")
+                $("#sortablefees").append("<li id='" + model.id + "'><span style='float: left;'></span><p>" + model.get("name") + "</p><span class='delete_fee delete'>Delete</span><span class='edit_fee edit'>Edit</span></li>");
+                $(".edit").button();
+                $(".delete").button();
                 $( "#sortablefees" ).sortable({
                     update: section_backbone.updateFeeValues
                 });
@@ -276,7 +273,7 @@
                 // this.fees.url = "delete/section_fee/get_section";
                  $.ajax({
                     type: "DELETE",
-                    url: "delete/section_fee/<%= documentid %>/" + id,
+                    url: "delete/section_fee/"+cur_doc_id +"/" + id,
                     dataType: "json",
                     contentType: "application/json",
                         success: function( data ){
@@ -304,7 +301,7 @@
                 if( typeof id != "string" ){
                     id = "";
                 }
-            var temp = $("#fee_form_modal").html("");
+            $("#fee_form_modal").html("");
             var temp = $("#fee_form_modal");
             temp.hide();
             $("body").append(temp);
@@ -314,20 +311,19 @@
                 modal: "yes",
                 success: function(data){
                    console.log($.toJSON(data));
+                    $("#" + data.id + " p").text(data.name);
                              $("#fee_form_modal").dialog("close");
                              //redirect("client/list");
                 }
             });    
+            console.log(temp)
             var mydialog = $(temp).dialog({
 		        autoOpen: false,
                 draggable: false,
                 resizable: false,
                 closeOnEscape: true,
                 close: function(){
-				        cked.ckeditor(function(){ // a hack to make jck editor work on page refresh
-						
-						        this.destroy();
-			        });
+				 
 			        mydialog.dialog("destroy");
 			
                 },
@@ -336,10 +332,7 @@
 				
 		        },
                 open: function(){
-			        console.log($("#jckeditor"));
-			        setTimeout( function(){ cked.ckeditor(ckeditor_options);  }, 200);
-			        console.log($("#jckeditor")); 
-			        $("form input").focus();      
+		
                 },
                 modal: true, 
                 hide: 'drop',
@@ -363,6 +356,7 @@
             return false;
         });
         
+        $(".edit_fee").die("click");
         $(".edit_fee").live("click", function() {
             var id = $(this).parents("li").attr("id");
             section_backbone.feemodal(id);

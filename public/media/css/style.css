@@ -167,7 +167,7 @@ body {
 	padding: 0;
 	color: #333;
 	-webkit-tap-highlight-color: rgb(255,255,0);
-	
+	font-family: Helvetica, Arial, sans-serif;
 }
 
 ::selection 	 {background: rgb(255,255,0);}
@@ -294,7 +294,6 @@ display: none;
 .modalbox input[type=text]{
 padding: 5px;
 height: 25px;
-font-family: Arial, Sans-Serif;
 font-size: 18px;
 
 display: block;
@@ -394,7 +393,7 @@ form input[type=text],input[type=password], textarea, .dataTables_filter input {
 	padding: 9px;
 	border: solid 1px #E5E5E5;
 	outline: 0;
-	font: normal 14px/100% Verdana, Tahoma, sans-serif;
+	font: normal 14px/100% Helvetica, Tahoma, sans-serif;
 	background: #FFFFFF url('bg_form.png') left top repeat-x;
 	background: -webkit-gradient(linear, left top, left 25, from(#FFFFFF), color-stop(4%, #EEEEEE), to(#FFFFFF));
 	background: -moz-linear-gradient(top, #FFFFFF, #EEEEEE 1px, #FFFFFF 25px);
@@ -409,7 +408,7 @@ form input[type=text].error,input[type=password].error, textarea.error {
 	padding: 9px;
 	border: solid 1px #e5e5e5;
 	outline: 0;
-	font: normal 13px/100% Verdana, Tahoma, sans-serif;
+	font: normal 13px/100% Helvetica, Tahoma, sans-serif;
 	background: #ff0000  left top repeat-x;
 	background: -webkit-gradient(linear, left top, left 25, from(#FFFFFF), color-stop(4%, #EEEEEE), to(#FFFFFF));
 	background: -moz-linear-gradient(top, #FFFFFF, #EEEEEE 1px, #FFFFFF 25px);
@@ -430,7 +429,7 @@ form select {
 	padding: 9px;
 	border: solid 1px #E5E5E5;
 	outline: 0;
-	font: normal 14px/100% Verdana, Tahoma, sans-serif;
+	font: normal 14px/100% Helvetica, Tahoma, sans-serif;
 	box-shadow: rgba(0,0,0, 0.1) 0px 0px 8px;
 	-moz-box-shadow: rgba(0,0,0, 0.1) 0px 0px 8px;
 	-webkit-box-shadow: rgba(0,0,0, 0.1) 0px 0px 8px;
@@ -480,7 +479,7 @@ ul.datatable-filter li {
     clear: both;
 }
 
-ul.datatable-filter p {
+ul.datatable-filter p {table
     float: left;
     color: #000 !important;
 }
@@ -629,10 +628,10 @@ font-size: 11px  !important;
 .list_view .int {
 text-align: center;
 }
-.list_view .edit:hover {
+.edit:hover {
   outline: none;
     color: #1c4257; border: 1px solid #da7c0c !important;
-    background: url(images/bg_fallback.png) 0 -50px repeat-x;
+    background: #faa51a url(images/bg_fallback.png) 0 -50px repeat-x;
     background: -webkit-gradient(
     linear,
     left bottom,
@@ -642,16 +641,16 @@ text-align: center;
     );
     background: -moz-linear-gradient(
         center top,
-        rgb(185,224,245),
-        rgb(146,189,214)
+        #faa51a,
+        #f47a20
     );
     -webkit-box-shadow: none;
     -moz-box-shadow: none;
 }
-.list_view .delete:hover{
+.delete:hover{
   outline: none;
     color: #1c4257; border: 1px solid #FF8080 !important;
-    background: url(images/bg_fallback.png) 0 -50px repeat-x;
+    background: rgb(255,130,130) url(images/bg_fallback.png) 0 -50px repeat-x;
     background: -webkit-gradient(
     linear,
     left bottom,
@@ -661,8 +660,8 @@ text-align: center;
     );
     background: -moz-linear-gradient(
         center top,
-        rgb(185,224,245),
-        rgb(146,189,214)
+        rgb(255,130,130),
+        rgb(230,95,95)
     );
     -webkit-box-shadow: none;
     -moz-box-shadow: none;
@@ -712,7 +711,7 @@ font-weight: bold;
 	cursor: pointer;
 	text-align: center;
 	text-decoration: none;
-	font: 14px/100% Arial, Helvetica, sans-serif;
+	font: 14px/100% Helvetica, sans-serif;
 	padding: .5em 2em .55em;
 	text-shadow: 0 1px 1px rgba(0,0,0,.3);
 	-webkit-border-radius: .5em;
@@ -758,13 +757,13 @@ font-weight: bold;
 	filter:  progid:DXImageTransform.Microsoft.gradient(startColorstr='#00ccff', endColorstr='#0066ff');
 }
 .blue:hover {
-	background: #f47c20;
+	background: #00ccff;
 	background: -webkit-gradient(linear, left top, left bottom, from(#00ccff), to(#0033ff));
 	background: -moz-linear-gradient(top,  #00ccff,  #0033ff);
 	filter:  progid:DXImageTransform.Microsoft.gradient(startColorstr='#00ccff  ', endColorstr='#0033ff');
 }
 .blue:active {
-	background: #f47c20;
+	background: #00ccff;
 	background: -webkit-gradient(linear, left top, left bottom, from(#00ccff), to(#0033ff));
 	background: -moz-linear-gradient(top,  #00ccff,  #0033ff);
 	filter:  progid:DXImageTransform.Microsoft.gradient(startColorstr='#00ccff  ', endColorstr='#0033ff');
@@ -902,7 +901,6 @@ font-weight: bold;
 }
 #hor-minimalist-b
 {
-	font-family: "Lucida Sans Unicode", "Lucida Grande", Sans-Serif;
 	font-size: 12px;
 	margin: 45px;
 	margin-left: 90px;
@@ -938,4 +936,21 @@ font-weight: bold;
 	font-size: 14px;
 	
 	
+}
+#sortablefees{
+	list-style:none;
+	padding: 5px;
+}
+#sortablefees li {
+	padding-right: 10px;
+display: block;
+}
+#sortablefees li span{
+	font-size: 10px;
+	float: right;
+}
+#sortablefees li p{
+	float: left;
+	height: 25px;
+	width: 170px;
 }
