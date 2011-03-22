@@ -2,11 +2,20 @@
 var express = require('express');
 var http = require('http');
 var rCommon = require('./common')
-var app = express.createServer();
 var connect = require('connect');
 var _ = require('underscore');
 var Exceptional = require('./exceptional').Exceptional;
 var cradle = require('cradle');
+var form = require('connect-form');
+var fs = require('fs');
+var sys = require('sys');
+
+var app = express.createServer(
+  // connect-form (http://github.com/visionmedia/connect-form)
+  // middleware uses the formidable middleware to parse urlencoded
+  // and multipart form data
+  form({ keepExtensions: true })
+);
 
 cradle.setup(rCommon.cradle_config);
 
@@ -397,6 +406,60 @@ app.put('/user', function(req, res) {
     
     db.merge(docid, new_contents, function(err, doc) {
         couch_response(err, doc, res); 
+    });
+});
+
+app.post('/user', function(req, res) {
+    var db = new(cradle.Connection)().database('app');
+    var docid = 'org.couchdb.user:' + req.session.username;
+
+    /* connect-form adds the req.form object.
+     * We can (optionally) define onComplete, passing
+     * the exception (if any) fields parsed, and files parsed.
+     */
+    req.form.complete(function(err, fields, files) {
+        console.log("connect-form appears to be working.");
+        if (err) {
+            next(err);
+        } else {
+            /* Upload the image to the database. */
+
+            /* We first need to perform a HEAD request
+             * to get the document revision.
+             */
+            db.head(docid, function(err, doc) {
+                if( err ) {
+                    throw new ServerError( err );
+                } else {
+                    console.log(fields);
+                    db.merge(docid, fields, function(err, doc) {
+                        if( err ) {
+                            throw new ServerError( err );
+                        } else {
+                            if( typeof files.image != "undefined" ) {
+                                /* Users are only allowed 1 logo, so rename the image
+                                 * they uploaded to logo.ext
+                                 */
+                                var logo_filename = 'logo.' + files.image.name.split('.').pop();
+
+                                db.saveAttachment(docid,
+                                    doc.rev,
+                                    logo_filename,
+                                    files.image.type,
+                                    fs.createReadStream(files.image.path),
+                                    function(response) {
+                                        /* Delete the file once we have finished uploading. */
+                                        fs.unlink(files.image.path);
+                                    }
+                                );
+                            }
+                        }    
+
+                        res.redirect("#/user/edit");
+                    });
+                }
+            });
+        }
     });
 });
 

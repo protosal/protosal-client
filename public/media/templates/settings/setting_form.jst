@@ -1,7 +1,7 @@
 <script type="text/template" id="user_form_template">
     <div id="proposal_form_container">
 
-        <form id="add_settings_form" class="edit_settings_form" enctype="multipart/form-data" method="post">
+        <form id="add_settings_form" action="http://localhost:3000/user" class="edit_settings_form" enctype="multipart/form-data" method="post">
            <br />
 
             <div style="">
@@ -21,6 +21,8 @@
                     <input name="address" id="" type="text" value="<%= typeof address != "undefined" ? address : "" %>" />
                 </fieldset>
 
+                <p>Image: <input type="file" name="image" /></p>
+
                 </div>
             </div>
         
@@ -31,19 +33,30 @@
     $('.user_save').unbind('click');
 
     $('.user_save').click(function() {
-        var formdata = $(".edit_settings_form").serializeObject();
+        $("#add_settings_form").submit();
+        return false;
+
+        /*
+        var formdata = $(".edit_settings_form").serialize();
+
+        // Store and delete the logo for later processing.
+        var logo = formdata.logo;
+        delete formdata.logo;
+
         console.log(formdata);
-        $.ajax( '/user', {
-            dataType: "json",
-            type: "PUT",
-            contentType: "application/json",
-            data: $.toJSON(formdata),
+
+        // Save the user data.
+        $.ajax( 'http://localhost:3000/user', {
+            type: "POST",
+            contentType: "multipart/form-data",
+            data: formdata,
             success: function(data) {
                 console.log(data);
                 console.log("success, yeah buddy!");
             }
         });
-        return false;
+        */
+
     });
 </jst>
 </script>
