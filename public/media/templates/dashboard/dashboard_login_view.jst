@@ -91,7 +91,7 @@
                 contentType: "application/json",
                 success: function(data){
                     GLOBALS.session = true;
-                    redirect( data.redirect );
+                    redirect( "dashboard/home" );
                     
                     console.log("whoop round 2");
                     console.log(data);
@@ -109,7 +109,7 @@
                 type: "POST",
                 data: $.toJSON(formdata),
                 contentType: "application/json",
-                success: function(data){
+                success: function(data, headers){
                     console.log(data)
                 }
             });
