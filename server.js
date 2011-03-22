@@ -36,7 +36,7 @@ app.configure(function() {
     app.use(connect.session({ secret: 'foobar' }));
     app.use(rCommon.authCheck );
 });
- 
+
 function BadJSON(msg) {
     this.name = 'BadJSON';
     Error.call(this, msg);
@@ -422,11 +422,9 @@ app.post('/user', function(req, res) {
         if (err) {
             next(err);
         } else {
-            /* Upload the image to the database. */
-
-            /* We first need to perform a HEAD request
-             * to get the document revision.
-             */
+            /* Record the time at which the record was modified. */
+            fields.last_modified = Date.now();
+            
             db.merge(docid, fields, function(err, doc) {
                 if( err ) {
                     throw new ServerError( err );
@@ -437,6 +435,7 @@ app.post('/user', function(req, res) {
                          */
                         var logo_filename = 'logo.' + files.image.name.split('.').pop();
 
+                        /* Upload the image to the database. */
                         db.saveAttachment(docid,
                             doc.rev,
                             logo_filename,

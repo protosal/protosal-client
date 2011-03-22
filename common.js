@@ -12,7 +12,7 @@ function get_master_auth() {
 }
 
 function auth_error(res) {
-    res.send( { redirect: "dashboard/login" }, 401 ); 
+    res.send( {}, 401 ); 
 }
 
 exports.cradle_config = {
@@ -62,7 +62,7 @@ function register(req, res) {
         }
     });
 
-    res.send(200);
+    res.send({}, 200);
 }
 
 function login(req, res) {
@@ -86,7 +86,7 @@ function login(req, res) {
                 req.session.username = req.body.username;
             }
 
-            res.send( { redirect: 'dashboard/home'} );
+            res.send({}, 200);
         });
 
         /* Put auth details back to the way they were. */
@@ -99,7 +99,7 @@ function login(req, res) {
 
 function logout(req, res) {
     req.session.destroy();
-    res.send( { redirect: "dashboard/login" } );
+    res.send({}, 200);
 }
 
 exports.authCheck = function (req, res, next) {
