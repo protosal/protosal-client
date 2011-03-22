@@ -4,7 +4,7 @@ var fs = require('fs');
 
 var Exceptional = {
 
-  API_KEY: undefined,
+  API_KEY: '05f3e5df3c4b21870836f019eff3d4e3fa49f0bb',
   PROTOCOL_VERSION: 6,
   VERSION: 1.0,
 

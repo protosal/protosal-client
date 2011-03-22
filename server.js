@@ -19,8 +19,6 @@ var app = express.createServer(
 
 cradle.setup(rCommon.cradle_config);
 
-Exceptional.API_KEY = '05f3e5df3c4b21870836f019eff3d4e3fa49f0bb';
-
 app.configure(function() {
     app.use(express.responseTime());  
     app.use(express.bodyParser());
