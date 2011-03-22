@@ -954,3 +954,9 @@ display: block;
 	height: 25px;
 	width: 170px;
 }
+.variable {
+	background: #ccff66;
+}
+.empty_variable {
+	background: #ff6666;
+}

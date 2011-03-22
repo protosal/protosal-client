@@ -50,7 +50,7 @@
 </div>
 </div>
 <jst>
-
+    
     FeeModel = Backbone.Model.extend({
         initialize: function() {
             console.log("New Fee Model created");
@@ -177,11 +177,13 @@
                     //Update this collections sections
                     console.log("received fee data");
                     $(".section_table", $(".section_" + section.cid) ).html( _.template( $("#section_fee_table_template").html(), { fees: data} ) );
+                    proposal_view.applyVariables( $(".section_" + section.cid) );
                 }); //When statement end
             } else {
                 $(".section_table", $(".section_" + section.cid) ).html("");
                 
             }
+            
         }
     })
     SectionsContainer = Backbone.View.extend({
@@ -210,7 +212,7 @@
                  $("#section_container_test ol").append( _.template( $("#proposal_preview_section").html(), { section: section } ) );
                  var feetable = new FeeTableView( section );
                 $(".section_content", ".section_" + section.cid).html( _.template( $("#proposal_preview_section_content").html(), section.attributes ) );
-                
+                proposal_view.applyVariables( ".section_" + section.cid );
             } else {
                 $("#section_container_test ol").append( _.template( $("#proposal_preview_section").html(), { section: section } ) );
                 $.ajax({
@@ -222,6 +224,7 @@
                         var feetable = new FeeTableView( section );
                         $("li[id='" + section.cid + "']").attr("id", response._id);
                         proposal_view.toc.updateOrder();
+                        proposal_view.applyVariables( ".section_" + section.cid );
                     }
                 });
             }
@@ -253,6 +256,7 @@
                                 $("#"+section.id).text(response.name); // set the toc name
                                 section.set(response);
                                 var feetable = new FeeTableView( section );
+                                proposal_view.applyVariables( ".section_" + cid );
                             }
                         });
                 }
@@ -358,6 +362,7 @@
             }); 
             // If this item is being added at page load don't do that shit above
             proposal_view.toc.updateOrder();
+            proposal_view.applyVariables( "#toc_list" );
         },
         updateOrder: function(event,ui){
             if( typeof ui != "undefined") {
@@ -416,7 +421,7 @@
         allsections: null,
         clients: null,
         client_id: "<%= typeof client_id != 'undefined' ? client_id : '' %>",
-        
+        client: null,
         initialize: function(){
             var that = this;
             console.log("Initialize the proposal view");
@@ -428,6 +433,15 @@
                 console.log("Get the proposal id");
                 that.proposalid = data.id;
                 
+                if( "<%= client_id %>" != "" ){
+                    $.ajax( "data/<%= client_id %>" ,{
+                        dataType: "json",
+                        success: function(data){
+                            that.client = data;
+                            that.applyVariables( ".proposal_view" )
+                        }
+                    })
+                }
                 
                 this.sections = new SectionCollection;
                 
@@ -452,12 +466,63 @@
             )
         },
         events: {
-            "keyup #proposal_name": "updatePreview" //Wrong should update model and model should listen for changes
+            "keyup #proposal_name": "updatePreview", //Wrong should update model and model should listen for changes
+            "change #client_combo": "updateClientData"
+        },
+        getClientData: function(){
             
         },
         updatePreview: function( event ){
             $("#preview_proposal_name").text($(event.currentTarget).val())  
         },  
+        updateClientData: function( event ){
+            id = $(event.currentTarget ).val();
+            if( id != ""){
+                $.when( $.ajax("data/" + id ) )
+                .then( function(data) {
+                    proposal_view.client = data
+                    proposal_view.applyVariables( ".proposal_preview" );
+                }); //When statement end
+            } else {
+                
+                    proposal_view.client = null;
+                    proposal_view.applyVariables( ".proposal_preview" );
+            }
+        },
+        getVariables : function(){
+            var  variables = {};
+            proposal_details = {
+                proposal_name: $("#preview_proposal_name").text()
+            }
+            variables = _.extend(variables, proposal_details);
+            variables = _.extend(variables, proposal_view.client);
+            return variables;
+        },
+        applyVariables: function( element ) {
+                var variables = proposal_view.getVariables();
+                    $(".variable", $(element) ).each(function(index){
+                        console.log(this)
+                        $(this).after("{{" + $(this).attr("name") + "}}");
+                        $(this).remove();
+                    })
+                    $(".empty_variable", $(element) ).each(function(index){
+                        console.log(this)
+                        $(this).after("{{" + $(this).attr("name") + "}}");
+                        $(this).remove();
+                    })
+                    var previewhtml = $(element).html();
+                    var matches = previewhtml.match(/\{\{([^}]+)\}\}/g);
+                    for (i in matches) {
+                        variable = matches[i].substr(2, matches[i].length-4);
+                        if( typeof variables[variable] != "undefined" ){
+                            previewhtml = previewhtml.replace(matches[i],"<span class='variable' name='"+variable+"'>"+variables[variable]+"</span>");
+                        }  else {
+                            previewhtml = previewhtml.replace(matches[i],"<span class='empty_variable' name='"+variable+"'>{&#123;"+variable+"}}</span>");
+                        }
+                    }
+                    $(element).html(previewhtml);
+            
+        },
         addSectionRender: function(){
             console.log( "Render the add section modal window" );
             var sections = this.allsections.models;
@@ -494,6 +559,7 @@
         }
     });
     proposal_view = new ProposalView;
+  
     $( "#radio" ).buttonset();
     thechecked = "<%= typeof status != "undefined" && status != "" ? status : 'pending' %>";
     $("input[value='"+thechecked+"']").attr("checked", "checked")
@@ -505,7 +571,7 @@
     <li id="<%= typeof section.id != "undefined" ? section.id : section.cid %>" template_id="<%= section.get("template_id") %>"><%= section.get("name") %></li>
 </script>
 <script type="text/template" id="clients_combo_form_element">
-    <select name="client_id">                $("body").append("<div style='' class='proposalcontainer proposal_preview container'>Yo</div>");
+    <select name="client_id" id="client_combo">                $("body").append("<div style='' class='proposalcontainer proposal_preview container'>Yo</div>");
                 $(".proposalcontainer").html( _.template( $("#proposal_preview").html(), {} ) );
     <option value="">Select Client</option>
     <% _.each( models, function( clientmodel) { 
