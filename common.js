@@ -48,7 +48,8 @@ function register(req, res) {
     var newUserProfile = {
         _id: docid,
         last_modified: Date.now(),
-        created_at: Date.now()
+        created_at: Date.now(),
+        author: req.body.email
     }
     
     var db2 = new(cradle.Connection)().database('app');
