@@ -427,37 +427,30 @@ app.post('/user', function(req, res) {
             /* We first need to perform a HEAD request
              * to get the document revision.
              */
-            db.head(docid, function(err, doc) {
+            db.merge(docid, fields, function(err, doc) {
                 if( err ) {
                     throw new ServerError( err );
                 } else {
-                    console.log(fields);
-                    db.merge(docid, fields, function(err, doc) {
-                        if( err ) {
-                            throw new ServerError( err );
-                        } else {
-                            if( typeof files.image != "undefined" ) {
-                                /* Users are only allowed 1 logo, so rename the image
-                                 * they uploaded to logo.ext
-                                 */
-                                var logo_filename = 'logo.' + files.image.name.split('.').pop();
+                    if( typeof files.image != "undefined" ) {
+                        /* Users are only allowed 1 logo, so rename the image
+                         * they uploaded to logo.ext
+                         */
+                        var logo_filename = 'logo.' + files.image.name.split('.').pop();
 
-                                db.saveAttachment(docid,
-                                    doc.rev,
-                                    logo_filename,
-                                    files.image.type,
-                                    fs.createReadStream(files.image.path),
-                                    function(response) {
-                                        /* Delete the file once we have finished uploading. */
-                                        fs.unlink(files.image.path);
-                                    }
-                                );
+                        db.saveAttachment(docid,
+                            doc.rev,
+                            logo_filename,
+                            files.image.type,
+                            fs.createReadStream(files.image.path),
+                            function(response) {
+                                /* Delete the file once we have finished uploading. */
+                                fs.unlink(files.image.path);
                             }
-                        }    
+                        );
+                    }
+                }    
 
-                        res.redirect("#/user/edit");
-                    });
-                }
+                res.redirect("#/user/edit");
             });
         }
     });
