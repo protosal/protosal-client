@@ -110,7 +110,8 @@
                 data: $.toJSON(formdata),
                 contentType: "application/json",
                 success: function(data, headers){
-                    console.log(data)
+                    $(".userpage").click();
+                       $.jGrowl("Thanks for signing up, now log in fool",{  theme: 'green', position: "top-right"});
                 }
             });
             return false;
