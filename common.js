@@ -4,6 +4,7 @@ var Hash = require('./sha1');
 var fs = require('fs');
 var sys = require('sys');
 var cradle = require('cradle');
+var Exceptional = require('./exceptional').Exceptional;
 
 var _defaultSalt = "1";
 
@@ -12,8 +13,10 @@ function get_master_auth() {
 }
 
 function auth_error(res) {
-    res.send( {}, 401 ); 
+    res.send( {error: "unauthorized", reason: "incorrect user" }, 401 ); 
 }
+
+exports.auth_error = auth_error;
 
 exports.cradle_config = {
     host: '127.0.0.1',
@@ -37,32 +40,42 @@ function register(req, res) {
 
     var db = new(cradle.Connection)().database('_users');
 
-    /* Create the user document in the authentication database. */
-    db.save(newUser, function(err, doc) {
-        if( err ) {
-            res.send(err, 500);
-            return;
+    db.head(docid, function(err, doc) {
+        /* If the etag is undefined, it means this user has not yet registered. */
+        if( typeof doc.etag == "undefined" ) {
+            /* Create the user document in the authentication database. */
+            db.save(newUser, function(err, doc) {
+                if( err ) {
+                    res.send(err, 500);
+                    throw new Exception;
+                }
+            });
+
+            var newUserProfile = {
+                _id: docid,
+                last_modified: Date.now(),
+                created_at: Date.now(),
+                author: req.body.email
+            }
+            
+            var db2 = new(cradle.Connection)().database('app');
+
+            /* Create the profile document in the app database. */
+            db2.save(newUserProfile, function(err, doc) { 
+                if( err ) {
+                    res.send(err, 500);
+                    throw new Exception;
+                }
+            });
+
+            res.send({}, 200);
+        } else {
+            /* We are dealing with an already registered user. */
+            res.send({error: "request failed", reason: "already registered"}, 400);
         }
     });
 
-    var newUserProfile = {
-        _id: docid,
-        last_modified: Date.now(),
-        created_at: Date.now(),
-        author: req.body.email
-    }
     
-    var db2 = new(cradle.Connection)().database('app');
-
-    /* Create the profile document in the app database. */
-    db2.save(newUserProfile, function(err, doc) { 
-        if( err ) {
-            res.send(err, 500);
-            return;
-        }
-    });
-
-    res.send({}, 200);
 }
 
 function login(req, res) {
@@ -130,3 +143,9 @@ exports.authCheck = function (req, res, next) {
         auth_error(res);
     }
 }
+
+process.on('uncaughtException', function (err) {
+    console.log(err);
+    console.log(err.stack);
+    Exceptional.handle(err);
+});
