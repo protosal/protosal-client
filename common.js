@@ -25,8 +25,9 @@ cradle.setup(exports.cradle_config);
 
 function register(req, res) {
     console.log("we are registering.");
+    var docid = "org.couchdb.user:" + req.body.email;
     var newUser = {
-        _id: "org.couchdb.user:" + req.body.email,
+        _id: docid,
         name: req.body.email,
         password_sha: Hash.hex_sha1(req.body.password + _defaultSalt),
         salt: _defaultSalt,
@@ -36,13 +37,31 @@ function register(req, res) {
 
     var db = new(cradle.Connection)().database('_users');
 
+    /* Create the user document in the authentication database. */
     db.save(newUser, function(err, doc) {
         if( err ) {
             res.send(err, 500);
-        } else {
-            res.send(doc);
+            return;
         }
     });
+
+    var newUserProfile = {
+        _id: docid,
+        last_modified: Date.now(),
+        created_at: Date.now()
+    }
+    
+    var db2 = new(cradle.Connection)().database('app');
+
+    /* Create the profile document in the app database. */
+    db2.save(newUserProfile, function(err, doc) { 
+        if( err ) {
+            res.send(err, 500);
+            return;
+        }
+    });
+
+    res.send(200);
 }
 
 function login(req, res) {
