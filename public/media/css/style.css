@@ -175,9 +175,9 @@ body {
 .container {
 	width: 960px;	
     background: #fff;
-    -moz-box-shadow: 0 0 5px 5px #ccc;
-	-webkit-box-shadow: 0 0 5px 5px #ccc;
-	box-shadow: 0 0 4px 4px #ccc;
+    -moz-box-shadow: 0 0 4px 4px #ccc;
+	-webkit-box-shadow: 0 0 4px 5px #ccc;
+	box-shadow: 0 0 3px 3px #ccc;
 	position: absolute;
     left: 50%;
     margin-left: -480px;
@@ -840,8 +840,8 @@ display: block;
     linear,
     left bottom,
     left top,
-    color-stop(1, rgb(185,224,245)),
-    color-stop(0, rgb(146,189,214))
+    color-stop(1, rgb(185,224,115)),
+    color-stop(0, rgb(146,189,114))
 	) !important;
 	background: -moz-linear-gradient(
 		center top,

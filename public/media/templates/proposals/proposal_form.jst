@@ -271,10 +271,12 @@
                 resizable: false,
                 closeOnEscape: true,
                 close: function(){
-				        cked.ckeditor(function(){ // a hack to make jck editor work on page refresh
-						
-				        this.destroy();
-			        });
+				                                $(".jckeditor").each( function(){
+                            $(this).ckeditor(function(){ // a hack to make jck editor work on page refresh
+                            
+                                this.destroy();
+                            });
+                        });
 			        mydialog.dialog("destroy");
 			
                 },
@@ -284,7 +286,7 @@
 		        },
                 open: function(){
 			        console.log($("#jckeditor"));
-			        setTimeout( function(){ cked.ckeditor(ckeditor_options);  }, 200);
+			        setTimeout( function(){ $(".jckeditor").ckeditor(ckeditor_options);  }, 200);
 			        console.log($("#jckeditor")); 
 			        $("form input").focus();      
                 },

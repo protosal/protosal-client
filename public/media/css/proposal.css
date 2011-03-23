@@ -37,7 +37,7 @@
     font-size: 1em;
 }
 
-.proposal_preview .section_container{ 
+.proposal_preview .section_container{ Landscaping Proposal
     margin-top: 50px;
 }
 .proposal_preview .section_heading.toc{
@@ -54,12 +54,10 @@
 }
 .proposal_preview .toc ol li{
 	font-size: 1.3em;
-	cursor: pointer;
+
 	width: 590px;
 }
-.proposal_preview .toc ol li:hover{
-	background: #ffffcc url(../icons/direction.png) no-repeat right;
-}
+
 .proposal_preview .section {
     margin-bottom: 30px;
 }
