@@ -33,9 +33,13 @@
     </form>
     </div>
     <div id="sidemenu" style="">
-    <a class="button  ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button"><span class="ui-button-text">Contents</span></a><br />
+    Editing
     <a id="side_add_section" class=" ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button"><span class="ui-button-text">Add Section</span></a><br />
-    <a class="button  ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button"><span class="ui-button-text">View PDF</span></a>
+    <br />
+    Finished
+    <a id="side_print_preview" editing="true" class="button  ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button"><span class="ui-button-text">Print Preview</span></a><br />
+    <a id="side_view_pdf" class="button  ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button"><span class="ui-button-text">View PDF</span></a>
+    <textarea id="pdfcrowd"></textarea>
     </div>
 </div>
 <div id="section_chooser_container" style="display:none;">
@@ -403,12 +407,35 @@
     SideMenu = Backbone.View.extend({
         el: $("#sidemenu"),
         events: {
-            "click #side_add_section": "openModal"
+            "click #side_add_section": "openModal",
+            "click #side_print_preview": "printPreview",
+            "click #side_view_pdf": "openPdf"
             
         },
         openModal: function(){
             proposal_view.addSectionRender();
             
+        },
+        printPreview: function(event){
+            button = $(event.currentTarget);
+            if( $(button).attr("editing") == "true" ){
+                $("span", button).text("Back to editing");
+                $(button).addClass("ui-state-active");
+                $("#proposal_editing").attr("href", "");
+                $(button).attr("editing","false");
+            } else {
+                $("span", button).text("Print Preview");
+                $(button).removeClass("ui-state-active");
+                $("#proposal_editing").attr("href", "/media/css/proposal_editing.css");
+                $(button).attr("editing", "true");
+            }
+            
+        },
+        openPdf: function(){
+            
+            html = $("#proposal_preview_container").html();
+            css = $("#proposal_css").val();
+            $("#pdfcrowd").text(css + html);
         }
     });
     
@@ -425,7 +452,7 @@
         initialize: function(){
             var that = this;
             console.log("Initialize the proposal view");
-            $("body").append("<div style='' class='proposalcontainer proposal_preview container'>Yo</div>");
+            $("body").append("<div id='proposal_preview_container'><div style='' class='proposalcontainer proposal_preview container'>Yo</div></div>");
 
             $.when( this.get_id() ).then( $.proxy( function(data){
                 $(".proposalcontainer").html( _.template( $("#proposal_preview").html(), { name: $("#proposal_name").val() } ) );
@@ -433,8 +460,8 @@
                 console.log("Get the proposal id");
                 that.proposalid = data.id;
                 
-                if( "<%= client_id %>" != "" ){
-                    $.ajax( "data/<%= client_id %>" ,{
+                if( "<%= typeof client_id != 'undefined' ? client_id : '' %>" != "" ){
+                    $.ajax( "data/<%= typeof client_id != 'undefined' ? client_id : '' %>" ,{
                         dataType: "json",
                         success: function(data){
                             that.client = data;
@@ -514,14 +541,23 @@
                     var matches = previewhtml.match(/\{\{([^}]+)\}\}/g);
                     for (i in matches) {
                         variable = matches[i].substr(2, matches[i].length-4);
-                        if( typeof variables[variable] != "undefined" ){
-                            previewhtml = previewhtml.replace(matches[i],"<span class='variable' name='"+variable+"'>"+variables[variable]+"</span>");
+                        if( typeof variables[variable] != "undefined"){
+                            if( variables[variable] != "") {
+                                 previewhtml = previewhtml.replace(matches[i],"<span class='variable' name='"+variable+"'>"+variables[variable]+"</span>");
+                            } else {
+                               previewhtml = previewhtml.replace(matches[i],"<span class='empty_variable' name='"+variable+"'>{&#123;"+variable+"}}</span>"); 
+                            }
                         }  else {
                             previewhtml = previewhtml.replace(matches[i],"<span class='empty_variable' name='"+variable+"'>{&#123;"+variable+"}}</span>");
                         }
                     }
                     $(element).html(previewhtml);
-            
+                        $("#toc_list").sortable({
+                            update: function(event, ui) {
+                                console.log(arguments);
+                            proposal_view.toc.updateOrder(event, ui)
+                            }
+                        }); 
         },
         addSectionRender: function(){
             console.log( "Render the add section modal window" );
@@ -571,12 +607,14 @@
     <li id="<%= typeof section.id != "undefined" ? section.id : section.cid %>" template_id="<%= section.get("template_id") %>"><%= section.get("name") %></li>
 </script>
 <script type="text/template" id="clients_combo_form_element">
-    <select name="client_id" id="client_combo">                $("body").append("<div style='' class='proposalcontainer proposal_preview container'>Yo</div>");
-                $(".proposalcontainer").html( _.template( $("#proposal_preview").html(), {} ) );
+    <select name="client_id" id="client_combo">                
     <option value="">Select Client</option>
     <% _.each( models, function( clientmodel) { 
             selected = "";
             clientmodel = clientmodel.get("value");
+            if( typeof client_id == "undefined") {
+                client_id = "";
+            }
             if( client_id == clientmodel._id) {
                 selected = "selected";
             }
@@ -614,7 +652,7 @@
             </div>
         </div>
         
-        <div class="delete_section" style="color: #ff0000;">Delete</div>
+        <div class="delete_section">Delete</div>
     </li>
 </script>
 <script type="text/template"" id="section_fee_table_template">
@@ -650,7 +688,7 @@
                     <strong>Fx</strong>: (07) 4723 1780
                 </div>
                 <div class="userlogo">
-                <img src="/media/userimages/logo.jpg" rks/>
+                <img src="http://protosal.com/logo.jpg" />
                 </div>
                 
             </div>
@@ -672,54 +710,145 @@
             <div id="section_container_test">
                 <ol></ol>
             </div>
-            <!--
-            <div class="section_container">
-                
-                <div class="section">
-                    <h3 class="section_heading">Overview</h3>
-                    <div class="section_content">
-                    This is a short but effective proposal template for a website redesign project. It clearly outlines the business challenges the client faces, how these challenges will be taken care of, and what the client must do to get the project started.
-                    </div>
-                </div>
-                
-                <div class="section">
-                    <h3 class="section_heading">Terms of Reference</h3>
-                    <div class="section_content">
-                        An Example of a bulleted list in the editor:-
-                        <ul>
-                            <li>Web Design</li>
-                            <li>Brick Designs</li>
-                            <li>Tailored Fingernails</li>
-                            <li>Obese Training</li>
-                        </ul>
-                    </div>
-                </div>
-                
-                <div class="section">
-                    <h3 class="section_heading">Section with a Fee</h3>
-                    <div class="section_content">notifications@getexceptional.com
-                        This section is an example of what a section with a fee table looks like.  This is going to be tricky but we can do it. Because we da best.
-                        <table>
-                            <tr>
-                                <td>Fee</td>
-                                <td>Price</td>
-                            </tr>
-                            <tr>
-                                <td>Web Design</td>
-                                <td>$100</td>
-                            </tr>
-                        </table>
-                    </div>
-                </div>
-                
-                <div class="section">
-                    <h3 class="section_heading">Conclusion</h3>
-                    <div class="section_content">
-                        This agreement becomes effective only when signed by agents of Sample client Company and tyth.  This is the conclusion you better believe it.
-                    </div>
-                </div>
-        </div>
-        -->
+            
+            <textarea id="proposal_css" style="display: none;">
+            <style>
+.proposal_preview {
+	z-index: 1;
+	top: 222px;
+	width: 705px;
+	padding: 25px 35px 25px 35px;
+	color: #444;
+}
+.proposal_preview .header {
+    height: 100px;
+    padding-bottom: 0px;
+    border-bottom: 1px solid #ccc;
+    margin-bottom: 30px;
+}
+.proposal_preview h2 {
+    font-size: 1.8em;
+    line-height: 1.2;
+}
+.proposal_preview h2.company {
+    font-size: 1.4em;
+    color: #555;
+}
+.proposal_preview .userlogo {
+    height: 90px;
+    float: right;
+    width: 200px;
+    margin-top: -15px;
+    
+}
+.proposal_preview .details {
+    float: left;
+    font-size: 1em;
+    line-height: 1.1em;
+}
+
+.proposal_preview .introduction {
+    font-size: 1em;
+}
+
+.proposal_preview .section_container{ 
+    margin-top: 50px;
+}
+.proposal_preview .section_heading.toc{
+	font-size: 1.7em;
+}
+.proposal_preview .toc {
+	margin-top: 50px;
+	margin-bottom: 50px;
+	
+}
+.proposal_preview .toc ol{
+	margin-left: 75px;
+	margin-top: 20px;
+}
+.proposal_preview .toc ol li{
+	font-size: 1.3em;
+	cursor: pointer;
+	width: 590px;
+}
+.proposal_preview .toc ol li:hover{
+	background: #ffffcc url(../icons/direction.png) no-repeat right;
+}
+.proposal_preview .section {
+    margin-bottom: 30px;
+}
+.proposal_preview .section h3 {
+    font-size: 1.2em;opment {{name}}
+Web Development
+
+    line-height: 1.9em;
+}
+.proposal_preview .section_content {
+    font-size: 1em;
+    padding-left: 10px;
+}
+.proposal_preview .section_content ul {
+    padding: 15px 0 0 40px;
+    line-height: 28px;
+    margin-left: 100px;
+}
+
+.section_temp ul {
+	
+	list-style: none;
+	width: 450px;
+	margin: auto;
+	margin-top: 20px;
+	margin-bottom: 20px;
+	height: 400px;
+	overflow: auto;
+}
+.section_list_item {
+	cursor:pointer;
+	height: 25px; 
+	border-bottom: 1px dashed #ebebeb;
+	padding: 2px;
+	font-size: 1.3em;
+}
+#hor-minimalist-b
+{
+	font-size: 12px;
+	margin: 45px;
+	margin-left: 90px;
+	width: 480px;
+	border-collapse: collapse;
+	text-align: left;
+}
+#hor-minimalist-b th
+{
+	font-size: 14px;
+	font-weight: normal;
+	color: #039;
+	padding: 10px 8px;
+	border-bottom: 2px solid #6678b1;
+}
+#hor-minimalist-b td
+{
+	border-bottom: 1px solid #ccc;
+	color: #669;
+	padding: 6px 8px;>
+}
+#hor-minimalist-b tbody tr:hover td
+{
+	color: #009;
+}
+
+
+
+
+
+
+
+
+
+</style>
+</textarea>
+
         <div style="clear: both;"></div>
         <div style="clear: both;"></div>
 </script>
