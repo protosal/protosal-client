@@ -16,6 +16,14 @@
         <link rel="stylesheet" type="text/css" href="/media/css/jquery-ui/Aristo/css/Aristo/jquery-ui-1.8.7.custom.css"> 
         <script type="text/javascript">
         cked = "";
+        function killck(){
+                                    if( cked != "" ){
+                            cked.ckeditor(function(){ // a hack to make jck editor work on page refresh
+                            
+                                this.destroy();
+                            });
+                        }
+        }
         var GLOBALS = {
             "route_id": null,
             "controller": null,
@@ -131,6 +139,7 @@
                   window.location = "#/dashboard/login"
                 },
               defaultRoute: function(controller, action, vid) {
+                    killck();
                     /* Redirect people to the home page if they try
                        to access the login page when they are already
                        authenticated.
@@ -154,13 +163,8 @@
                         
                         //We know the page is about to change so lets clean up any jckeditors hanging around before the dom changes and jckeditors internal reference is updated
                         //CLEAN UP EVERYTHING
-                        $(".jckeditor").each( function(){
-                            $(this).ckeditor(function(){ // a hack to make jck editor work on page refresh
-                            
-                                this.destroy();
-                            });
-                        });
-                        
+                     
+
                         $(".ui-dialog").remove();
                         $(".modal_window").remove();
                         
@@ -200,7 +204,7 @@
 
             });
             
-            $(".back-button").live("click", function() { history.go(-1); return false; });
+            $(".back-button").live("click", function() { killck(); history.go(-1); return false;  });
             $(".close-button").live("click", function(event) { console.log(event); $(event.currentTarget).parents(".ui-dialog-content").dialog("close"); return false; });
             window.saveclickHandler =  function(event){
 

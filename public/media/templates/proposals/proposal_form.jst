@@ -251,6 +251,7 @@
                 templateid: template_id,
                 modal: "yes",
                 success: function(data){
+         
                      $("#atestform").dialog("close");
                          $.ajax({
                             url: "data/" + section.id,
@@ -271,23 +272,16 @@
                 resizable: false,
                 closeOnEscape: true,
                 close: function(){
-				                                $(".jckeditor").each( function(){
-                            $(this).ckeditor(function(){ // a hack to make jck editor work on page refresh
-                            
-                                this.destroy();
-                            });
-                        });
+				     
 			        mydialog.dialog("destroy");
 			
                 },
                 beforeClose: function(){
-				
+				    killck();
+                    console.log(cked);
 				
 		        },
                 open: function(){
-			        console.log($("#jckeditor"));
-			        setTimeout( function(){ $(".jckeditor").ckeditor(ckeditor_options);  }, 200);
-			        console.log($("#jckeditor")); 
 			        $("form input").focus();      
                 },
                 modal: true, 

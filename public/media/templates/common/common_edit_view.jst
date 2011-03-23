@@ -1,6 +1,6 @@
 <script type="text/template" id="common_edit_view_template">
 
-<% typeof success == "undefined" ? success = function() { redirect(GLOBALS.controller + "/list"); } : success = success; %>
+<% typeof success == "undefined" ? success = function() { redirect(GLOBALS.controller + "/list"); killck(); } : success = success; %>
 <% typeof templateid == "undefined" ? templateid = "" : templateid = templateid; %>
 <%  
     if( typeof documentid == "undefined") {
