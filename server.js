@@ -7,8 +7,10 @@ var _ = require('underscore');
 var Exceptional = require('./exceptional').Exceptional;
 var cradle = require('cradle');
 var form = require('connect-form');
+var async = require('async');
 var fs = require('fs');
 var sys = require('sys');
+var pdfcrowd = require('./node-pdfcrowd');
 
 var app = express.createServer(
   // connect-form (http://github.com/visionmedia/connect-form)
@@ -407,52 +409,6 @@ app.put('/user', function(req, res) {
     });
 });
 
-app.post('/user', function(req, res) {
-    var db = new(cradle.Connection)().database('app');
-    var docid = 'org.couchdb.user:' + req.session.username;
-
-    /* connect-form adds the req.form object.
-     * We can (optionally) define onComplete, passing
-     * the exception (if any) fields parsed, and files parsed.
-     */
-    req.form.complete(function(err, fields, files) {
-        console.log("connect-form appears to be working.");
-        if (err) {
-            next(err);
-        } else {
-            /* Record the time at which the record was modified. */
-            fields.last_modified = Date.now();
-            
-            db.merge(docid, fields, function(err, doc) {
-                if( err ) {
-                    throw new ServerError( err );
-                } else {
-                    if( typeof files.image != "undefined" ) {
-                        /* Users are only allowed 1 logo, so rename the image
-                         * they uploaded to logo.ext
-                         */
-                        var logo_filename = 'logo.' + files.image.name.split('.').pop();
-
-                        /* Upload the image to the database. */
-                        db.saveAttachment(docid,
-                            doc.rev,
-                            logo_filename,
-                            files.image.type,
-                            fs.createReadStream(files.image.path),
-                            function(response) {
-                                /* Delete the file once we have finished uploading. */
-                                fs.unlink(files.image.path);
-                            }
-                        );
-                    }
-                }    
-
-                res.redirect("#/user/edit");
-            });
-        }
-    });
-});
-
 app.put('/data/:id', function(req, res) {
     var db = new(cradle.Connection)().database('app');
 
@@ -474,6 +430,87 @@ app.put('/data/:id', function(req, res) {
         }
     });
     
+});
+
+app.post('/user', function(req, res) {
+    var con = new(cradle.Connection)();
+    var db = con.database('app');
+    var docid = 'org.couchdb.user:' + req.session.username;
+
+    /* connect-form adds the req.form object.
+     * We can (optionally) define onComplete, passing
+     * the exception (if any) fields parsed, and files parsed.
+     */
+    req.form.complete(function(err, fields, files) {
+        console.log("connect-form appears to be working.");
+        if (err) {
+            throw new ServerError( err );
+        } else {
+            /* Record the time at which the record was modified. */
+            fields.last_modified = Date.now();
+            
+            db.merge(docid, fields, function(err, doc) {
+                if( err ) {
+                    throw new ServerError( err );
+                } else {
+                    if( typeof files.image != "undefined" ) {
+                        /* Users are only allowed 1 logo, so rename the image
+                         * they uploaded to logo.ext
+                         */
+                        var logo_filename = 'logo.' + files.image.name.split('.').pop();
+
+                        /* Delete all old attachments. */
+                        db.get(doc.id, function(err, doc) {
+                            if( err ) {
+                                throw new ServerError( err );
+                            } else {
+                                /* Enumerate through all attachments, deleting them. */
+                                for( var name in doc._attachments ) {
+                                    console.log("Name: " + name);
+                                    if( doc._attachments.hasOwnProperty(name) ) {
+                                        var path =
+                                            '/app/' + escape(doc._id) + '/' + name;
+                                        var options = {rev: doc._rev};
+                                            console.log(path);
+                                        con.request('DELETE',
+                                            path,
+                                            options,
+                                            function(err, doc) {
+                                                if( err )
+                                                    throw new ServerError( err );
+                                            }
+                                        );
+                                    }
+                                }
+                            }
+                        });
+
+                        /* Upload the image to the database. */
+                        db.saveAttachment(docid,
+                            doc.rev,
+                            logo_filename,
+                            files.image.type,
+                            fs.createReadStream(files.image.path),
+                            function(response) {
+                                /* Delete the file once we have finished uploading. */
+                                fs.unlink(files.image.path);
+                            }
+                        );
+                    }
+                }    
+
+                res.redirect("#/user/edit");
+            });
+        }
+    });
+});
+
+app.post('/pdf', function(req, res) {
+    console.log("trying to generate pdf");
+    var username = 'ryankirkman';
+    var api_key = 'a4e60e5dc9b00d298fd5f57a6b9c1c3e';
+
+    pdfcrowd.generate_pdf(username, api_key, 'A', res);
 });
 
 app.post('/data/bulk_docs', function(req, res) {
