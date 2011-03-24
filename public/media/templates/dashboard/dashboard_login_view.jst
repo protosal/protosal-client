@@ -136,6 +136,7 @@
            $(this).removeClass("register").addClass("login").addClass("orange").removeClass("blue");
            $(this).text("Back to Login");
            setTimeout( function (){     $("#email").focus(); }, 100);
+           $.jGrowl("Thanks for signing up, now log in fool",{  theme: 'notice', position: "top-right"});
         } else {
            $("#tab-2").removeClass("active-tab"); 
            $("#tab-1").addClass("active-tab"); 
@@ -143,6 +144,7 @@
             $(this).text("Start Free Trial");
            $(this).removeClass("login").addClass("register").addClass("blue").removeClass("orange");
            setTimeout( function (){     $("#username").focus(); }, 100);
+           $.jGrowl("Thanks for signing up, now log in fool",{  theme: 'notice', position: "top-right"});
         }
 //active-tab").removeClass("active-tab");
        // $(tab).addClass("active-tab");

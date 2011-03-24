@@ -557,6 +557,13 @@ margin-top: 2px;
 width: 300px !important;
 background-color: #ff3333 !important;
 }
+.notice .jGrowl-message {
+    font-size: 1.8em;
+}
+.notice {
+width: 300px !important;
+background-color: #0099cc !important;
+}
 
 .datatable {
 min-width: 700px !important;
