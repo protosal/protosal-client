@@ -2,7 +2,7 @@
     <div class="ui-widget-header">
         <h3 style="text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);float: left;"><%= title %></h3>
         <% _.each( buttons, function( button ) { %>
-            <a class="button <%= button.classes %>" controller="<%= button.controller%>" href="<%= button.href %>" style="float: right;"><%= button.text %></a>
+            <a class="button <%= button.classes %> <%= button.text == "Save" ? "ui-state-save" : "" %>" controller="<%= button.controller%>" href="<%= button.href %>" style="float: right;"><%= button.text %></a>
         <% }); %>           
         <div style="clear:both;"></div>
     </div>
