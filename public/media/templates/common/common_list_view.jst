@@ -37,7 +37,8 @@
                 if( this.models.length != 0 ) {
                     $("#common_list_view_table_container").html( _.template( $("#common_list_view_table_template").jsthtml(), { rows: this.models } ) );
                 } else {
-                    $("#common_list_view_table_container").html( "Echo our a warning for no records" );
+                    
+                    $("#common_list_view_table_container").html( _.template( $("#common_list_view_table_template").jsthtml(), { rows: [] } ) );
                 }
                 //$("#common_list_view_table_container").slideDown(400);
                 $("#common_list_view_table_container").fadeIn(400);

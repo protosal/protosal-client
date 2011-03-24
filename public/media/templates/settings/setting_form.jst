@@ -77,7 +77,7 @@
         console.log(formdata);
 
         // Save the user data.
-        $.ajax( 'http://localhost:3000/user', {
+        $.ajax( 'user', {
             type: "POST",
             contentType: "multipart/form-data",
             data: formdata,

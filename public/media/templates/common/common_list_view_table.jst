@@ -2,13 +2,16 @@
 <table class="list_view">
    <thead>
    <tr>
-        <% _.each( rows[0].get("value"), function(val, key) { 
-            if( key[0] != "_" ){    
-                %>
-                    <th><%= _(key).capitalize() %></th>
-                <% 
+        <% 
+            if( rows.length > 0 ){
+                _.each( rows[0].get("value"), function(val, key) { 
+                if( key[0] != "_" ){    
+                    %>
+                        <th><%= _(key).capitalize() %></th>
+                    <% 
+                }
+                });
             }
-            });
         %>
         <th>Actions</th>
    </tr>
