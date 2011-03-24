@@ -8,6 +8,8 @@ exports.generate_pdf = function(username, api_key, src_data, res) {
     console.log(username);
     console.log(api_key);
     console.log(src_data);
+    
+    src_data = decodeURIComponent(src_data).split('+').join(' ');
 
     restler.post('http://pdfcrowd.com/api/pdf/convert/html/', {
         binary: true,

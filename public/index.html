@@ -73,6 +73,8 @@
             console.log("Head.js has finished loading");
             
 
+     
+
             
             d = new Date();
             $.ajax({ 
@@ -139,11 +141,13 @@
                   window.location = "#/dashboard/login"
                 },
               defaultRoute: function(controller, action, vid) {
-                    killck();
                     /* Redirect people to the home page if they try
                        to access the login page when they are already
                        authenticated.
                     */
+                    if(typeof CKEDITOR != "undefined" ){
+                        delete CKEDITOR.instances.description;
+                    }
                     if( GLOBALS.session && controller == "dashboard" && action == "login" ) {
                         redirect("dashboard/home");
                         return;
@@ -163,7 +167,7 @@
                         
                         //We know the page is about to change so lets clean up any jckeditors hanging around before the dom changes and jckeditors internal reference is updated
                         //CLEAN UP EVERYTHING
-                     
+                        
 
                         $(".ui-dialog").remove();
                         $(".modal_window").remove();
@@ -193,7 +197,7 @@
                             $(".proposalcontainer").remove();
                             $(".containerspace").hide();
                         }
-
+                        
                         
                         _.jstTemplate( $("#contentpane"), $("#" + template_name + "_view_template"), obj )
                        $("#contentpane").fadeIn(300);
@@ -204,7 +208,7 @@
 
             });
             
-            $(".back-button").live("click", function() { killck(); history.go(-1); return false;  });
+            $(".back-button").live("click", function() { history.go(-1); return false;  });
             $(".close-button").live("click", function(event) { console.log(event); $(event.currentTarget).parents(".ui-dialog-content").dialog("close"); return false; });
             window.saveclickHandler =  function(event){
 
@@ -219,7 +223,7 @@
                 if(event.data.templateid == "") {
                     formdata.template    = true;
                 }
-                var url = GLOBALS.couch_server + "/data";
+                var url = GLOBALS.server_base + "/data";
                 type = "POST";
                 
                 // Detect if we are inserting (POST), or updating (PUT)

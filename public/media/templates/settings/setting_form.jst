@@ -1,33 +1,63 @@
 <script type="text/template" id="user_form_template">
     <div id="proposal_form_container">
-
         <form id="add_settings_form" action="http://localhost:3000/user" class="edit_settings_form" enctype="multipart/form-data" method="post">
+        
+        <div class="stack">
+        
+        
            <br />
+            
+            <div class="stack1of2">
+                <div class="stackContent">
+                    <fieldset>
+                        <label for="">
+                            Company Name
+                        </label>
+                        <input name="companyname" id="" type="text" value="<%= typeof companyname != "undefined" ? companyname : "" %>" />
 
-            <div style="">
-                <div class="megaform" style=" float: left;">
+                        <label for="">
+                            Company Short Description
+                        </label>
+                        <input name="companyshortdescription" id="" type="text" value="<%= typeof companyshortdescription != "undefined" ? companyshortdescription : "" %>" />
+                        <label for="">
+                            Address
+                        </label>
+                        <input name="address" id="" type="text" value="<%= typeof address != "undefined" ? address : "" %>" />
+                    </fieldset>
 
-                <fieldset>
-                    <label for="">
-                        Name
-                    </label>
-                    <input name="name" id="" type="text" value="<%= typeof name != "undefined" ? name : "" %>" />
-                </fieldset>
-
-                <fieldset>
-                    <label for="">
-                        Address
-                    </label>
-                    <input name="address" id="" type="text" value="<%= typeof address != "undefined" ? address : "" %>" />
-                </fieldset>
-
-                <p>Image: <input type="file" name="image" /></p>
+                  
+                </div>
+            </div>
+            <div class="stack1of2">
+                <div class="stackContent">
+                    <fieldset>
+                            <div class="stack">
+                                <div class="stack1of3">
+                                    <div class="stackContent">
+                                    <img style="width: 40px;" src="http://localhost:5984/app/org.couchdb.user%3Athomas/logo.png" />
+                                    </div>
+                                </div>
+                                <div class="stack2of3">
+                                    <div class="stackContent">
+                                    <p>Image: <input type="file" name="image" /></p>
+                                    </div>
+                                </div>
+                            </div>
+                          
+                           
+                        <label for="">
+                            Company Name
+                        </label>
+                        <input name="companyname" id="" type="text" value="<%= typeof companyname != "undefined" ? companyname : "" %>" />
+                     </fieldset>
 
                 </div>
             </div>
+        </div>
+        
         
         </form>
-        <img style="width: 400px;" src="http://localhost:5984/app/org.couchdb.user%3Athomas/logo.png" />
+       
     </div>
 <jst>
     

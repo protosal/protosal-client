@@ -75,9 +75,9 @@ _rev = ""
                             data.documentid = "<%= current_doc_id %>";
                             $("#<%= controller %>_formc").append( _.template( $("#<%= controller %>_form_template").jsthtml(), data ) );
                             
-            cked = "";
-                setTimeout( function() { cked = ($(".jckeditor", $("#<%= controller %>_formc") )); cked.ckeditor(ckeditor_options); }, 300);
-			
+                            cked = "";
+                                setTimeout( function() { cked = ($(".jckeditor", $("#<%= controller %>_formc") )); cked.ckeditor(ckeditor_options); }, 300);
+    
                             if (typeof data._rev != "undefined")
                                 _rev = data._rev; 
                             
@@ -105,7 +105,7 @@ _rev = ""
                         documentid: "",
                         success: <%= success %>
                     }, window.saveclickHandler );
-					_.jstTemplate( $("#<%= controller %>_formc"), $("#<%= controller %>_form_template"), { success: <%= success %>, documentid: "" } );  
+                        _.jstTemplate( $("#<%= controller %>_formc"), $("#<%= controller %>_form_template"), { success: <%= success %>, documentid: "" } );  
                  
                                     cked = "";
                 setTimeout( function() { cked = ($(".jckeditor", $("#<%= controller %>_formc") )); cked.ckeditor(ckeditor_options); }, 300);

@@ -510,7 +510,7 @@ app.post('/pdf', function(req, res) {
     var username = 'ryankirkman';
     var api_key = 'a4e60e5dc9b00d298fd5f57a6b9c1c3e';
 
-    pdfcrowd.generate_pdf(username, api_key, unescape(req.rawBody), res);
+    pdfcrowd.generate_pdf(username, api_key, req.body.pdfdata, res);
 });
 
 app.post('/data/bulk_docs', function(req, res) {
