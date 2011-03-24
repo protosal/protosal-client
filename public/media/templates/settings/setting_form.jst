@@ -1,6 +1,6 @@
 <script type="text/template" id="user_form_template">
     <div id="proposal_form_container">
-        <form id="add_settings_form" action="http://localhost:3000/user" class="edit_settings_form" enctype="multipart/form-data" method="post">
+        <form id="add_settings_form" action="user" class="edit_settings_form" enctype="multipart/form-data" method="post">
         
         <div class="stack">
         
@@ -66,28 +66,6 @@
     $('.user_save').click(function() {
         $("#add_settings_form").submit();
         return false;
-
-        /*
-        var formdata = $(".edit_settings_form").serialize();
-
-        // Store and delete the logo for later processing.
-        var logo = formdata.logo;
-        delete formdata.logo;
-
-        console.log(formdata);
-
-        // Save the user data.
-        $.ajax( 'user', {
-            type: "POST",
-            contentType: "multipart/form-data",
-            data: formdata,
-            success: function(data) {
-                console.log(data);
-                console.log("success, yeah buddy!");
-            }
-        });
-        */
-
     });
 </jst>
 </script>
