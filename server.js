@@ -368,6 +368,33 @@ app.get('/related2/:view/:id', function( req, res ){
     );
 });
 
+app.get('/user', function(req, res) {
+    var db = new(cradle.Connection)().database('app');
+    var docid = 'org.couchdb.user:' + req.session.username;
+
+    db.get(docid, function(err, doc) {
+        couch_response(err, doc, res); 
+    });
+});
+
+app.get('/register/:activation_key', function(req, res) {
+    var db = new(cradle.Connection)().database('app');
+    var key = { key: req.params.activation_key };
+
+    db.view('user/register', key, function(err, doc_arr) {
+        /* If a document is returned, the activation link was valid. */
+        if( doc_arr.length == 1 ) {
+            db.merge(doc_arr[0].id, {activated: true}, function(err, doc) {
+                if( err ) {
+                    throw new ServerError( err );
+                } else {
+                    res.redirect("#/dashboard/login");
+                }
+            });
+        }
+    });
+});
+
 app.get('/:list_type/:view', function(req, res) {
     var db = new(cradle.Connection)().database('app');
 
@@ -377,15 +404,6 @@ app.get('/:list_type/:view', function(req, res) {
             couch_response(err, doc, res);
         }
     );
-});
-
-app.get('/user', function(req, res) {
-    var db = new(cradle.Connection)().database('app');
-    var docid = 'org.couchdb.user:' + req.session.username;
-
-    db.get(docid, function(err, doc) {
-        couch_response(err, doc, res); 
-    });
 });
 
 app.put('/user', function(req, res) {
