@@ -440,7 +440,7 @@
         },
         openPdf: function(){
             
-            html = $("#proposal_preview_container").html();
+            html = $(".proposal_preview_container").html();
             css = $("#proposal_css").val();
             $("#pdfcrowd").text(css  + html);
             $("#pdfcrowdform").submit();   
@@ -460,7 +460,7 @@
         initialize: function(){
             var that = this;
             console.log("Initialize the proposal view");
-            $("body").append("<div id='proposal_preview_container'><div style='' class='proposalcontainer proposal_preview container'>Yo</div></div>");
+            $("body").append("<div class='proposal_preview_container'><div style='' class='proposalcontainer proposal_preview container'>Yo</div></div>");
 
             $.when( this.get_id() ).then( $.proxy( function(data){
                 $(".proposalcontainer").html( _.template( $("#proposal_preview").html(), { name: $("#proposal_name").val() } ) );
