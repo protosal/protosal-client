@@ -1,43 +1,57 @@
 <script type="text/template" id="user_form_template">
     <div id="proposal_form_container">
+    
+    
+       
         <form id="add_settings_form" action="user" class="edit_settings_form" enctype="multipart/form-data" method="post">
         
-        <div class="stack">
-        
-        
-           <br />
-            
-            <div class="stack1of2">
-                <div class="stackContent">
-                    <fieldset>
-                        <label for="">
+    
+    
+    
+    <br />
+<p class="pagedesc">Change your settings here</p>
+
+        <div class="stack1of3" style="margin-left: 120px;">
+            <div class="stackContent">
+                                      <label for="">
                             Company Name
                         </label>
                         <input name="companyname" id="" type="text" value="<%= typeof companyname != "undefined" ? companyname : "" %>" />
 
                         <label for="">
-                            Company Short Description
+                            Description
                         </label>
                         <input name="companyshortdescription" id="" type="text" value="<%= typeof companyshortdescription != "undefined" ? companyshortdescription : "" %>" />
+                        
+                        <br />
+                        <br />
                         <label for="">
                             Address
                         </label>
                         <input name="address" id="" type="text" value="<%= typeof address != "undefined" ? address : "" %>" />
-                    </fieldset>
-
-                  
-                </div>
+                        <label for="">
+                            Street
+                        </label>
+                        <input name="street" id="" type="text" value="<%= typeof street != "undefined" ? street : "" %>" />
+                        <label for="">
+                            City
+                        </label>
+                        <input name="city" id="" type="text" value="<%= typeof city != "undefined" ? city : "" %>" />
             </div>
-            <div class="stack1of2">
-                <div class="stackContent">
-                    <fieldset>
+        </div>
+        <div class="stack1of3">
+            <div class="stackContent">
+                <label for="">
+                                    Logo
+                                </label>
                             <div class="stack">
-                                <div class="stack1of3">
+                                
+                                <div class="stack1of2">
                                     <div class="stackContent">
-                                    <img style="width: 40px;" src="http://localhost:5984/app/org.couchdb.user%3Athomas/logo.png" />
+                                    <img style="width: 120px;" src="http://localhost:5984/app/org.couchdb.user%3Athomas/logo.png" />
                                     </div>
                                 </div>
-                                <div class="stack2of3">
+                                <div class="stack1of2">
                                     <div class="stackContent">
                                     <p>Image: <input type="file" name="image" /></p>
                                     </div>
@@ -45,16 +59,22 @@
                             </div>
                           
                            
-                        <label for="">
-                            Company Name
-                        </label>
-                        <input name="companyname" id="" type="text" value="<%= typeof companyname != "undefined" ? companyname : "" %>" />
-                     </fieldset>
-
-                </div>
             </div>
         </div>
-        
+
+   
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+ 
+
         
         </form>
        
