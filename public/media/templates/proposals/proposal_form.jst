@@ -275,6 +275,17 @@
                     
                     delete CKEDITOR.instances.description
 			        mydialog.dialog("destroy");
+                        $.ajax({
+                            url: "data/" + section.id,
+                            success: function( response ){section_fee_table_template
+                                $(".section_content", ".section_" + cid).html( _.template( $("#proposal_preview_section_content").html(), response ) );
+                                $(".section_heading", ".section_" + cid).text(response.name);
+                                $("#"+section.id).text(response.name); // set the toc name
+                                section.set(response);
+                                var feetable = new FeeTableView( section );
+                                proposal_view.applyVariables( ".section_" + cid );
+                            }
+                        });
                 },
                 beforeClose: function(){
 				    
