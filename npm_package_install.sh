@@ -7,4 +7,4 @@ npm install cradle
 npm install connect-form
 npm install async
 npm install node-uuid
-npm install restler
+npm install request
