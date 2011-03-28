@@ -59,7 +59,7 @@ function register(req, res) {
                     return callback(null);
                 } else {
                     /* We are dealing with an already registered user. */
-                    var err = {
+                    var err_doc = {
                         body: {
                             error: "registration_failed",
                             reason: "already registered",
@@ -67,7 +67,7 @@ function register(req, res) {
                         statusCode: 400
                     };
 
-                    callback(err);
+                    callback(err_doc);
                 } 
             });
         },
