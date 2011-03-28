@@ -31,31 +31,66 @@ exports.cradle_config = {
 
 cradle.setup(exports.cradle_config);
 
+function couchdb_error(err, callback) {
+    console.log("we have a couchdb error");
+
+    var err_obj = {
+        body: err,
+        statusCode: 500
+    }
+    return callback(err_obj);
+}
+
 function register(req, res) {
     console.log("we are registering.");
     var docid = "org.couchdb.user:" + req.body.email;
-    var newUser = {
-        _id: docid,
-        name: req.body.email,
-        password_sha: Hash.hex_sha1(req.body.password + _defaultSalt),
-        salt: _defaultSalt,
-        type: "user",
-        roles: []
-    }
 
     var con = new(cradle.Connection)();
     var db = con.database('_users');
 
-    db.head(docid, function(err, doc) {
-        /* If the etag is undefined, it means this user has not yet registered. */
-        if( typeof doc.etag == "undefined" ) {
-            /* Create the user document in the authentication database. */
-            db.save(newUser, function(err, doc) {
-                if( err ) {
-                    res.send(err, 500);
-                    throw "unable to save user document";
-                }
+    async.waterfall([
+        function( callback ) {
+            /* Check to see if the user document already exists in the _users table. */
+            db.head(docid, function(err, doc) {
+                if( err ) return couchdb_error(err, callback);
+
+                /* If the etag is undefined, this user has not yet registered. */
+                if( typeof doc.etag == "undefined" ) {
+                    return callback(null);
+                } else {
+                    /* We are dealing with an already registered user. */
+                    var err = {
+                        body: {
+                            error: "registration_failed",
+                            reason: "already registered",
+                        },
+                        statusCode: 400
+                    };
+
+                    callback(err);
+                } 
             });
+        },
+        function( callback ) {
+            /* Create the user document in the authentication database. */
+
+            var newUser = {
+                _id: docid,
+                name: req.body.email,
+                password_sha: Hash.hex_sha1(req.body.password + _defaultSalt),
+                salt: _defaultSalt,
+                type: "user",
+                roles: []
+            }
+
+            db.save(newUser, function(err, doc) {
+                if( err ) return couchdb_error(err, callback);
+
+                return callback(null);
+            });
+        },
+        function( callback ) {
+            /* Create the profile document in the app database. */
 
             var newUserProfile = {
                 _id: docid,
@@ -69,34 +104,49 @@ function register(req, res) {
 
             var db2 = new(cradle.Connection)().database('app');
 
-            /* Create the profile document in the app database. */
             db2.save(newUserProfile, function(err, doc) { 
-                if( err ) {
-                    res.send(err, 500);
-                    throw "unable to save profile document";
-                } else {
-                    var activation_url = "http://protosal.com:3000/register/" +
-                        newUserProfile.activation_key
-                    /* Send the registration email. */
-                    postmark.send({
-                        "From": "admin@protosal.com", 
-                        "To": req.body.email, 
-                        "Subject": "Activate Your Account", 
-                        "HtmlBody": "<b>Click here: </b><a href='" + activation_url + "'>" + activation_url + "</a>"
-                    }, function(err, res) {
-                        console.log("Error: ");
-                        console.log(err); 
-                        console.log("Response: ");
-                        console.log(res); 
-                    });
-                }
+                if( err ) return couchdb_error(err, callback);
+                
+                return callback(null, newUserProfile.activation_key);
             });
+        },
+        function( activation_key, callback ) {
+            /* Send the registration email. */
 
-            res.send({}, 200);
+            var activation_url = "http://app.protosal.com:3000/register/" + activation_key;
 
+            try {
+                postmark.send({
+                    "From": "admin@protosal.com", 
+                    "To": req.body.email, 
+                    "Subject": "Activate Your Account", 
+                    "HtmlBody": "<b>Click here: </b><a href='" + activation_url + "'>" + activation_url + "</a>"
+                });
+            } catch(err) {
+                console.log("Error: ");
+                console.log(err); 
+
+                var err_obj = {
+                    body: {
+                        error: "registration_email_sending_failed",
+                        reson: err.message
+                    },
+                    statusCode: 500
+                }
+
+                return callback(err_obj);
+            }
+            
+            return callback(null);
+        }
+    ],
+    function(err) {
+        /* Error handler. */
+        if( err ) {
+            res.send(err.body, err.statusCode);
         } else {
-            /* We are dealing with an already registered user. */
-            res.send({error: "request failed", reason: "already registered"}, 400);
+            /* Indicate success. */
+            res.send({}, 200);
         }
     });
 }
