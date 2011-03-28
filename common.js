@@ -7,7 +7,7 @@ var cradle = require('cradle');
 var Exceptional = require('./exceptional').Exceptional;
 var async = require('async');
 var uuid = require('node-uuid')
-var postmark = require('./postmark')('473b864e-b165-473c-9435-68981a3bbeef');
+var postmark = require('postmark')('473b864e-b165-473c-9435-68981a3bbeef');
 
 var _defaultSalt = "1";
 
