@@ -116,7 +116,7 @@ function login(req, res) {
 
         con.request('GET', '/_session', function(err, doc) {
             if( err ) {
-                auth_error(res, "incorrect_credentials");
+                auth_error(res, "incorrect credentials");
             } else {
                 var db = con.database('app');
                 var docid = "org.couchdb.user:" + req.body.username;
@@ -131,7 +131,7 @@ function login(req, res) {
                             req.session.username = req.body.username;
                             res.send({}, 200);
                         } else {
-                            auth_error(res, "not_activated");
+                            auth_error(res, "not activated");
                         }
                     }
                 });
