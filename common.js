@@ -174,7 +174,7 @@ function login(req, res) {
                 /* Check that the user has activated their account. */
                 db.get(docid, function(err, doc) {
                     if( err ) {
-                        throw "unable to get document id";
+                        auth_error(res, "user not found");
                     } else {
                         if( doc.activated ) {
                             req.session.auth = true;
