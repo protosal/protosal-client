@@ -101,7 +101,8 @@
                                     $.ajaxPrefilter( function( options, originalOptions, jqXHR ) {
                                         errorMessages = {
                                             "already_registered": "This username has already been taken",
-                                            "incorrect_user": "Invalid username/password or you haven't activated your email yet"
+                                            "incorrect_credentials": "Invalid username/password, try again or reset your password",
+                                            "not_activated": "You have not activated your account yet, please check your email inbox"
                                         };
                                         jqXHR.error (function(response) {
                                             var reason = $.parseJSON(response.responseText).reason;
