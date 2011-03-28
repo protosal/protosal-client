@@ -8,3 +8,4 @@ npm install connect-form
 npm install async
 npm install node-uuid
 npm install request
+npm install postmark
