@@ -368,6 +368,32 @@ app.get('/related2/:view/:id', function( req, res ){
     );
 });
 
+app.get('/logo/:user_id', function(req, res) {
+    var db = new(cradle.Connection)().database('app');
+    var docid = 'org.couchdb.user:' + req.params.user_id;
+
+    db.get(docid, function(err, doc) {
+        for( var name in doc._attachments ) {
+            if( name.indexOf("logo") != -1 ) {
+                console.log(doc._id);
+                console.log(name);
+                /* Proxy the response from couchdb. */
+                db.getAttachment(doc._id, name).on('response', function(response) {
+                    response.on('data', function(chunk) {
+                        res.write(chunk, 'binary');
+                    }); 
+
+                    response.on('end', function() {
+                        res.end();
+                    });
+                });
+
+                break;
+            }
+        }
+    });
+});
+
 app.get('/user', function(req, res) {
     var db = new(cradle.Connection)().database('app');
     var docid = 'org.couchdb.user:' + req.session.username;
