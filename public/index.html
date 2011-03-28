@@ -99,8 +99,18 @@
                                     console.log("User already logged in");
                                 }
                                     $.ajaxPrefilter( function( options, originalOptions, jqXHR ) {
-                                        jqXHR.error (function() {
-                                            $.jGrowl("Something went wrong! Refresh the page if it continues to happen",{  theme: 'apple', position: "top-right"});
+                                        errorMessages = {
+                                            "already_registered": "This username has already been taken",
+                                            "incorrect_user": "Invalid username/password or you haven't activated your email yet"
+                                        };
+                                        jqXHR.error (function(response) {
+                                            var reason = $.parseJSON(response.responseText).reason;
+                                            if( typeof errorMessages[reason] != "undefined") {
+                                                $.jGrowl( errorMessages[reason] ,{  theme: 'apple', position: "top-right"});    
+                                            } else{
+                                                $.jGrowl("Something went wrong! Refresh the page if it continues to happen",{  theme: 'apple', position: "top-right"});   
+                                            }
+                                            
                                         });
                                     });
                                     protosal_controller = new ProtosalController;
