@@ -15,8 +15,10 @@ function get_master_auth() {
     return { username: 'ryth', password: 'abCD--12' };
 }
 
-function auth_error(res) {
-    res.send( {error: "unauthorized", reason: "incorrect user" }, 401 ); 
+function auth_error(res, reason) {
+    if( reason == null )
+        reason = "incorrect user";
+    res.send( {error: "unauthorized", reason: reason}, 401 ); 
 }
 
 exports.auth_error = auth_error;
@@ -114,7 +116,7 @@ function login(req, res) {
 
         con.request('GET', '/_session', function(err, doc) {
             if( err ) {
-                auth_error(res);
+                auth_error(res, "incorrect_credentials");
             } else {
                 var db = con.database('app');
                 var docid = "org.couchdb.user:" + req.body.username;
@@ -129,7 +131,7 @@ function login(req, res) {
                             req.session.username = req.body.username;
                             res.send({}, 200);
                         } else {
-                            auth_error(res);
+                            auth_error(res, "not_activated");
                         }
                     }
                 });
