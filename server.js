@@ -620,7 +620,7 @@ app.post('/pdf/email', function(req, res) {
             // Send an email with the pdf as an attachment.
             // var docid = 'org.couchdb.user:' + req.session.username;
             postmark.send({
-                "From": "admin@protosal.com",
+                "From": req.session.username,
                 "To": req.body.to,
                 "Subject": "Protosal - " + req.body.subject,
                 "HtmlBody": req.body.HtmlBody,
