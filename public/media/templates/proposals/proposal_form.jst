@@ -39,7 +39,7 @@
     Finished
     <a id="side_print_preview" editing="true" class="button  ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button"><span class="ui-button-text">Print Preview</span></a><br />
     <a id="side_view_pdf" class="button  ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button"><span class="ui-button-text">View PDF</span></a>
-    <a id="side_email_pdf" class="button  ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button"><span class="ui-button-text">Email Client</span></a
+    <a id="side_email_pdf" class="button  ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button"><span class="ui-button-text">Email Client</span></a>
     <form action="pdf" method="POST" id="pdfcrowdform"><textarea id="pdfcrowd" name="pdfdata" style="display: none;"></textarea></form>
     </div>
 </div>
@@ -514,7 +514,6 @@ Bye Baby
             
         },
         openPdf: function(){
-            
             html = $(".proposal_preview_container").html();
             css = $("#proposal_css").val();
             $("#pdfcrowd").text(css  + html);
