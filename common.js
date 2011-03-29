@@ -32,8 +32,6 @@ exports.cradle_config = {
 cradle.setup(exports.cradle_config);
 
 function couchdb_error(err, callback) {
-    console.log("we have a couchdb error");
-
     var err_obj = {
         body: err,
         statusCode: 500
