@@ -373,7 +373,15 @@ app.get('/logo/:user_id', function(req, res) {
     var docid = 'org.couchdb.user:' + req.params.user_id;
 
     db.get(docid, function(err, doc) {
+        if (err) return res.send(err, 404);
+
+        /* Loop through all attachment documents. */
         for( var name in doc._attachments ) {
+            /* Stopping at the first document containing "logo".
+             * This works because every time a new logo is updated,
+             * all other attachements on the user profile document
+             * are deleted.
+             */
             if( name.indexOf("logo") != -1 ) {
                 console.log(doc._id);
                 console.log(name);
@@ -388,9 +396,11 @@ app.get('/logo/:user_id', function(req, res) {
                     });
                 });
 
-                break;
+                return;
             }
         }
+
+        res.send({}, 404);
     });
 });
 
