@@ -39,6 +39,8 @@ function couchdb_error(err, callback) {
     return callback(err_obj);
 }
 
+exports.couchdb_error = couchdb_error;
+
 function register(req, res) {
     console.log("we are registering.");
     var docid = "org.couchdb.user:" + req.body.email;
