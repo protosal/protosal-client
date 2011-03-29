@@ -73,7 +73,6 @@ _rev = ""
                         success: function(data){
                             data.success = <%= success %>;
                             data.documentid = "<%= current_doc_id %>";
-                            data.username = "<%= username %>";
                             $("#<%= controller %>_formc").append( _.template( $("#<%= controller %>_form_template").jsthtml(), data ) );
                             
                             cked = "";
@@ -96,7 +95,6 @@ _rev = ""
                         dataType: "json",
                         success: function(data){
                             
-                            data.username = "<%= username %>";
                             $("#<%= controller %>_formc").append( _.template( $("#<%= controller %>_form_template").jsthtml(), data ) );
                         }
                     });
@@ -109,7 +107,7 @@ _rev = ""
                         success: <%= success %>
                     }, window.saveclickHandler );
                     
-                        _.jstTemplate( $("#<%= controller %>_formc"), $("#<%= controller %>_form_template"), { username: "<%= username %>", success: <%= success %>, documentid: "" } );  
+                        _.jstTemplate( $("#<%= controller %>_formc"), $("#<%= controller %>_form_template"), { success: <%= success %>, documentid: "" } );  
                  
                                     cked = "";
                 setTimeout( function() { cked = ($(".jckeditor", $("#<%= controller %>_formc") )); cked.ckeditor(ckeditor_options); }, 200);
