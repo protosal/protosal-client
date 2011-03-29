@@ -509,7 +509,7 @@ app.post('/user', function(req, res) {
                             callback( null, doc );
                         } else {
                             /* We terminate here, as no image was uploaded. */
-                            callback( {error: "no image"} );
+                            res.redirect("#/user/edit");
                         }
                     }
                 });
