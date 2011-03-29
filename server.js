@@ -613,39 +613,34 @@ app.post('/pdf', function(req, res) {
 });
 
 app.post('/pdf/email', function(req, res) {
-    req.form.complete(function(err, fields, files) {
-        pdfcrowd.generate_pdf(
-            fields.pdfdata
-        ).on('complete', function(data, response) {
-            try {
-                // Send an email with the pdf as an attachment.
-                // var docid = 'org.couchdb.user:' + req.session.username;
-                postmark.send({
-                    "From": "admin@protosal.com",
-                    "To": fields.to,
-                    "Subject": "Protosal - " + fields.subject,
-                    "HtmlBody": fields.HtmlBody,
-                    "Attachments": [
-                        {
-                            "Name": fields.ProposalName + ".pdf",
-                            "ContentType": "application/pdf",
-                            "Content": data.toString('base64')
-                        }
-                    ]
-                });
-            } catch(err) {
-                console.log("Error sending email");
-                console.log(err);
-                return res.send({error: "sending_email_failed"}, 500);
-            }
-            
-            res.send({}, 200);
-        }).on('error', function(data, response) {
-            console.log("error generating pdf for email");
-            fs.writeFile('data.log', data);
-            fs.writeFile('response.log', data);
-            res.send({error: "pdf_generation_failed"}, 500);
-        });
+    pdfcrowd.generate_pdf(
+        req.body.pdfdata
+    ).on('complete', function(data, response) {
+        try {
+            // Send an email with the pdf as an attachment.
+            // var docid = 'org.couchdb.user:' + req.session.username;
+            postmark.send({
+                "From": "admin@protosal.com",
+                "To": req.body.to,
+                "Subject": "Protosal - " + req.body.subject,
+                "HtmlBody": encodeURI(req.body.HtmlBody),
+                "Attachments": [
+                    {
+                        "Name": req.body.ProposalName + ".pdf",
+                        "ContentType": "application/pdf",
+                        "Content": data.toString('base64')
+                    }
+                ]
+            });
+        } catch(err) {
+            console.log("Error sending email");
+            return res.send({error: "sending_email_failed"}, 500);
+        }
+        
+        res.send({}, 200);
+    }).on('error', function(data, response) {
+        console.log("error generating pdf for email");
+        res.send({error: "pdf_generation_failed"}, 500);
     });
 });
 
