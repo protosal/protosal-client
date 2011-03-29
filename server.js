@@ -11,6 +11,7 @@ var async = require('async');
 var fs = require('fs');
 var sys = require('sys');
 var pdfcrowd = require('./node-pdfcrowd');
+var postmark = require('postmark')('473b864e-b165-473c-9435-68981a3bbeef');
 
 var app = express.createServer(
   // connect-form (http://github.com/visionmedia/connect-form)
@@ -491,79 +492,154 @@ app.post('/user', function(req, res) {
     var db = con.database('app');
     var docid = 'org.couchdb.user:' + req.session.username;
 
+    req.form.complete(function(err, fields, files) {
+        if( err ) throw new ServerError( err );
+        
+        async.waterfall([
+            function( callback ) {
+                /* Merge the uploaded form fields with the user profile doc. */
+
+                fields.last_modified = Date.now();
+
+                db.merge(docid, fields, function(err, doc) {
+                    if( err ) {
+                        callback( err );
+                    } else {
+                        if( typeof files.image != "undefined" ) {
+                            callback( null, doc );
+                        } else {
+                            /* We terminate here, as no image was uploaded. */
+                            callback( {error: "no image"} );
+                        }
+                    }
+                });
+            },
+            function( doc, callback ) {
+                /* Get attachment details. */
+                db.get(doc.id, function(err, doc) {
+                    if( err ) {
+                        callback( err );
+                    } else {
+                        callback( null, doc );
+                    }
+                });
+            },
+            function( doc, callback ) {
+                /* Delete the previous attachment.
+                 * There should only ever be one, as the previous
+                 * attachment is always deleted here when a new
+                 * one is uploaded.
+                 */
+
+                /* Extract filenames from attachments.
+                 * There should only be one.
+                 */
+                var files = [];
+                for( var file in doc._attachments ) {
+                    files.push(file);
+                }
+
+                if( files.length > 0 ) {
+                    var path = '/app/' + escape(doc._id) + '/' + files[0];
+
+                    var options = {rev: doc._rev};
+
+                    con.request('DELETE', path, options, function(err, doc) {
+                        if( err ) {
+                            callback( err );
+                        } else {
+                            /* Send the new new revision returned by CouchDB. */
+                            callback( null, doc.rev );
+                        }
+                    });
+                } else {
+                    /* Send the existing revision, as the doc hasn't been updated. */
+                    callback( null, doc._rev );
+                }
+            },
+            function( rev, callback ) {
+                /* Upload the image to the database. */
+
+                var logo_filename = 'logo.' + files.image.name.split('.').pop();
+
+                db.saveAttachment(docid,
+                    rev,
+                    logo_filename,
+                    files.image.type,
+                    fs.createReadStream(files.image.path),
+                    function(err, doc) {
+                        if( err ) {
+                            callback( err );
+                        } else {
+                            /* Delete the file once we have finished uploading. */
+                            fs.unlink(files.image.path);
+
+                            callback( null );
+                        }
+                    }
+                );
+            }
+        ],
+        function(err) {
+            /* Error handler. */
+            if( err ) {
+                res.send(err, 500);
+            } else {
+                /* Indicate success. */
+                res.redirect("#/user/edit");
+            }
+        });
+    });
+
     /* connect-form adds the req.form object.
      * We can (optionally) define onComplete, passing
      * the exception (if any) fields parsed, and files parsed.
      */
-    req.form.complete(function(err, fields, files) {
-        console.log("connect-form appears to be working.");
-        if (err) {
-            throw new ServerError( err );
-        } else {
-            /* Record the time at which the record was modified. */
-            fields.last_modified = Date.now();
-            
-            db.merge(docid, fields, function(err, doc) {
-                if( err ) {
-                    throw new ServerError( err );
-                } else {
-                    if( typeof files.image != "undefined" ) {
-                        /* Users are only allowed 1 logo, so rename the image
-                         * they uploaded to logo.ext
-                         */
-                        var logo_filename = 'logo.' + files.image.name.split('.').pop();
-
-                        /* Delete all old attachments. */
-                        db.get(doc.id, function(err, doc) {
-                            if( err ) {
-                                throw new ServerError( err );
-                            } else {
-                                /* Enumerate through all attachments, deleting them. */
-                                for( var name in doc._attachments ) {
-                                    console.log("Name: " + name);
-                                    if( doc._attachments.hasOwnProperty(name) ) {
-                                        var path =
-                                            '/app/' + escape(doc._id) + '/' + name;
-                                        var options = {rev: doc._rev};
-                                            console.log(path);
-                                        con.request('DELETE',
-                                            path,
-                                            options,
-                                            function(err, doc) {
-                                                if( err )
-                                                    throw new ServerError( err );
-                                            }
-                                        );
-                                    }
-                                }
-                            }
-                        });
-
-                        /* Upload the image to the database. */
-                        db.saveAttachment(docid,
-                            doc.rev,
-                            logo_filename,
-                            files.image.type,
-                            fs.createReadStream(files.image.path),
-                            function(response) {
-                                /* Delete the file once we have finished uploading. */
-                                fs.unlink(files.image.path);
-                            }
-                        );
-                    }
-                }    
-
-                res.redirect("#/user/edit");
-            });
-        }
-    });
 });
 
 app.post('/pdf', function(req, res) {
-    var username = 'ryankirkman';
-    var api_key = 'a4e60e5dc9b00d298fd5f57a6b9c1c3e';
+    pdfcrowd.generate_pdf(
+        req.body.pdfdata
+    ).on('complete', function(data, response) {
+        /* Actually send the data. Hack it so that the
+         * headers and status code are what pdfcrowd
+         * responded with.
+         */
+        res.send(data, response.headers, response.statusCode);
+    }).on('error', function(data, response) {
+        console.log("error generating pdf");
+        res.send({error: "pdf generation failed"}, 500);
+    });
+});
 
-    pdfcrowd.generate_pdf(username, api_key, req.body.pdfdata, res);
+app.post('/pdf/email', function(req, res) {
+    pdfcrowd.generate_pdf(
+        req.body.pdfdata
+    ).on('complete', function(data, response) {
+        try {
+            /* Send an email with the pdf as an attachment. */
+            postmark.send({
+                "From": "admin@protosal.com",
+                "To": req.body.to,
+                "Subject": "Protosal - " + req.body.subject,
+                "HtmlBody": req.body.HtmlBody,
+                "Attachment": [
+                    {
+                        "Name": req.body.pdfname,
+                        "Content-Type": "application/pdf",
+                        "Contet": data
+                    }
+                ]
+            });
+        } catch(err) {
+            console.log("Error sending email");
+            res.send({error: "sending_email_failed"}, 500);
+        }
+    }).on('error', function(data, response) {
+        console.log("error generating pdf for email");
+        res.send({error: "pdf_generation_failed"}, 500);
+    });
+
 });
 
 app.post('/data/bulk_docs', function(req, res) {
