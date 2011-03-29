@@ -623,7 +623,7 @@ app.post('/pdf/email', function(req, res) {
                 "From": "admin@protosal.com",
                 "To": req.body.to,
                 "Subject": "Protosal - " + req.body.subject,
-                "HtmlBody": encodeURI(req.body.HtmlBody),
+                "HtmlBody": req.body.HtmlBody,
                 "Attachments": [
                     {
                         "Name": req.body.ProposalName + ".pdf",
