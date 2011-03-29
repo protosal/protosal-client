@@ -11,4 +11,37 @@
         $('.settings_save').unbind('click');
     </jst>
 </script>
+<script type="text/template" id="view_variables">
 
+    <div class="ui-widget-header">
+        <h3 style="text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);float: left;">Variables you can use</h3>
+        
+            <a class="button close-button variables_close" href="" style="float: right;">Close</a>
+                       
+        <div style="clear:both;"></div>
+    </div>
+    <div class="stack">
+        <div class="stack1of3">
+            <div class="stackContent">
+                <p>Template variables can be used anywhere in your proposal such as the section description, section header or fee name.  They can be access by puting in the template editor {{variable}} where it matches up.  I gave up trying to word this properly so Ryans job instead.</p>
+            </div>
+        </div>
+        <div class="stack1of3">
+            <div class="stackContent">
+               Client Receiptant
+            <ul>
+            <li>{{name}} - Name of the client</li>
+            <li>{{email}} - Email of the client</li>
+            </ul>
+            </div>
+        </div>
+        <div class="stack1of3">
+            <div class="stackContent">
+            Lol
+            </div>
+        </div>
+    </div>
+    <jst>
+        $(".variables_close").button();
+    </jst>
+</script>

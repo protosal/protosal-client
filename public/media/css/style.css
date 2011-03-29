@@ -860,6 +860,9 @@ display: block;
 }
 .ui-state-save a, .ui-state-save a:link, .ui-state-save a:visited { color: #313131; text-decoration: none; }
 
-
+.userlogo img{
+	width: 120px;
+	float: right;
+}
 
 

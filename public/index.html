@@ -79,7 +79,6 @@
             $.ajax({ 
                 url: "media/templates/all.jst?" +   d.getTime(),
                 success: function(response){
-                        console.log("tempplates loaded, appending to dom");
                         $("body").append(response);
                         
                          $.ajaxPrefilter(function( options ) {
@@ -90,19 +89,22 @@
                                 }
                            }
                         });
-                        var url = GLOBALS.server_base + "/list_by_author/" + "proposal";
+                        var url = GLOBALS.server_base + "/user";
                         $.ajax( url, {
                             dataType: "json",
-                            complete: function(headers){
+                            complete: function(headers, data, data2){
                                 if( headers.status != 401 ){
                                     GLOBALS.session = true;
                                     console.log("User already logged in");
+                                    
+                                    body = $.parseJSON( headers.responseText );
+                                    GLOBALS.username = body._id.replace("org.couchdb.user:", "");
                                 }
                                     $.ajaxPrefilter( function( options, originalOptions, jqXHR ) {
                                         errorMessages = {
-                                            "already_registered": "This username has already been taken",
-                                            "incorrect_credentials": "Invalid username/password, try again or reset your password",
-                                            "not_activated": "You have not activated your account yet, please check your email inbox"
+                                            "already registered": "This username has already been taken",
+                                            "incorrect credentials": "Invalid username/password, try again or reset your password",
+                                            "not activated": "You have not activated your account yet, please check your email inbox"
                                         };
                                         jqXHR.error (function(response) {
                                             var reason = $.parseJSON(response.responseText).reason;
@@ -188,6 +190,7 @@
 
                         
                         var template_name = "";
+                        obj.username= GLOBALS.username;
                         obj.controller = GLOBALS.controller;
                         obj.action = GLOBALS.action;
                         if ( GLOBALS.action == "list" ) {
@@ -277,8 +280,21 @@
                     }
                     return base + (base.charAt(base.length - 1) == '/' ? '' : '/') + this.id + rev;
                 }
-            });  
-            
+            });
+              
+            $(".view_variables").live("click", function(){
+                $("<div>").html($("#view_variables").jsthtml()).dialog({
+                    draggable: false,
+                    resizable: false,
+                    closeOnEscape: true,
+                    modal: true, 
+                    hide: 'drop',
+                    width: "960px",
+                    position: ["50%",100],
+                    height: "500"
+                });
+                return false;
+            });
             $(".preview_buttons button").button();             
         };
         

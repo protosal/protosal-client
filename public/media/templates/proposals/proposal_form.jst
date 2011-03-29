@@ -39,6 +39,7 @@
     Finished
     <a id="side_print_preview" editing="true" class="button  ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button"><span class="ui-button-text">Print Preview</span></a><br />
     <a id="side_view_pdf" class="button  ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button"><span class="ui-button-text">View PDF</span></a>
+    <a id="side_email_pdf" class="button  ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button"><span class="ui-button-text">Email Client</span></a
     <form action="pdf" method="POST" id="pdfcrowdform"><textarea id="pdfcrowd" name="pdfdata" style="display: none;"></textarea></form>
     </div>
 </div>
@@ -50,6 +51,33 @@
     </div>
     <ul></ul>
     <div id="atestform" class="modal_window">
+
+</div>
+<div id="email_pdf_modal">
+  <form action="emailpdf" method="POST" id="email_pdf_form">
+      <div class="ui-widget-header">
+        <h3 style="text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);float: left;">Email Client</h3>
+            <a class="button send_email_button" href="" style="float: right;">Send</a>
+            <a class="button close-button" href="" style="float: right;">Close</a>
+              
+        <div style="clear:both;"></div>
+    </div>
+  <label>Client Email</label>
+<input type="text" id="email_pdf_client" name="clientemail" value="This template has no assigned client" />
+<label>Subject</label>
+<input type="text" id="email_pdf_subject" name="emailsubject" value="New Proposal from {{my_company}}"/>
+<label>Message</label>
+<textarea id="email_pdf_message" style="width: 450px;" name="message">
+Hi {{name}},
+
+I am a prostitue from Uganda lets have sex. Email me at
+{{email}}
+
+Bye Baby
+</textarea>
+<a href="" class="view_variables">what variables can i use?</a>
+<textarea name="pdfdata" id="email_pdf_html" style="display: none;">boo</textarea>
+</form>
 
 </div>
 </div>
@@ -461,7 +489,8 @@
         events: {
             "click #side_add_section": "openModal",
             "click #side_print_preview": "printPreview",
-            "click #side_view_pdf": "openPdf"
+            "click #side_view_pdf": "openPdf",
+            "click #side_email_pdf": "emailPdf"
             
         },
         openModal: function(){
@@ -489,9 +518,54 @@
             css = $("#proposal_css").val();
             $("#pdfcrowd").text(css  + html);
             $("#pdfcrowdform").submit();   
+        },
+        emailPdf: function(){
+            proposal_view.emailmodal = new EmailPdfView;
+            $("#email_pdf_modal").dialog({
+                draggable: false,
+                resizable: false,
+                closeOnEscape: true,
+                modal: true, 
+                hide: 'drop',
+                width: "500px",
+                position: ["50%",100],
+                height: "500"
+            });
+            html = $(".proposal_preview_container").html();
+            css = $("#proposal_css").val();
+            $("#email_pdf_html").text(css  + html);
+            
         }
     });
-    
+    EmailPdfView =  Backbone.View.extend({
+        el: $("#email_pdf_modal"),
+        initialize: function(){
+        },
+        events: {
+            "click .send_email_button": "sendEmail"
+        },
+        sendEmail: function(){
+            $("#email_pdf_message").val( proposal_view.replaceVariables( $("#email_pdf_message").val() ) );
+            $("#email_pdf_subject").val( proposal_view.replaceVariables( $("#email_pdf_subject").val() ) );
+            alert("hey");
+            return false;
+        }
+    });
+    UserDetails = Backbone.Model.extend({
+        initialize: function(){
+            var that = this;
+            $.ajax({
+                url: "user",
+                dataType: "json",
+                success: function( data ) {
+                    that.set( data );
+                    console.log("user model");
+                    console.log(that);
+                    $(".proposal_details").html( _.template($("#proposal_details_template").html(), that) );
+                }
+            })   
+        }
+    });
     ProposalView = Backbone.View.extend({
     
         el: $("#proposal_form_container"),
@@ -518,11 +592,15 @@
                         dataType: "json",
                         success: function(data){
                             that.client = data;
-                            that.applyVariables( ".proposal_view" )
+                            console.log(data)
+                            if( typeof data.email != "undefined" ){
+                                $("#email_pdf_client").val(data.email);
+                            }
+                            that.applyVariables( ".proposal_view" );
                         }
                     })
                 }
-                
+                this.userdetails = new UserDetails;
                 this.sections = new SectionCollection;
                 
                 this.sections.bind("add", this.sections.addToPreview);
@@ -535,11 +613,12 @@
                 this.clients.getAllClients();
                 console.log(this.clients);
                 this.fees = new FeeCollection;
-            
+                
                 this.toc = new TOCView;
                 this.section_container = new SectionsContainer;
                 this.sidemenu = new SideMenu;
                 this.section_chooser = new SectionChooser;
+                
                 
             }, this)
 
@@ -561,10 +640,11 @@
                 $.when( $.ajax("data/" + id ) )
                 .then( function(data) {
                     proposal_view.client = data
+                    $("#email_pdf_client").val(data.email);
                     proposal_view.applyVariables( ".proposal_preview" );
                 }); //When statement end
             } else {
-                
+                    $("#email_pdf_client").val("No client set");
                     proposal_view.client = null;
                     proposal_view.applyVariables( ".proposal_preview" );
             }
@@ -577,6 +657,18 @@
             variables = _.extend(variables, proposal_details);
             variables = _.extend(variables, proposal_view.client);
             return variables;
+        },
+        replaceVariables: function( inputvalue ){
+              var variables = proposal_view.getVariables();
+              
+                    var matches = inputvalue.match(/\{\{([^}]+)\}\}/g);
+                    for (i in matches) {
+                        variable = matches[i].substr(2, matches[i].length-4);
+                        if( typeof variables[variable] != "undefined"){
+                            inputvalue = inputvalue.replace(matches[i],variables[variable])
+                        }
+                    }
+            return inputvalue;
         },
         applyVariables: function( element ) {
                 var variables = proposal_view.getVariables();
@@ -650,6 +742,7 @@
     proposal_view = new ProposalView;
   
     $( "#radio" ).buttonset();
+    $("#email_pdf_form .button").button();
     thechecked = "<%= typeof status != "undefined" && status != "" ? status : 'pending' %>";
     $("input[value='"+thechecked+"']").attr("checked", "checked")
     
@@ -733,17 +826,20 @@
                 <%= typeof description != "undefined" ? description : "" %>
         </div>
 </script>
+<script type="text/template" id="proposal_details_template">
+    <strong>Consultants (NQ) Pty LTD</strong><br />
+    Building Services Consulting Engnieers<br />
+    <br />
+    <strong>Ph</strong>: (07) 4030 1000<br /> 
+    <strong>Fx</strong>: (07) 4723 1780
+</script>
 <script type="text/template" id="proposal_preview">
             <div class="header">
-                <div class="details">
-                    <strong>Consultants (NQ) Pty LTD</strong><br />
-                    Building Services Consulting Engnieers<br />
-                    <br />
-                    <strong>Ph</strong>: (07) 4030 1000<br /> 
-                    <strong>Fx</strong>: (07) 4723 1780
+                <div class="details proposal_details">
+                    Loading
                 </div>
                 <div class="userlogo">
-                <img src="http://protosal.com/logo.jpg" />
+                <img src="/logo/<%= GLOBALS.username %>" />
                 </div>
                 
             </div>
