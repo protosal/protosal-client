@@ -68,11 +68,12 @@
                 "click .edit":  "editPage",
             },
             removeRow: function(event){
-                var row = $(event.currentTarget).parents("tr");
-                var id = row.attr("row_id");
-                row.remove();
-                listdata.get(id).destroy();
-                
+                if( confirm("Are you sure you want to delete this?") ){
+                    var row = $(event.currentTarget).parents("tr");
+                    var id = row.attr("row_id");
+                    row.remove();
+                    listdata.get(id).destroy();
+                }
             },
             editPage: function(event){
                 var row = $(event.currentTarget).parents("tr");
