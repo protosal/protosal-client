@@ -4,9 +4,9 @@
         .column { width: 400px; float: left; padding-bottom: 100px; }
         .wide { width: 550px;  }
         .portlet { margin: 0 1em 1em 0; }
-        .portlet-header { margin: 0.3em; padding-bottom: 4px; padding-left: 0.2em; }
+        .portlet-header { margin: 0.3em; padding-bottom: 0px; padding-left: 0.8em; }
         .portlet-header .ui-icon { float: right; }
-        .portlet-content { padding: 0.4em; }
+        .portlet-content { padding: 20px; padding-top: 7px; padding-bottom: 7px;}
         .ui-sortable-placeholder { border: 1px dotted black; visibility: visible !important; height: 50px !important; }
         .ui-sortable-placeholder * { visibility: hidden; }
         
@@ -35,34 +35,72 @@
 <div class="demo">
 <div class="column">
     <div class="portlet">
-        <div class="portlet-header">Drafts</div>
+        <div class="portlet-header">Latest from the Protosal Team</div>
+        <div class="portlet-content">19/1/2011 - <strong>Happy New year</strong> <br />
+        New features are flying in make sure you get to uservoice to request more.
+        </div>
+    </div>  
+    <style>
+    .pstatus {
+     text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);
+     color: #000;
+    float: left; padding: 4px; width: 54px;text-align: center;  
+    margin-right: 15px; 
+    }
+
+    .accepted {
+        background: #66cc00;
+        
+    }
+    .pending {
+        background: #ffcc33;
+    }
+    .declined {
+        background: #ff3333;
+    
+    </style>
+    <div class="portlet">
+        <div class="portlet-header">Pending</div>
         <div class="portlet-content">
         <ul id="drafts">
-        <li><div class="corners" style="float: left;background: #99cc33; padding: 4px; width: 50px;text-align: center;">
-            Sent
-            </div><p>Proposal #2 for Client #3</p></li>
-        <li><div class="corners" style="float: left;background: #ff3333; padding: 4px; width: 50px;text-align: center;">
-            Declined</div><p>Proposal #3 for Client #6</p></li>
+        
+        <li><div class="corners pstatus pending">
+            Pending</div><p><a href="#">Proposal #3</a> for <a href="#">Client #6</a></p></li>
+        <li><div class="corners pstatus pending">
+            Pending</div><p><a href="#">Proposal #3</a> for <a href="#">Client #6</a></p></li>
         </ul>
-            
+        <div style="clear: both;"></div>
         </div>
     </div>
     
     <div class="portlet">
         <div class="portlet-header">Recent Proposals</div>
-        <div class="portlet-content"></div>
+        <div class="portlet-content">
+               <ul id="drafts">
+        <li><div class="corners pstatus accepted">
+            Accepted
+            </div><p><a href="#">Proposal #2</a> for <a href="#">Client #3</a></p>
+                
+            </li>
+        <li><div class="corners pstatus pending">
+            Pending</div><p><a href="#">Proposal #3</a> for <a href="#">Client #6</a></p></li>
+        <li><div class="corners pstatus declined">
+            Declined</div><p><a href="#">Proposal #3</a> for <a href="#">Client #6</a></p></li>
+        <li><div class="corners pstatus accepted">
+            Accepted</div><p><a href="#">Proposal #3</a> for <a href="#">Client #6</a></p></li>
+        </ul>
+        
+        <div style="clear: both;"></div>
+        </div>
     </div>
-    <div class="portlet">
-        <div class="portlet-header">Company News</div>
-        <div class="portlet-content">19/1/2011 - Happy New year <br />This year we hope to bring in some new software.  Hopefully it will be beneficial</div>
-    </div>  
+
 </div>
 
 
 <div class="column wide">
     <div class="portlet">
-        <div class="portlet-header">Statistics</div>
-        <div class="portlet-content">
+        <div class="portlet-header">Monthly Accepted/Pending/Declined</div>
+        <div class="portlet-content" style="padding: 2px;">
         <div id="graph" style="width: 520px; height: 400px; margin: 0 auto"></div> 
         </div>
     </div>
@@ -96,12 +134,8 @@
                 "#ffcc33"     
             ],
             title: {
-                text: 'Monthly Approval Rates',
+                text: '',
                 x: -20 //center
-            },
-            subtitle: {
-                text: 'Source: Protosal.com',
-                x: -20
             },
             xAxis: {
                 categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
@@ -148,7 +182,8 @@
 }, 2000);
     $(function() {
     $( ".column" ).sortable({
-        connectWith: ".column"
+        connectWith: ".column",
+        disabled: true
     });
 
     $( ".portlet" ).addClass( "ui-widget ui-widget-content ui-helper-clearfix ui-corner-all" )
@@ -165,7 +200,7 @@
 
     $( ".column" ).disableSelection();
 
-
+    $(".corners").corner("3px");
 
 
     options = {
