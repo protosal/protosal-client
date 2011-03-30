@@ -663,8 +663,11 @@ Bye Baby
         getVariables : function(){
             var  variables = {};
             proposal_details = {
-                proposal_name: $("#preview_proposal_name").text()
-            }
+                proposal_name: $("#preview_proposal_name").text(),
+                companyname: proposal_view.userdetails.get("companyname"),
+                company_name: proposal_view.userdetails.get("companyshortdescription"),
+                company_name: proposal_view.userdetails.get("address"),
+            };
             variables = _.extend(variables, proposal_details);
             variables = _.extend(variables, proposal_view.client);
             return variables;

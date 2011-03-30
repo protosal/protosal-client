@@ -3,39 +3,86 @@
 <p class="pagedesc">Add clients here using the form below, something useful should be here but I can't think of anything right now as my brain is fried from looking at code all day</p>
 <form id="add_client_form" class="edit_client_form" enctype="multipart/form-data" method="post">
 
-        <div class="stack1of3" style="margin-left: 120px;">
-            <div class="stackContent">
+<div id="client_tabs">
+	<ul>
+		<li><a href="#client_contact_details">Contact Details</a></li>
+		<li><a href="#client_company_details">Company Details</a></li>
+	</ul>
+	<div id="client_contact_details">
+<div class="stack">
+            <div class="stack1of2">
+                <div class="stackContent">
+                    
+                    <label for="">
+                        Email</label>
+                    <input name="email" id="" type="text" value="<%= typeof email != "undefined" ? email : "" %>" />
+                    <label for="">
+                        First Name</label>
+                    <input name="firstname" id="" type="text" value="<%= typeof firstname != "undefined" ? firstname : ""  %>" />
+                    <label for="">
+                        Last Name</label>
+                    <input name="lastname" id="" type="text" value="<%= typeof lastname != "undefined" ? lastname : ""  %>" />
+                    <label for="">
+                        Phone</label>
+                    <input name="phone" id="" type="text" value="<%= typeof phone != "undefined" ? phone : ""  %>" />
+                    <label for="">
+                        Other Phone</label>
+                    <input name="otherphone" id="" type="text" value="<%= typeof otherphone != "undefined" ? otherphone : ""  %>" />
+
+                </div>
+            </div>
+            <div class="stack1of2">
+                <div class="stackContent">
+
+               <label for="">
+                    Comment</label>
+                <textarea id="" rows="4" name="comment" cols="30"><%= typeof comment != "undefined" ? comment : ""  %></textarea>
+                </div>
+            </div>
+        </div>
+	</div>
+	<div id="client_company_details">
+        <div class="stack">
+            <div class="stack1of2">
+                <div class="stackContent">
+                     <label for="">
+                    Company</label>
+                <input name="company" id="" type="text" value="<%= typeof company != "undefined" ? company : ""  %>" />
                 <label for="">
-                    Name</label>
-                <input name="name" id="" type="text" value="<%= typeof name != "undefined" ? name : ""  %>" />
+                    Address</label>
+                <input name="address" id="" type="text" value="<%= typeof address != "undefined" ? address : ""  %>" />
                 <label for="">
-                    Email</label>
-                <input name="email" id="" type="text" value="<%= typeof email != "undefined" ? email : "" %>" />
-                <label for="">
-                    Website</label>
-                <input name="website" id="" type="text" value="<%= typeof website != "undefined" ? website : ""  %>" />
-                <label for="">
-                    Street</label>
-                <input name="street" id="" type="text" value="<%= typeof street != "undefined" ? street : ""  %>" />
-                <label for="">
-                    Suburb</label>
-                <input name="suburb" id="" type="text" value="<%= typeof suburb != "undefined" ? suburb : ""  %>" />
+                    Address 2</label>
+                <input name="address2" id="" type="text" value="<%= typeof address2 != "undefined" ? address2 : ""  %>" />
                 <label for="">
                     City</label>
                 <input name="city" id="" type="text" value="<%= typeof city != "undefined" ? city : ""  %>" />
+                </div>
             </div>
-        </div>
-        <div class="stack1of3">
-            <div class="stackContent">
+            <div class="stack1of2">
+                <div class="stackContent">
+             
                 <label for="">
-                    Comment</label>
-                <textarea id="" rows="4" name="comment" cols="30"><%= typeof comment != "undefined" ? comment : ""  %></textarea>
+                    State</label>
+                <input name="state" id="" type="text" value="<%= typeof state != "undefined" ? state : ""  %>" />
+                <label for="">
+                    Zipcode</label>
+                <input name="zipcode" id="" type="text" value="<%= typeof zipcode != "undefined" ? zipcode : ""  %>" />
+                <label for="">
+                    Country</label>
+                <input name="country" id="" type="text" value="<%= typeof country != "undefined" ? country : ""  %>" />
+               
+                </div>
             </div>
-        </div>
+        </div>	
+	</div>
+</div>
 
     </form>
 
- 
+ <jst>
+ $("#client_tabs").tabs();
+ </jst>
 
 
 </script>
