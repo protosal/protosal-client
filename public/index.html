@@ -105,7 +105,8 @@
                                         errorMessages = {
                                             "already registered": "This username has already been taken",
                                             "incorrect credentials": "Invalid username/password, try again or reset your password",
-                                            "not activated": "You have not activated your account yet, please check your email inbox"
+                                            "not activated": "You have not activated your account yet, please check your email inbox",
+                                            "user not found": "No user exist with this email address"
                                         };
                                         jqXHR.error (function(response) {
                                             var reason = $.parseJSON(response.responseText).reason;
