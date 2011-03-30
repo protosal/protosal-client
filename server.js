@@ -433,16 +433,22 @@ app.get('/register/:activation_key', function(req, res) {
     });
 });
 
-app.get('/proposal/:status/:limit?/:startdate?/:enddate?', function(req, res) {
+app.get('/proposal/:status?/:limit?/:startdate?/:enddate?', function(req, res) {
     var db = new(cradle.Connection)().database('app');
     var key = {
-        startkey: [req.session.username, req.params.status],
-        endkey: [req.session.username, req.params.status, {}],
+        startkey: [req.session.username],
+        endkey: [req.session.username, {}],
     };
 
     /* If a limit is present and not set to all, add it to the key. */
     if( req.params.limit && req.params.limit != 'all' )
         key.limit = req.params.limit;
+    
+    if( req.params.status ) {
+        key.startkey.push( req.params.status );
+        key.endkey.pop();
+        key.endkey.push( req.params.status, {} );
+    }
 
     if( req.params.startdate && req.params.enddate) {
         key.startkey[2] = parseInt(req.params.startdate);
