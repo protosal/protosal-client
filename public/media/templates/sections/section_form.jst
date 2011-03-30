@@ -357,6 +357,8 @@
                 var id = $(this).parents("li").attr("id")
                 $(this).parents("li").remove();
                  section_backbone.removeFee(id);
+                 console.log(section_backbone.fees.get( id ));
+                 section_backbone.fees.remove( section_backbone.fees.get( id ) );
                 // $(this).parents("li").remove();
             }
             return false;
@@ -364,6 +366,19 @@
         });
         
         $(".edit_fee").die("click");
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
         $(".edit_fee").live("click", function() {
             var id = $(this).parents("li").attr("id");
             section_backbone.feemodal(id);
