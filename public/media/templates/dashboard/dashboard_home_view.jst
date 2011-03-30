@@ -212,7 +212,7 @@
     }
     $.ajax({
         dataType: "json",
-        url: "proposal/pending/10",
+        url: "proposal/all/pending",
         success: function(data){
             if( data.length > 0 ){
                 $(".pending_container").html( _.template( $("#recent_container_template").html(), { proposals: data} ) );
