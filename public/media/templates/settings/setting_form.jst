@@ -9,10 +9,12 @@
     
     
     <br />
-<p class="pagedesc">Change your settings here</p>
+<p class="pagedesc"><strong>Tip: </strong>Your uploaded logo will apear on all your proposals</p>
+<div style="width: 700px; margin: auto;">
     <div class="stack">
         <div class="stack1of2">
             <div class="stackContent">
+                        <h3>User Details</h3>
                                       <label for="">
                             Company Name
                         </label>
@@ -23,8 +25,6 @@
                         </label>
                         <input name="companyshortdescription" id="" type="text" value="<%= typeof companyshortdescription != "undefined" ? companyshortdescription : "" %>" />
                         
-                        <br />
-                        <br />
                         <label for="">
                             Address
                         </label>
@@ -41,22 +41,14 @@
         </div>
         <div class="stack1of2">
             <div class="stackContent">
-                <label for="">
-                                    Logo
-                                </label>
-                            <div class="stack">
-                                
-                                <div class="stack1of2">
-                                    <div class="stackContent">
-                                    <img style="width: 120px;" src="/logo/<%= GLOBALS.username %>" />
+                           <h3>Upload a logo</h3>
+                            <div style="border: 1px dashed #ccc; width: 230px; height: 180px; overflow: hidden;">
+                                    <img src="/logo/<%= GLOBALS.username %>" />
                                     </div>
-                                </div>
-                                <div class="stack1of2">
-                                    <div class="stackContent">
+                          <br />
                                     <p>Image: <input type="file" name="image" /></p>
-                                    </div>
-                                </div>
-                            </div>
+                                  
+                          
 
                             <br />
                             <br />
@@ -65,7 +57,7 @@
                             <input type="password" name="old_password" />
                             <label>New Password</label>
                             <input type="password" name="new_password" />
-                            <label>Confirm Password</label>
+                            <label style="width: 200px;">Confirm Password</label>
                             <input type="password" name="confirm_password" />
                            
             </div>
@@ -89,6 +81,7 @@
         </form>
        
     </div>
+</div>
 <jst>
     
     $('.user_save').unbind('click');
