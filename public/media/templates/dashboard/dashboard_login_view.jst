@@ -92,7 +92,7 @@
                 success: function(data){
                     GLOBALS.session = true;
                     
-                    GLOBALS.username = "#username"; // never use for transactions
+                    GLOBALS.username = $("#username").val(); // never use for transactions
                     redirect( "dashboard/home" );
                     console.log("whoop round 2");
                     console.log(data);

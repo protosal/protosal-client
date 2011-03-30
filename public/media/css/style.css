@@ -377,6 +377,7 @@ form em {
 }
 form label {
   width: 120px; /* Width of labels */
+  color: #444;
 }
 form fieldset fieldset label {
   margin-left: 123px; /* Width plus 3 (html space) */
@@ -391,6 +392,7 @@ padding: 40px;
 }
 form input[type=text],input[type=password], textarea, .dataTables_filter input { 
 	padding: 9px;
+	padding-left: 15px;
 	border: solid 1px #E5E5E5;
 	outline: 0;
 	font: normal 14px/100% Helvetica, Tahoma, sans-serif;
@@ -866,3 +868,8 @@ display: block;
 }
 
 
+#client_tabs {
+margin: auto;
+	width: 800px;
+	
+}
