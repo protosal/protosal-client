@@ -227,9 +227,13 @@
         dataType: "json",
         url: "proposal",
         success: function(data){
-            $(".recent_container").html( _.template( $("#recent_container_template").html(), { proposals: data} ) );
-            
-    $(".corners").corner("3px");
+                        if( data.length > 0 ){
+                $(".recent_container").html( _.template( $("#recent_container_template").html(), { proposals: data} ) );
+                
+                 $(".corners").corner("3px");
+            } else {
+                $(".recent_container").html( "You have no recent proposals. ")
+            }
         }
     })
     $("#pageheader").html( _.template( $("#page_header_template").jsthtml(), options ) );
