@@ -353,11 +353,14 @@
         
         $(".delete_fee").die("click");
         $(".delete_fee").live("click", function() {
-            var id = $(this).parents("li").attr("id")
-            $(this).parents("li").remove();
-             section_backbone.removeFee(id);
-            // $(this).parents("li").remove();
+            if( confirm("Are you sure you want to delete this?") ){
+                var id = $(this).parents("li").attr("id")
+                $(this).parents("li").remove();
+                 section_backbone.removeFee(id);
+                // $(this).parents("li").remove();
+            }
             return false;
+            
         });
         
         $(".edit_fee").die("click");
