@@ -9,7 +9,7 @@ var async = require('async');
 var uuid = require('node-uuid')
 var postmark = require('postmark')('473b864e-b165-473c-9435-68981a3bbeef');
 
-var _defaultSalt = "1";
+exports.defaultSalt = "1";
 
 function get_master_auth() {
     return { username: 'ryth', password: 'abCD--12' };
@@ -77,8 +77,8 @@ function register(req, res) {
             var newUser = {
                 _id: docid,
                 name: req.body.email,
-                password_sha: Hash.hex_sha1(req.body.password + _defaultSalt),
-                salt: _defaultSalt,
+                password_sha: Hash.hex_sha1(req.body.password + exports.defaultSalt),
+                salt: exports.defaultSalt,
                 type: "user",
                 roles: []
             }
