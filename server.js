@@ -433,7 +433,7 @@ app.get('/register/:activation_key', function(req, res) {
     });
 });
 
-app.get('/proposal/:status?/:limit?/:startdate?/:enddate?', function(req, res) {
+app.get('/proposal/:limit?/:status?/:startdate?/:enddate?', function(req, res) {
     var db = new(cradle.Connection)().database('app');
     var key = {
         startkey: [req.session.username],
