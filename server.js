@@ -85,9 +85,9 @@ app.error(function(err, req, res, next){
 
 function couch_response(err, doc, res) {
     if( err ) {
-        throw new ServerError( err );
+        res.send( err, 500 );
     } else {
-        res.send(doc);
+        res.send( doc );
     }
 }
 
