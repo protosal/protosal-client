@@ -780,7 +780,7 @@ Bye Baby
                 selected = "selected";
             }
         %>
-        <option value="<%= clientmodel._id %>" <%= selected %>><%= clientmodel.name %></option>
+        <option value="<%= clientmodel._id %>" <%= selected %>><%= clientmodel.firstname %> <%= clientmodel.lastname %> <%=  clientmodel.company != '' ? " - " + clientmodel.company : "" %></option>
         <% });%>
     </select>
 </script>

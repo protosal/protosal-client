@@ -61,21 +61,14 @@
     </style>
     <div class="portlet">
         <div class="portlet-header">Pending</div>
-        <div class="portlet-content">
-        <ul id="drafts">
-        
-        <li><div class="corners pstatus pending">
-            Pending</div><p><a href="#">Proposal #3</a> for <a href="#">Client #6</a></p></li>
-        <li><div class="corners pstatus pending">
-            Pending</div><p><a href="#">Proposal #3</a> for <a href="#">Client #6</a></p></li>
-        </ul>
-        <div style="clear: both;"></div>
+        <div class="portlet-content pending_container">
+
         </div>
     </div>
     
     <div class="portlet">
         <div class="portlet-header">Recent Proposals</div>
-        <div class="portlet-content">
+        <div class="portlet-content recent_container">
                <ul id="drafts">
         <li><div class="corners pstatus accepted">
             Accepted
@@ -217,8 +210,51 @@
         ]
         
     }
-    
+    $.ajax({
+        dataType: "json",
+        url: "proposal/pending/10",
+        success: function(data){
+            if( data.length > 0 ){
+                $(".pending_container").html( _.template( $("#recent_container_template").html(), { proposals: data} ) );
+                
+                 $(".corners").corner("3px");
+            } else {
+                $(".pending_container").html( "You have no pending proposals. ")
+            }
+        }
+    })
+    $.ajax({
+        dataType: "json",
+        url: "proposal",
+        success: function(data){
+            $(".recent_container").html( _.template( $("#recent_container_template").html(), { proposals: data} ) );
+            
+    $(".corners").corner("3px");
+        }
+    })
     $("#pageheader").html( _.template( $("#page_header_template").jsthtml(), options ) );
 });
 </jst>
+</script>
+<script type="text/template" id="pending_container_template">
+        <ul id="drafts">
+        <% _.each( proposals, function( proposal ){ %>
+        
+        
+        <li><div class="corners pstatus pending">
+            Pending</div><p><a href="#/proposal/edit/<%= proposal.value._id %>"><%= proposal.value.name %></a> for <a href="#">Client #6</a></p></li>
+        <% }); %>
+        </ul>
+        <div style="clear: both;"></div>
+</script>
+<script type="text/template" id="recent_container_template">
+        <ul id="drafts">
+        <% _.each( proposals, function( proposal ){ %>
+        
+        
+        <li><div class="corners pstatus <%= proposal.key[1] %>">
+            <%= _.capitalize(proposal.key[1]) %></div><p><a href="#/proposal/edit/<%= proposal.value._id %>"><%= proposal.value.name != "" ? proposal.value.name : "Un-named Proposal" %></a> for <a href="#">Client #6</a></p></li>
+        <% }); %>
+        </ul>
+        <div style="clear: both;"></div>
 </script>
