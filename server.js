@@ -433,6 +433,27 @@ app.get('/register/:activation_key', function(req, res) {
     });
 });
 
+app.get('/proposal/:status/:limit?/:startdate?/:enddate?', function(req, res) {
+    var db = new(cradle.Connection)().database('app');
+    var key = {
+        startkey: [req.session.username, req.params.status],
+        endkey: [req.session.username, req.params.status, {}],
+    };
+
+    /* If a limit is present and not set to all, add it to the key. */
+    if( req.params.limit && req.params.limit != 'all' )
+        key.limit = req.params.limit;
+
+    if( req.params.startdate && req.params.enddate) {
+        key.startkey[2] = parseInt(req.params.startdate);
+        key.endkey[2] = parseInt(req.params.enddate);
+    }
+
+    db.view('proposal/status_statistics', key, function(err, doc) {
+        couch_response(err, doc, res);
+    });
+});
+
 app.get('/:list_type/:view', function(req, res) {
     var db = new(cradle.Connection)().database('app');
 
