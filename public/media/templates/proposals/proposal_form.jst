@@ -572,7 +572,7 @@ Bye Baby
                     that.set( data );
                     console.log("user model");
                     console.log(that);
-                    $(".proposal_details").html( _.template($("#proposal_details_template").html(), that) );
+                    $(".proposal_details").html( _.template($("#proposal_details_template").html(), { details: that }) );
                 }
             })   
         }
@@ -664,9 +664,10 @@ Bye Baby
             var  variables = {};
             proposal_details = {
                 proposal_name: $("#preview_proposal_name").text(),
-                companyname: proposal_view.userdetails.get("companyname"),
-                company_name: proposal_view.userdetails.get("companyshortdescription"),
-                company_name: proposal_view.userdetails.get("address"),
+                company_name: proposal_view.userdetails.get("companyname"),
+                company_shortdescription: proposal_view.userdetails.get("companyshortdescription"),
+                company_phone: proposal_view.userdetails.get("phone"),
+                company_fax: proposal_view.userdetails.get("fax")
             };
             variables = _.extend(variables, proposal_details);
             variables = _.extend(variables, proposal_view.client);
@@ -841,11 +842,11 @@ Bye Baby
         </div>
 </script>
 <script type="text/template" id="proposal_details_template">
-    <strong>Consultants (NQ) Pty LTD</strong><br />
-    Building Services Consulting Engnieers<br />
+    <strong><%= details.get("companyname") %></strong><br />
+    <%= details.get("companyshortdescription") %><br />
     <br />
-    <strong>Ph</strong>: (07) 4030 1000<br /> 
-    <strong>Fx</strong>: (07) 4723 1780
+    <strong>Ph</strong>: <%= details.get("phone") %><br /> 
+    <strong>Fx</strong>: <%= details.get("fax") %>
 </script>
 <script type="text/template" id="proposal_preview">
             <div class="header">
