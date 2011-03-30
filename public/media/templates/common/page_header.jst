@@ -23,25 +23,48 @@
     <div class="stack">
         <div class="stack1of3">
             <div class="stackContent">
-                <p>Template variables can be used anywhere in your proposal such as the section description, section header or fee name.  They can be access by puting in the template editor {{variable}} where it matches up.  I gave up trying to word this properly so Ryans job instead.</p>
+                <p style="padding: 20px;">Template variables can be used anywhere in your proposal such as the section description, section header or fee name.  They can be accessed by putting {{}} around what ever variable you wish to access e.g. {{client_name}}.  </p>
             </div>
         </div>
         <div class="stack1of3">
-            <div class="stackContent">
-               Client Receiptant
+            <div class="stackContent" style="padding: 20px;">
+               <h3>Client Variables</h3>
             <ul>
-            <li>{{name}} - Name of the client</li>
-            <li>{{email}} - Email of the client</li>
+            <li><strong>{{client_email}}</strong> - Email of the client</li>
+            <li><strong>{{client_firstname}}</strong> - First name of the client</li>
+            <li><strong>{{client_lastname}}</strong> - Last name of the client</li>
+            <li><strong>{{client_phone}}</strong> - Client phone number</li>
+            <li><strong>{{client_otherphone}}</strong> - Client alt phone number</li>
+            <li><strong>{{client_company}}</strong> - Client company</li>
+            <li><strong>{{client_address}}</strong> - Client company address</li>
+            <li><strong>{{client_address2}}</strong> - Client company alt address</li>
+            <li><strong>{{client_city}}</strong> - Client company city</li>
+            <li><strong>{{client_state}}</strong> - Client company state</li>
+            <li><strong>{{client_zipcode}}</strong> - Client company zip code</li>
+            <li><strong>{{client_country}}</strong> - Email of the client</li>
             </ul>
+            
+            
             </div>
         </div>
         <div class="stack1of3">
-            <div class="stackContent">
-            Lol
+            <div class="stackContent" style="padding: 20px;">
+            <h3>Proposal Variables</h3>
+            <ul>
+            <li><strong>{{proposal_name}}</strong> - The name of current proposal</li>
+            
+            </ul>
+            <h3>My Variables</h3>
+            <ul>
+            <li><strong>{{my_firstname}}</strong> - Your first name</li>
+            <li><strong>{{my_lastname}}</strong> - Your last name</li>
+            <li><strong>{{my_address}}</strong> - Your address</li>
+            
+            </ul>
             </div>
         </div>
     </div>
     <jst>
-        $(".variables_close").button();
+        
     </jst>
 </script>
