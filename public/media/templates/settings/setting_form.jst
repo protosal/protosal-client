@@ -10,8 +10,8 @@
     
     <br />
 <p class="pagedesc">Change your settings here</p>
-
-        <div class="stack1of3" style="margin-left: 120px;">
+    <div class="stack">
+        <div class="stack1of2">
             <div class="stackContent">
                                       <label for="">
                             Company Name
@@ -39,7 +39,7 @@
                         <input name="city" id="" type="text" value="<%= typeof city != "undefined" ? city : "" %>" />
             </div>
         </div>
-        <div class="stack1of3">
+        <div class="stack1of2">
             <div class="stackContent">
                 <label for="">
                                     Logo
@@ -57,10 +57,20 @@
                                     </div>
                                 </div>
                             </div>
-                          
+
+                            <br />
+                            <br />
+                            <h3>Change Password</h3> 
+                            <label>Old Password</label>
+                            <input type="password" name="old_password" />
+                            <label>New Password</label>
+                            <input type="password" name="new_password" />
+                            <label>Confirm Password</label>
+                            <input type="password" name="confirm_password" />
                            
             </div>
         </div>
+    </div>
 
    
     

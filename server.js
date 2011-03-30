@@ -12,6 +12,7 @@ var fs = require('fs');
 var sys = require('sys');
 var pdfcrowd = require('./node-pdfcrowd');
 var postmark = require('postmark')('473b864e-b165-473c-9435-68981a3bbeef');
+var Hash = require('./sha1');
 
 var app = express.createServer(
   // connect-form (http://github.com/visionmedia/connect-form)
@@ -487,6 +488,83 @@ app.put('/data/:id', function(req, res) {
     
 });
 
+function change_password(
+        username,
+        old_password,
+        new_password,
+        confirm_password,
+        parent_callback) {
+
+    var docid = 'org.couchdb.user:' + username;
+
+    var user_db = new(cradle.Connection)().database('_users');
+    
+    async.waterfall([
+        function( callback ) {
+            /* If all password fields have been provided. */
+
+            if( old_password && new_password && confirm_password ) {
+                if( new_password == confirm_password ) {
+                    return callback( null );
+                } else {
+                    return callback( {"error": "password_mistyped"} );
+                }
+            } else if( old_password || new_password || confirm_password ) {
+                /* If we get here, it means a user has filled out some,
+                 * but not all password fields. */
+                return callback( {"error": "missing_password_fields"} );
+            } else {
+                /* Otherwise, they don't want to change their password.
+                 * In that case, carry on processing the parent callback chain. 
+                 */
+                return parent_callback( null );
+            }
+        },
+        function( callback ) {
+            /* Retreive the user document. */
+
+            user_db.get(docid, function(err, doc) {
+                if( err ) {
+                    callback( err );
+                } else {
+                    callback( null, doc );
+                }
+            });
+        },
+        function( doc, callback ) {
+            /* If the old password and the password in the database match. */
+
+            if( doc.password_sha == Hash.hex_sha1(old_password + doc.salt) ) {
+                callback( null, doc ); 
+            } else {
+                callback( {error: "old_password_incorrect"} );
+            }
+        },
+        function( doc, callback ) {
+            /* Save the new password. */
+
+            var user_doc = {
+                password_sha: Hash.hex_sha1(new_password + doc.salt)
+            };
+
+            user_db.merge(docid, user_doc, function(err, doc) {
+                if( err ) {
+                    callback( err );
+                } else {
+                    callback( null );
+                }
+            });
+        }
+    ],
+    function( err ) {
+        if( err ) {
+            parent_callback( err );
+        } else {
+            parent_callback( null );
+        }
+    });
+}
+
 app.post('/user', function(req, res) {
     var con = new(cradle.Connection)();
     var db = con.database('app');
@@ -494,8 +572,18 @@ app.post('/user', function(req, res) {
 
     req.form.complete(function(err, fields, files) {
         if( err ) throw new ServerError( err );
-        
+ 
         async.waterfall([
+            function( callback ) {
+                /* Change password if the user specifies. */
+                change_password(
+                    req.session.username,
+                    fields.old_password,
+                    fields.new_password,
+                    fields.confirm_password,
+                    callback
+                );
+            },
             function( callback ) {
                 /* Merge the uploaded form fields with the user profile doc. */
 
