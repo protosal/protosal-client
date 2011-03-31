@@ -836,6 +836,7 @@ display: block;
 /* Rules for preview proposal */
 .delete_section {
 	color: #fff;
+	display: none;
 }
 
 
