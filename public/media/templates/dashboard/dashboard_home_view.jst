@@ -69,21 +69,7 @@
     <div class="portlet">
         <div class="portlet-header">Recent Proposals</div>
         <div class="portlet-content recent_container">
-               <ul id="drafts">
-        <li><div class="corners pstatus accepted">
-            Accepted
-            </div><p><a href="#">Proposal #2</a> for <a href="#">Client #3</a></p>
-                
-            </li>
-        <li><div class="corners pstatus pending">
-            Pending</div><p><a href="#">Proposal #3</a> for <a href="#">Client #6</a></p></li>
-        <li><div class="corners pstatus declined">
-            Declined</div><p><a href="#">Proposal #3</a> for <a href="#">Client #6</a></p></li>
-        <li><div class="corners pstatus accepted">
-            Accepted</div><p><a href="#">Proposal #3</a> for <a href="#">Client #6</a></p></li>
-        </ul>
-        
-        <div style="clear: both;"></div>
+            
         </div>
     </div>
 
@@ -229,10 +215,11 @@
         success: function(data){
                         if( data.length > 0 ){
                 $(".recent_container").html( _.template( $("#recent_container_template").html(), { proposals: data} ) );
-                
+              
                  $(".corners").corner("3px");
             } else {
                 $(".recent_container").html( "You have no recent proposals. ");
+                
             }
         }
     })
@@ -257,7 +244,7 @@
         
         
         <li><div class="corners pstatus <%= proposal.key[1] %>">
-            <%= _.capitalize(proposal.key[1]) %></div><p><a href="#/proposal/edit/<%= proposal.value._id %>"><%= proposal.value.name != "" ? proposal.value.name : "Un-named Proposal" %></a> for <a href="#">Client #6</a></p></li>
+            <%= _.capitalize(   proposal.key[1]) %></div><p><a href="#/proposal/edit/<%= proposal.value._id %>"><%= proposal.value.name != "" ? proposal.value.name : "Un-named Proposal" %></a></p></li>
         <% }); %>
         </ul>
         <div style="clear: both;"></div>

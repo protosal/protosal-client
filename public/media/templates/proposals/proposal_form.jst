@@ -732,6 +732,7 @@ Bye Baby
                 formdata = $(".edit_proposal_form").serializeObject();
                 // Add the type of form to the form object
                 formdata.type = "proposal";
+                formdata.status = "pending";
                 formdata.template = true;
                 return $.ajax( "data", {
                         dataType: "json",
