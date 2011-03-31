@@ -75,7 +75,7 @@
             
             //Create a section id at initialization so you can attach relationships straight away
             function aaaaaa(){
-                if( GLOBALS.route_id == "" ){
+                if( GLOBALS.route_id == "" || GLOBALS.controller != "<%= controller %>"){
                     formdata = $(".edit_section_form").serializeObject();
                     formdata.type = "section";
                        return $.ajax( "data", {
@@ -103,6 +103,7 @@
             }
             $.when( aaaaaa() ).then( function(resp){
                 that.section_id = resp.id;
+                alert(resp.id)
                 section_backbone.fees = new Fees( null, { view: section_backbone });
                 console.log("lets get all the section fees that we have already added");
                     $.ajax({
