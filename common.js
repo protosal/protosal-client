@@ -120,7 +120,7 @@ function register(req, res) {
                     'From': 'admin@protosal.com', 
                     'To': req.body.email, 
                     'Subject': 'Activate Your Account', 
-                    'HtmlBody': '<b>Click here: </b><a href='' + activation_url + ''>' + activation_url + '</a>'
+                    'HtmlBody': '<b>Click here: </b><a href="' + activation_url + '">' + activation_url + '</a>'
                 });
             } catch(err) {
                 console.log('Error: ');
