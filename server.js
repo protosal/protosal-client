@@ -446,29 +446,42 @@ app.get('/register/:activation_key', function(req, res) {
     });
 });
 
+app.get('/proposal/stats', function(req, res) {
+    var db = new(cradle.Connection)().database('app');
+    var options = {
+        startkey: [req.session.username],
+        endkey: [req.session.username, {}],
+        group: true
+    };
+         
+    db.view('proposal/status_count', options, function(err, doc) {
+        couch_response(err, doc, res);
+    });
+});
+
 app.get('/proposal/:limit?/:status?/:startdate?/:enddate?', function(req, res) {
     var db = new(cradle.Connection)().database('app');
-    var key = {
+    var options = {
         startkey: [req.session.username],
         endkey: [req.session.username, {}],
     };
 
     /* If a limit is present and not set to all, add it to the key. */
     if( req.params.limit && req.params.limit != 'all' )
-        key.limit = req.params.limit;
+        options.limit = req.params.limit;
     
     if( req.params.status ) {
-        key.startkey.push( req.params.status );
-        key.endkey.pop();
-        key.endkey.push( req.params.status, {} );
+        options.startkey.push( req.params.status );
+        options.endkey.pop();
+        options.endkey.push( req.params.status, {} );
     }
 
     if( req.params.startdate && req.params.enddate) {
-        key.startkey[2] = parseInt(req.params.startdate);
-        key.endkey[2] = parseInt(req.params.enddate);
+        options.startkey[2] = parseInt(req.params.startdate);
+        options.endkey[2] = parseInt(req.params.enddate);
     }
 
-    db.view('proposal/status_statistics', key, function(err, doc) {
+    db.view('proposal/status_statistics', options, function(err, doc) {
         couch_response(err, doc, res);
     });
 });
