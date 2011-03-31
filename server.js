@@ -413,7 +413,8 @@ app.get('/logo/:user_id', function(req, res) {
             }
         }
 
-        res.send({}, 404);
+        /* If we didn't find a logo, return a default logo. */
+        res.sendfile('public/media/images/default_logo.png');
     });
 });
 
