@@ -244,7 +244,7 @@
         
         
         <li><div class="corners pstatus <%= proposal.key[1] %>">
-            <%= _.capitalize(   proposal.key[1]) %></div><p><a href="#/proposal/edit/<%= proposal.value._id %>"><%= proposal.value.name != "" ? proposal.value.name : "Un-named Proposal" %></a><% if( proposal.value.client_id != "" ){ %> - <a style="color: #ccc;" href="#/client/edit/<%= proposal.value.client_id %>">View Client</a><% }; %></p></li>
+            <%= _.capitalize(   proposal.key[1]) %></div><p><a href="#/proposal/edit/<%= proposal.value._id %>"><%= proposal.value.name != "" ? proposal.value.name : "Un-named Proposal" %></a><% if( typeof proposal.value.client_id != "undefined" && proposal.value.client_id != "" ){ %> - <a style="color: #ccc;" href="#/client/edit/<%= proposal.value.client_id %>">View Client</a><% }; %></p></li>
         <% }); %>
         </ul>
         <div style="clear: both;"></div>
