@@ -347,21 +347,32 @@ app.get('/data/:id', function(req, res) {
 });
 
 app.get('/related2/:view/:id', function( req, res ){
+    /* This route returns all child documents in a relationship.
+     *
+     * It takes a relationship view expected to be named
+     * "parent_child", where both parent and child are
+     * valid views. For example "section_fee", where both
+     * "section" and "fee" are valid views.
+     */
+
     var db = new(cradle.Connection)().database('app');
 
     var child = req.params.view.split('_')[1];
 
+    /* Get all relationship documents. */
     db.view(req.params.view + '/list_by_parent',
         { key: req.params.id },
         function(err, doc) {
             if( err ) {
                 throw new ServerError( err );
             } else {
+                /* Extract all child ids from the returned relationship documents. */
                 var keys = _.map(doc.rows, function( row ) {
                     var property = child + '_id';
                     return row.value[property];
                 });    
 
+                /* Return all corresponding child documents. */
                 db.view(child + '/list_by_id', {'keys': keys}, function(err, doc) {
                     couch_response(err, doc, res);
                 });
@@ -402,7 +413,8 @@ app.get('/logo/:user_id', function(req, res) {
             }
         }
 
-        res.send({}, 404);
+        /* If we didn't find a logo, return a default logo. */
+        res.sendfile('public/media/images/default_logo.png');
     });
 });
 
