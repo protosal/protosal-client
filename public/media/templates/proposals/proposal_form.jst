@@ -671,7 +671,11 @@ Bye Baby
                 company_fax: proposal_view.userdetails.get("fax")
             };
             variables = _.extend(variables, proposal_details);
-            variables = _.extend(variables, proposal_view.client);
+            client_variables = {};
+            _.each( proposal_view.client, function( value, key ) {
+                client_variables["client_" + key] = value;
+            });
+            variables = _.extend(variables, client_variables);
             return variables;
         },
         replaceVariables: function( inputvalue ){

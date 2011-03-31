@@ -75,7 +75,7 @@
             
             //Create a section id at initialization so you can attach relationships straight away
             function aaaaaa(){
-                if( GLOBALS.route_id == "" || GLOBALS.controller != "<%= controller %>"){
+                if( GLOBALS.route_id == "" && GLOBALS.controller != "<%= controller %>"){
                     formdata = $(".edit_section_form").serializeObject();
                     formdata.type = "section";
                        return $.ajax( "data", {
@@ -103,7 +103,6 @@
             }
             $.when( aaaaaa() ).then( function(resp){
                 that.section_id = resp.id;
-                alert(resp.id)
                 section_backbone.fees = new Fees( null, { view: section_backbone });
                 console.log("lets get all the section fees that we have already added");
                     $.ajax({
@@ -122,6 +121,7 @@
                                             "name": model.name,
                                             "price": model.price,
                                             "rev": model._rev,
+                                            "preloaded": true
                                         } );
                                     });
                                     
@@ -257,18 +257,31 @@
                 $( "#sortablefees" ).sortable({
                     update: section_backbone.updateFeeValues
                 });
-                section_backbone.updateFeeValues();
+                
+                    section_backbone.updateFeeValues( model );
+                
             },
             updateFeeValues: function(event, ui){
-                        
+                       
                 sections = $("#sortablefees").sortable('toArray').toString();
                 console.log(sections);
                 $("#feelist").val( sections );
-                $.ajax({
-                    type: "PUT",
-                    url: "data/" + section_backbone.section_id,
-                    data: "feelist=" + $("#feelist").val()
-                })
+                if( typeof event != "undefined" ){
+                if( event.get("preloaded") != true ){
+                    $.ajax({
+                        type: "PUT",
+                        url: "data/" + section_backbone.section_id,
+                        data: "feelist=" + $("#feelist").val()
+                    })
+                    event.set({ "preloaded": false });
+                }
+                } else {
+                      $.ajax({
+                        type: "PUT",
+                        url: "data/" + section_backbone.section_id,
+                        data: "feelist=" + $("#feelist").val()
+                    })
+                }
             },
             removeFee: function ( id ) {
                 
@@ -285,7 +298,7 @@
                             
                             console.log(data);
                             section_backbone.updateFeeValues();
-                        
+                                
                         }
                     })
                  
