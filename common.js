@@ -9,7 +9,7 @@ var async = require('async');
 var uuid = require('node-uuid')
 var postmark = require('postmark')('473b864e-b165-473c-9435-68981a3bbeef');
 
-exports.defaultSalt = "1";
+exports.defaultSalt = '1';
 
 function get_master_auth() {
     return { username: 'ryth', password: 'abCD--12' };
@@ -17,8 +17,8 @@ function get_master_auth() {
 
 function auth_error(res, reason) {
     if( reason == null )
-        reason = "incorrect user";
-    res.send( {error: "unauthorized", reason: reason}, 401 ); 
+        reason = 'incorrect user';
+    res.send( {error: 'unauthorized', reason: reason}, 401 ); 
 }
 
 exports.auth_error = auth_error;
@@ -42,8 +42,8 @@ function couchdb_error(err, callback) {
 exports.couchdb_error = couchdb_error;
 
 function register(req, res) {
-    console.log("we are registering.");
-    var docid = "org.couchdb.user:" + req.body.email;
+    console.log('we are registering.');
+    var docid = 'org.couchdb.user:' + req.body.email;
 
     var con = new(cradle.Connection)();
     var db = con.database('_users');
@@ -55,14 +55,14 @@ function register(req, res) {
                 if( err ) return couchdb_error(err, callback);
 
                 /* If the etag is undefined, this user has not yet registered. */
-                if( typeof doc.etag == "undefined" ) {
+                if( typeof doc.etag == 'undefined' ) {
                     return callback(null);
                 } else {
                     /* We are dealing with an already registered user. */
                     var err_doc = {
                         body: {
-                            error: "registration_failed",
-                            reason: "already registered",
+                            error: 'registration_failed',
+                            reason: 'already registered',
                         },
                         statusCode: 400
                     };
@@ -79,7 +79,7 @@ function register(req, res) {
                 name: req.body.email,
                 password_sha: Hash.hex_sha1(req.body.password + exports.defaultSalt),
                 salt: exports.defaultSalt,
-                type: "user",
+                type: 'user',
                 roles: []
             }
 
@@ -113,22 +113,22 @@ function register(req, res) {
         function( activation_key, callback ) {
             /* Send the registration email. */
 
-            var activation_url = "http://app.protosal.com:3000/register/" + activation_key;
+            var activation_url = 'http://app.protosal.com:3000/register/' + activation_key;
 
             try {
                 postmark.send({
-                    "From": "admin@protosal.com", 
-                    "To": req.body.email, 
-                    "Subject": "Activate Your Account", 
-                    "HtmlBody": "<b>Click here: </b><a href='" + activation_url + "'>" + activation_url + "</a>"
+                    'From': 'admin@protosal.com', 
+                    'To': req.body.email, 
+                    'Subject': 'Activate Your Account', 
+                    'HtmlBody': '<b>Click here: </b><a href='' + activation_url + ''>' + activation_url + '</a>'
                 });
             } catch(err) {
-                console.log("Error: ");
+                console.log('Error: ');
                 console.log(err); 
 
                 var err_obj = {
                     body: {
-                        error: "registration_email_sending_failed",
+                        error: 'registration_email_sending_failed',
                         reson: err.message
                     },
                     statusCode: 500
@@ -152,7 +152,7 @@ function register(req, res) {
 }
 
 function login(req, res) {
-    if( req.method != "POST" ) {
+    if( req.method != 'POST' ) {
         auth_error(res);
         return;    
     }
@@ -166,22 +166,22 @@ function login(req, res) {
 
         con.request('GET', '/_session', function(err, doc) {
             if( err ) {
-                auth_error(res, "incorrect credentials");
+                auth_error(res, 'incorrect credentials');
             } else {
                 var db = con.database('app');
-                var docid = "org.couchdb.user:" + req.body.username;
+                var docid = 'org.couchdb.user:' + req.body.username;
 
                 /* Check that the user has activated their account. */
                 db.get(docid, function(err, doc) {
                     if( err ) {
-                        auth_error(res, "user not found");
+                        auth_error(res, 'user not found');
                     } else {
                         if( doc.activated ) {
                             req.session.auth = true;
                             req.session.username = req.body.username;
                             res.send({}, 200);
                         } else {
-                            auth_error(res, "not activated");
+                            auth_error(res, 'not activated');
                         }
                     }
                 });
@@ -206,7 +206,7 @@ exports.authCheck = function (req, res, next) {
 
     // ####
     // Logout
-    if ( url.pathname == "/logout" ) {
+    if ( url.pathname == '/logout' ) {
         logout(req, res);
         return;
     }
@@ -234,9 +234,9 @@ exports.authCheck = function (req, res, next) {
     // ########
     // Auth - Replace this simple if with you Database or File or Whatever...
     // If Database, you need a Async callback...
-    if( url.pathname == "/user/register" ) {
+    if( url.pathname == '/user/register' ) {
         register(req, res);
-    } else if ( url.pathname == "/user/login" ) {
+    } else if ( url.pathname == '/user/login' ) {
         login(req, res);
     } else {
         auth_error(res);

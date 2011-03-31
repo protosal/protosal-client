@@ -57,9 +57,9 @@ AuthRequired.prototype.__proto__ = Error.prototype;
 
 function ServerError(msg) {
     this.name = 'ServerError';
-    if( typeof msg == "object" ) {
+    if( typeof msg == 'object' ) {
         /* Stringify couchdb error objects. */
-        this.message = "Error: " + msg.error + ". Reason: " + msg.reason;
+        this.message = 'Error: ' + msg.error + '. Reason: ' + msg.reason;
     }
     Error.call(this, msg);
     Error.captureStackTrace(this, arguments.callee);
@@ -73,9 +73,9 @@ app.error(function(err, req, res, next){
     } else if(err instanceof AuthRequired) {
         rCommon.auth_error(res);
     } else if(err instanceof ServerError) {
-        res.send({"error":"internal server error"}, 500);
+        res.send({'error':'internal server error'}, 500);
     } else {
-        console.log("shiiiiiiiiiiiiiit, what is this new error?");
+        console.log('shiiiiiiiiiiiiiit, what is this new error?');
     }
 
     Exceptional.handle(err);
@@ -101,13 +101,13 @@ function get_property(doc, prop_name) {
      * doc._id
      * doc.value._id
      */
-    var property = "";
-    if( typeof doc[prop_name] != "undefined" ) {
+    var property = '';
+    if( typeof doc[prop_name] != 'undefined' ) {
         property = doc[prop_name];
-    } else if( typeof doc['_' + prop_name] != "undefined" ) {
+    } else if( typeof doc['_' + prop_name] != 'undefined' ) {
         property = doc['_' + prop_name];
-    } else if( typeof doc.value != "undefined"
-            && typeof doc.value['_' + prop_name] != "undefined" ) {
+    } else if( typeof doc.value != 'undefined'
+            && typeof doc.value['_' + prop_name] != 'undefined' ) {
         property = doc.value['_' + prop_name];
     }
     
@@ -115,12 +115,12 @@ function get_property(doc, prop_name) {
 }
 
 function couch_remove(db, doc, res) {
-    console.log("Before docid");
+    console.log('Before docid');
     var docid = get_property(doc, 'id');
-    console.log("Doc Id: " + docid);
+    console.log('Doc Id: ' + docid);
 
     if( doc.template ) {
-        console.log("archive it");
+        console.log('archive it');
         db.merge(docid, {archived: true, last_modified: Date.now()}, function(err, doc) {
             if( !res ) {
                 if( err )
@@ -130,14 +130,14 @@ function couch_remove(db, doc, res) {
             }
         });
     } else {
-        console.log("REMOVE IT!");
+        console.log('REMOVE IT!');
         var revid = get_property(doc, 'rev');
 
         db.remove(docid, revid,
             function(err, doc) {
                 if( !res ) {
                     if( err ) {
-                        console.log("Real Error Message: ");
+                        console.log('Real Error Message: ');
                         console.log(err);
                         throw new ServerError( err );
                     }
@@ -211,7 +211,7 @@ app.get('/data/newinstance/:proposal_id/:section_id', function(req, res) {
 
                 /* Create the new section document. */
                 db.save(doc, function(err, new_doc) {
-                    console.log("new section document");
+                    console.log('new section document');
                     console.log(new_doc);
 
                     if( err ) {
@@ -228,7 +228,7 @@ app.get('/data/newinstance/:proposal_id/:section_id', function(req, res) {
                             if( err ) {
                                 throw new ServerError( err );
                             } else {
-                                console.log("res_arr");
+                                console.log('res_arr');
                                 console.log(res_arr);
 
                                 /* Loop through section_fee records. */
@@ -236,7 +236,7 @@ app.get('/data/newinstance/:proposal_id/:section_id', function(req, res) {
 
                                     /* Get the fee record. */
                                     db.get(row.fee_id, function(err, doc1) {
-                                        console.log("Fee Document:");
+                                        console.log('Fee Document:');
                                         console.log(doc1);
 
                                         if( err ) {
@@ -257,7 +257,7 @@ app.get('/data/newinstance/:proposal_id/:section_id', function(req, res) {
                                             
                                             /* Create the new fee record. */
                                             db.save(doc1, function(err, doc2) {
-                                                console.log("New Fee Document:");
+                                                console.log('New Fee Document:');
                                                 console.log(doc2);
 
                                                 if( err ) {
@@ -276,7 +276,7 @@ app.get('/data/newinstance/:proposal_id/:section_id', function(req, res) {
                                                 
                                                 /* Finally, create the new section_fee document. */
                                                 db.save(new_section_fee, function(err, doc3) {
-                                                    console.log("New section_fee:");
+                                                    console.log('New section_fee:');
                                                     console.log(doc3);
 
                                                     if( err ) {
@@ -284,7 +284,7 @@ app.get('/data/newinstance/:proposal_id/:section_id', function(req, res) {
                                                     } else {
                                                         /* Now, we build the new feelist. */
                                                         db.view('section_fee/list_by_parent', { key: new_doc._id }, function(err, res_arr) {
-                                                            console.log("building new feelist");
+                                                            console.log('building new feelist');
                                                             console.log(res_arr);
                                                             if( err ) {
                                                                 throw new ServerError( err );
@@ -293,8 +293,8 @@ app.get('/data/newinstance/:proposal_id/:section_id', function(req, res) {
                                                                 var new_feelist = _.map(res_arr, function(row) {
                                                                     return row.value.fee_id;
                                                                 });
-                                                                new_feelist = new_feelist.join(",");
-                                                                console.log("new feelist");
+                                                                new_feelist = new_feelist.join(',');
+                                                                console.log('new feelist');
                                                                 console.log(new_feelist);
 
                                                                 /* Update the section instance with the new feelist. */
@@ -302,7 +302,7 @@ app.get('/data/newinstance/:proposal_id/:section_id', function(req, res) {
                                                                     if( err ) {
                                                                         throw new ServerError( err );
                                                                     } else {
-                                                                        console.log("This makes me want to vomit.");
+                                                                        console.log('This makes me want to vomit.');
                                                                         console.log(doc4);
                                                                     }
                                                                 });
@@ -350,9 +350,9 @@ app.get('/related2/:view/:id', function( req, res ){
     /* This route returns all child documents in a relationship.
      *
      * It takes a relationship view expected to be named
-     * "parent_child", where both parent and child are
-     * valid views. For example "section_fee", where both
-     * "section" and "fee" are valid views.
+     * 'parent_child', where both parent and child are
+     * valid views. For example 'section_fee', where both
+     * 'section' and 'fee' are valid views.
      */
 
     var db = new(cradle.Connection)().database('app');
@@ -390,12 +390,12 @@ app.get('/logo/:user_id', function(req, res) {
 
         /* Loop through all attachment documents. */
         for( var name in doc._attachments ) {
-            /* Stopping at the first document containing "logo".
+            /* Stopping at the first document containing 'logo'.
              * This works because every time a new logo is updated,
              * all other attachements on the user profile document
              * are deleted.
              */
-            if( name.indexOf("logo") != -1 ) {
+            if( name.indexOf('logo') != -1 ) {
                 console.log(doc._id);
                 console.log(name);
                 /* Proxy the response from couchdb. */
@@ -438,8 +438,8 @@ app.get('/register/:activation_key', function(req, res) {
                 if( err ) {
                     throw new ServerError( err );
                 } else {
-                    var user_login = doc_arr[0].id.replace("org.couchdb.user:", "");
-                    res.redirect("#/dashboard/login/activated/" + user_login);
+                    var user_login = doc_arr[0].id.replace('org.couchdb.user:', '');
+                    res.redirect('#/dashboard/login/activated/' + user_login);
                 }
             });
         }
@@ -493,10 +493,10 @@ app.put('/user', function(req, res) {
     var new_contents = {};
     new_contents.author = req.session.username;
 
-    if( typeof req.body.name != "undefined" ) {
+    if( typeof req.body.name != 'undefined' ) {
         new_contents.name = req.body.name;
     }
-    if( typeof req.body.address != "undefined" ) {
+    if( typeof req.body.address != 'undefined' ) {
         new_contents.address = req.body.address;
     }
     
@@ -547,12 +547,12 @@ function change_password(
                 if( new_password == confirm_password ) {
                     return callback( null );
                 } else {
-                    return callback( {"error": "password_mistyped"} );
+                    return callback( {'error': 'password_mistyped'} );
                 }
             } else if( old_password || new_password || confirm_password ) {
                 /* If we get here, it means a user has filled out some,
                  * but not all password fields. */
-                return callback( {"error": "missing_password_fields"} );
+                return callback( {'error': 'missing_password_fields'} );
             } else {
                 /* Otherwise, they don't want to change their password.
                  * In that case, carry on processing the parent callback chain. 
@@ -577,7 +577,7 @@ function change_password(
             if( doc.password_sha == Hash.hex_sha1(old_password + doc.salt) ) {
                 callback( null, doc ); 
             } else {
-                callback( {error: "old_password_incorrect"} );
+                callback( {error: 'old_password_incorrect'} );
             }
         },
         function( doc, callback ) {
@@ -633,11 +633,11 @@ app.post('/user', function(req, res) {
                     if( err ) {
                         callback( err );
                     } else {
-                        if( typeof files.image != "undefined" ) {
+                        if( typeof files.image != 'undefined' ) {
                             callback( null, doc );
                         } else {
                             /* We terminate here, as no image was uploaded. */
-                            res.redirect("#/user/edit");
+                            res.redirect('#/user/edit');
                         }
                     }
                 });
@@ -714,7 +714,7 @@ app.post('/user', function(req, res) {
                 res.send(err, 500);
             } else {
                 /* Indicate success. */
-                res.redirect("#/user/edit");
+                res.redirect('#/user/edit');
             }
         });
     });
@@ -735,8 +735,8 @@ app.post('/pdf', function(req, res) {
          */
         res.send(data, response.headers, response.statusCode);
     }).on('error', function(data, response) {
-        console.log("error generating pdf");
-        res.send({error: "pdf generation failed"}, 500);
+        console.log('error generating pdf');
+        res.send({error: 'pdf generation failed'}, 500);
     });
 });
 
@@ -749,27 +749,27 @@ app.post('/pdf/email', function(req, res) {
             // var docid = 'org.couchdb.user:' + req.session.username;
             console.log(req.session.username);
             postmark.send({
-                "From": req.session.username,
-                "To": req.body.to,
-                "Subject": "Protosal - " + req.body.subject,
-                "HtmlBody": req.body.HtmlBody,
-                "Attachments": [
+                'From': req.session.username,
+                'To': req.body.to,
+                'Subject': 'Protosal - ' + req.body.subject,
+                'HtmlBody': req.body.HtmlBody,
+                'Attachments': [
                     {
-                        "Name": req.body.ProposalName + ".pdf",
-                        "ContentType": "application/pdf",
-                        "Content": data.toString('base64')
+                        'Name': req.body.ProposalName + '.pdf',
+                        'ContentType': 'application/pdf',
+                        'Content': data.toString('base64')
                     }
                 ]
             });
         } catch(err) {
-            console.log("Error sending email");
-            return res.send({error: "sending_email_failed"}, 500);
+            console.log('Error sending email');
+            return res.send({error: 'sending_email_failed'}, 500);
         }
         
         res.send({}, 200);
     }).on('error', function(data, response) {
-        console.log("error generating pdf for email");
-        res.send({error: "pdf_generation_failed"}, 500);
+        console.log('error generating pdf for email');
+        res.send({error: 'pdf_generation_failed'}, 500);
     });
 });
 
