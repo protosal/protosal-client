@@ -78,7 +78,7 @@
 
 <div class="column wide">
     <div class="portlet">
-        <div class="portlet-header">Monthly Accepted/Pending/Declined</div>
+        <div class="portlet-header">Proposal Status Count</div>
         <div class="portlet-content" style="padding: 2px;">
         <div id="graph" style="width: 520px; height: 400px; margin: 0 auto"></div> 
         </div>
@@ -94,16 +94,17 @@
 </div><!-- End demo -->
 
 <jst> 
-    
       
     var chart;
-    $(document).ready(function() {
-    
-        setTimeout( function(){    
-        chart = new Highcharts.Chart({
+
+    function generate_chart(series) {
+        console.log("Generate Chart Series:");
+        console.log(series);
+
+        return new Highcharts.Chart({
             chart: {
                 renderTo: 'graph',
-                defaultSeriesType: 'area',
+                defaultSeriesType: 'column',
                 marginRight: 130,
                 marginBottom: 25
             },
@@ -117,8 +118,7 @@
                 x: -20 //center
             },
             xAxis: {
-                categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
-                    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+                categories: ['Proposals', '']
             },
             yAxis: {
                 title: {
@@ -144,21 +144,46 @@
                 y: 100,
                 borderWidth: 0
             },
-            series: [{
-                name: 'Approved',
-                data: [0,0,1,2,2,3,4,5,1,1,1,1]
-            },{
-                name: 'Declined',
-                data: [0,2,3,1,2,0,3,3,0,0,2,1]
-            }, {
-                name: 'Pending',
-                data: [1,0,1,1,1,1,0,0,0,0,0,1]
-            } ]
+            series: series
         });
+    }
+
+    function process_data(data) {
+        var series = {
+            'Accepted': [0],
+            'Declined': [0],
+            'Pending': [0]
+        };
+
+        for(var i = 0; i < data.length; i++) {
+            var series_name = _.capitalize( data[i].key[1] );
+            series[ series_name ][0] = data[i].value;
+        }
+
+        var seriesArray = [];
+
+        for( var key in series ) {
+            if( series.hasOwnProperty( key ) ) {
+                seriesArray.push( { name: key, data: series[ key ] } );
+            }
+        }
         
-        
-    });
-}, 2000);
+        return seriesArray;
+    }
+
+    $(document).ready(function() {
+        setTimeout( function(){    
+            $.ajax({
+                url: '/proposal/stats',
+                dataType: 'json',
+                success: function(data) {
+                    var series = process_data( data );
+                    chart = generate_chart( series );
+                }
+            });
+        });
+    }, 2000);
+
     $(function() {
     $( ".column" ).sortable({
         connectWith: ".column",
