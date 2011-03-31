@@ -727,7 +727,8 @@ app.post('/user', function(req, res) {
 
 app.post('/pdf', function(req, res) {
     pdfcrowd.generate_pdf(
-        req.body.pdfdata
+        req.body.pdfdata,
+        req.body.ProposalName
     ).on('complete', function(data, response) {
         /* Actually send the data. Hack it so that the
          * headers and status code are what pdfcrowd
