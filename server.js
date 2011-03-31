@@ -438,7 +438,8 @@ app.get('/register/:activation_key', function(req, res) {
                 if( err ) {
                     throw new ServerError( err );
                 } else {
-                    res.redirect("#/dashboard/login");
+                    var user_login = doc_arr[0].id.replace("org.couchdb.user:", "");
+                    res.redirect("#/dashboard/login/activated/" + user_login);
                 }
             });
         }
