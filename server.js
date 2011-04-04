@@ -234,8 +234,6 @@ function new_proposal_section(proposal_id, section_id, author, callback) {
 }
 
 function clone_docs_series(doc_arr, callback) {
-    console.log("doc_arr:");
-
     async.mapSeries(doc_arr, new_doc_instance, function(err, result) {
         if( err ) {
             return callback( err );
@@ -247,8 +245,6 @@ function clone_docs_series(doc_arr, callback) {
 
 function new_fee_list( section_id, fee_docs, callback ) {
     var db = new(cradle.Connection)().database('app');
-
-    console.log("fee docs:");
 
     var fee_ids = fee_docs.map(function( doc ) {
         return doc.id;
@@ -288,43 +284,26 @@ app.get('/data/newinstance/:proposal_id/:section_id', function(req, res) {
             );
         },
         function( section_doc, callback ) {
-            console.log("new section instance");
-
             template_section_doc = section_doc;
             
             new_doc_instance( section_doc, callback );
         },
         function( section_instance_doc, callback ) {
-            console.log("get fee docs");
-            console.log(template_section_doc);
-
             instance_section_id = section_instance_doc.id;
 
             get_docs( template_section_doc.feelist, callback );
         },
         function( template_fee_docs, callback ) {
-            console.log("clone docs series");
-
-            console.log(template_fee_docs);
-
             var template_fee_docs = template_fee_docs.map(function( doc ) {
                 return doc;
             });
 
-            console.log(template_fee_docs);
-
             clone_docs_series( template_fee_docs, callback ); 
         },
         function( instance_fee_docs, callback ) {
-            console.log("new fee list");
-            console.log(instance_fee_docs);
-            
             new_fee_list( instance_section_id, instance_fee_docs, callback );
         },
         function( doc, callback ) {
-            console.log("new proposal section");
-            console.log(doc);
-
             new_proposal_section(
                 req.params.proposal_id,
                 instance_section_id,
@@ -373,8 +352,6 @@ function get_related_doc_ids(parent_id, doc_type, callback) {
         if( err ) {
             return callback( err );
         } else {
-            console.log("get_related_doc_ids");
-            console.log(doc);
             var doc_list = doc[doc_type + 'list'];
             return callback( null, doc_list );
         }
@@ -414,8 +391,6 @@ app.get('/related2/:view/:id', function( req, res ){
             get_related_doc_ids( req.params.id, child, callback );
         },
         function( doc_ids, callback ) {
-            console.log("doc_ids");
-            console.log(doc_ids);
             get_docs_from_view( child, doc_ids, callback );
         },
         function( docs, callback ) {
