@@ -63,14 +63,14 @@
   <label>Client Email</label>
 <input type="text" id="email_pdf_client" name="to" value="This template has no assigned client" />
 <label>Subject</label>
-<input type="text" id="email_pdf_subject" name="subject" value="New Proposal from {{my_company}}"/>
-<input type="hidden" id="email_pdf_proposal" name="ProposalName" value="New Proposal from {{my_company}}"/>
+<input type="text" id="email_pdf_subject" name="subject" value="New Proposal from {{client_company}}"/>
+<input type="hidden" id="email_pdf_proposal" name="ProposalName" value="New Proposal from {{client_company}}"/>
 <label>Message</label>
 <textarea id="email_pdf_message" style="width: 450px;" name="HtmlBody">
-Hi {{name}},
+Hi {{client_firstname}},
 
 Find attached the requested proposal for contract xxxxxx
-{{email}}
+{{client_email}}
 
 Thank you
 </textarea>
@@ -543,19 +543,22 @@ Thank you
         events: {
             "click .send_email_button": "sendEmail"
         },
-        sendEmail: function(){
+        sendEmail: function(event){
             $("#email_pdf_message").val( proposal_view.replaceVariables( $("#email_pdf_message").val() ) );
             $("#email_pdf_subject").val( proposal_view.replaceVariables( $("#email_pdf_subject").val() ) );
             $("#email_pdf_proposal").val( $("#proposal_name").val() );
             
             var formdata = $("#email_pdf_form").serializeObject();
+            
+            $(event.currentTarget).parents(".ui-dialog-content").dialog("close");
+            
             $.ajax({
                 url: "pdf/email",
                 data: formdata,
                 dataType: "json",
                 type: "POST",
                 success: function( data ){
-                    console.log(data);
+                     $.jGrowl("Email sent successfully",{  theme: 'success', position: "top-right"});   
                 }
             })
             return false;
