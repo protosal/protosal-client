@@ -868,23 +868,6 @@ app.delete('/data/:id/:rev', function(req, res) {
     });
 });
 
-/* Delete the relationship */
-app.delete('/delete/:controller/:parent_id/:child_id', function(req, res) {
-    var db = new(cradle.Connection)().database('app');
-
-    var key = {key: [req.params.parent_id, req.params.child_id]};
-    db.view(req.params.controller + '/list', key, function(err, rel_doc) {
-        if( err ) {
-            throw new ServerError( err );
-        } else {
-            /* Delete the relationship document.
-             * Views always return an array of objects.
-             */
-            couch_remove(db, rel_doc[0], res);
-        }
-    });
-});
-
 app.listen(3000);
 
 process.on('uncaughtException', function (err) {
