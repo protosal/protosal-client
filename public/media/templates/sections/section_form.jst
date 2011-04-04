@@ -75,7 +75,7 @@
             
             //Create a section id at initialization so you can attach relationships straight away
             function aaaaaa(){
-                if( GLOBALS.route_id == "" && GLOBALS.controller != "<%= controller %>"){
+                if( GLOBALS.route_id == "" || GLOBALS.controller != "<%= controller %>"){
                     formdata = $(".edit_section_form").serializeObject();
                     formdata.type = "section";
                        return $.ajax( "data", {

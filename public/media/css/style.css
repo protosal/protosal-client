@@ -912,6 +912,7 @@ margin: auto;
 	) !important;
         
     }
+    
     .declined + label.ui-state-active {
         background: #ff3333 !important;
         
@@ -929,4 +930,16 @@ margin: auto;
 		rgb(255,51,51),
 		rgb(215,51,51)
 	) !important;
+    }
+    
+    
+    .accepted {
+        background: #66cc00;
+        
+    }
+    .pending {
+        background: #ffcc33;
+    }
+    .declined {
+        background: #ff3333;
     }
