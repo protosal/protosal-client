@@ -410,6 +410,32 @@ app.get('/data/:id', function(req, res) {
     });
 });
 
+function get_related_doc_ids(parent_id, doc_type, callback) {
+    var db = new(cradle.Connection)().database('app');
+
+    db.get(parent_id, function(err, doc) {
+        if( err ) {
+            callback( err );
+        } else {
+            var doc_list = doc[doc_type + 'list'];
+            callback( null, doc_list );
+        }
+    });
+}
+
+function get_docs_from_view( view, doc_ids, callback ) {
+    var db = new(cradle.Connection)().database('app');
+
+    /* Return all corresponding child documents. */
+    db.view(view+ '/list_by_id', {'keys': doc_ids}, function(err, docs) {
+        if( err ) {
+            callback( err );
+        } else {
+            callback( null, docs );
+        }
+    });
+}
+
 app.get('/related2/:view/:id', function( req, res ){
     /* This route returns all child documents in a relationship.
      *
@@ -423,26 +449,24 @@ app.get('/related2/:view/:id', function( req, res ){
 
     var child = req.params.view.split('_')[1];
 
-    /* Get all relationship documents. */
-    db.view(req.params.view + '/list_by_parent',
-        { key: req.params.id },
-        function(err, doc) {
-            if( err ) {
-                throw new ServerError( err );
-            } else {
-                /* Extract all child ids from the returned relationship documents. */
-                var keys = _.map(doc.rows, function( row ) {
-                    var property = child + '_id';
-                    return row.value[property];
-                });    
-
-                /* Return all corresponding child documents. */
-                db.view(child + '/list_by_id', {'keys': keys}, function(err, doc) {
-                    couch_response(err, doc, res);
-                });
-            }
+    async.waterfall([
+        function( callback ) {
+            get_related_doc_ids( req.params.id, child, callback );
+        },
+        function( doc_ids, callback ) {
+            get_docs_from_view( child, doc_ids, callback );
+        },
+        function( docs, callback ) {
+            res.send( docs, 200 );
         }
-    );
+    ],
+    function( err ) {
+        if( err ) {
+            console.log( err );
+            
+            res.send({}, 500);
+        }
+    });
 });
 
 app.get('/logo/:user_id', function(req, res) {
