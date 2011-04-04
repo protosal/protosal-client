@@ -844,22 +844,20 @@ display: block;
 
 .ui-state-save, .ui-widget-content .ui-state-save, .ui-widget-header .ui-state-save { 
 	outline: none;
-	color: #1c4257; border: 1px solid #7096ab !important;
-	background: url(images/bg_fallback.png) 0 -50px repeat-x !important;
+	color: #1c4257; border: 1px solid #7096ab;
+	background: url(images/bg_fallback.png) 0 -50px repeat-x;
 	background: -webkit-gradient(
     linear,
     left bottom,
     left top,
-    color-stop(1, rgb(185,224,115)),
-    color-stop(0, rgb(146,189,114))
+    color-stop(1, rgb(185,224,245)),
+    color-stop(0, rgb(146,189,214))
 	) !important;
 	background: -moz-linear-gradient(
 		center top,
 		rgb(185,224,245),
 		rgb(146,189,214)
 	) !important;
-	-webkit-box-shadow: none;
-	-moz-box-shadow: none;
 }
 .ui-state-save a, .ui-state-save a:link, .ui-state-save a:visited { color: #313131; text-decoration: none; }
 
@@ -876,3 +874,59 @@ margin: auto;
 	width: 800px;
 	
 }
+   .accepted + label.ui-state-active{
+        background: #66cc00 !important;
+        
+	color: #1c4257; border: 1px solid #66cc00 !important;
+        	background: url(images/bg_fallback.png) 0 -50px repeat-x !important;
+	background: -webkit-gradient(
+    linear,
+    left bottom,
+    left top,
+    color-stop(1, rgb(185,224,115)),
+    color-stop(0, rgb(146,189,114))
+	) !important;
+	background: -moz-linear-gradient(
+		center top,
+		rgb(185,224,245),
+		rgb(146,189,214)
+	) !important;
+        
+    }
+    .pending + label.ui-state-active{
+        background: #ffcc33 !important;
+        
+	color: #1c4257; border: 1px solid #ffcc66 !important;
+         	background: url(images/bg_fallback.png) 0 -50px repeat-x !important;
+	background: -webkit-gradient(
+    linear,
+    left bottom,
+    left top,
+    color-stop(1, rgb(255,204,51)),
+    color-stop(0, rgb(225,204,51))
+	) !important;
+	background: -moz-linear-gradient(
+		center top,
+		rgb(255,204,51),
+		rgb(225,204,51)
+	) !important;
+        
+    }
+    .declined + label.ui-state-active {
+        background: #ff3333 !important;
+        
+	color: #1c4257; border: 1px solid #ff2222 !important;
+           	background: url(images/bg_fallback.png) 0 -50px repeat-x !important;
+	background: -webkit-gradient(
+    linear,
+    left bottom,
+    left top,
+    color-stop(1, rgb(225,61,61)),
+    color-stop(0, rgb(220,61,61))
+	) !important;
+	background: -moz-linear-gradient(
+		center top,
+		rgb(255,51,51),
+		rgb(215,51,51)
+	) !important;
+    }
