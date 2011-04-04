@@ -74,6 +74,8 @@ _rev = ""
                             data.success = <%= success %>;
                             data.documentid = "<%= current_doc_id %>";
                             data.controller = "<%= controller %>";
+                            console.log("Let's see some data:");
+                            console.log(data);
                             $("#<%= controller %>_formc").append( _.template( $("#<%= controller %>_form_template").jsthtml(), data ) );
                             
                             cked = "";

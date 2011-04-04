@@ -234,6 +234,12 @@
                 savebutton = event.currentTarget;
                 savebuttoncontroller = $(savebutton).attr("controller");
                 formdata = $(".edit_" + savebuttoncontroller + "_form").serializeObject();
+
+                if( typeof formdata.feelist != "undefined" ) {
+                    formdata.feelist = formdata.feelist.split(",");
+                } else if( typeof formdata.sectionlist != "undefined" ) {
+                    formdata.sectionlist = formdata.sectionlist.split(",");
+                }
                 
                 formdata.type = savebuttoncontroller;
                 if(event.data.templateid == "") {

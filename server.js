@@ -189,37 +189,7 @@ function new_section_fee( section_id, fee_id, author, callback ) {
     });
 }
 
-function new_section_fees_from_array( section_id, fee_doc_arr, author, callback ) { 
-    async.forEach(
-        fee_doc_arr,
-        function( instance_fee_doc, local_callback ) {
-            new_section_fee(
-                section_id,
-                instance_fee_doc.id,
-                author,
-                local_callback
-            );
-        },
-        function( err ) {
-            if( err ) return callback( err );
-        }
-    );
-}
-
-function get_section_fee_records(template_section_id, callback) {
-    /* Get all section_fee records associated with the section. */
-    var db = new(cradle.Connection)().database('app');
-
-    db.view('section_fee/list_by_parent', { key: docid }, function(err, doc_arr) {
-        if( err ) {
-            return callback( err );
-        } else {
-            return callback(null, doc_arr);
-        }
-    });
-}
-
-function check_doc_auth(docid, username, callback) {
+function get_doc(docid, username, callback) {
     /* Check auth details, returning the associated document. */
 
     var db = new(cradle.Connection)().database('app');
@@ -336,7 +306,7 @@ app.get('/data/newinstance/:proposal_id/:section_id', function(req, res) {
 
     async.waterfall([
         function( callback ) {
-            check_doc_auth(
+            get_doc(
                 req.params.section_id,
                 req.session.username,
                 callback
@@ -362,6 +332,12 @@ app.get('/data/newinstance/:proposal_id/:section_id', function(req, res) {
 
             console.log(template_fee_docs);
 
+            var template_fee_docs = template_fee_docs.map(function( doc ) {
+                return doc;
+            });
+
+            console.log(template_fee_docs);
+
             clone_docs_series( template_fee_docs, callback ); 
         },
         function( instance_fee_docs, callback ) {
@@ -380,6 +356,13 @@ app.get('/data/newinstance/:proposal_id/:section_id', function(req, res) {
                 req.session.username,
                 callback
             );
+        },
+        function( doc, callback ) {
+            get_doc( instance_section_id, req.session.username, callback );
+        },
+        function( doc, callback ) {
+            res.send( doc, 200 );
+            callback( null );
         }
     ],
     function( err ) {
@@ -388,8 +371,6 @@ app.get('/data/newinstance/:proposal_id/:section_id', function(req, res) {
             console.log( new Error().stack );
 
             res.send({}, 500);
-        } else {
-            res.send({}, 200);
         }
     });
 });
@@ -415,23 +396,27 @@ function get_related_doc_ids(parent_id, doc_type, callback) {
 
     db.get(parent_id, function(err, doc) {
         if( err ) {
-            callback( err );
+            return callback( err );
         } else {
+            console.log("get_related_doc_ids");
+            console.log(doc);
             var doc_list = doc[doc_type + 'list'];
-            callback( null, doc_list );
+            return callback( null, doc_list );
         }
     });
 }
 
 function get_docs_from_view( view, doc_ids, callback ) {
+    if( doc_ids.length == 0 ) return callback( null, [] );
+
     var db = new(cradle.Connection)().database('app');
 
     /* Return all corresponding child documents. */
-    db.view(view+ '/list_by_id', {'keys': doc_ids}, function(err, docs) {
+    db.view(view + '/list_by_id', {'keys': doc_ids}, function(err, docs) {
         if( err ) {
-            callback( err );
+            return callback( err );
         } else {
-            callback( null, docs );
+            return callback( null, docs );
         }
     });
 }
@@ -454,6 +439,8 @@ app.get('/related2/:view/:id', function( req, res ){
             get_related_doc_ids( req.params.id, child, callback );
         },
         function( doc_ids, callback ) {
+            console.log("doc_ids");
+            console.log(doc_ids);
             get_docs_from_view( child, doc_ids, callback );
         },
         function( docs, callback ) {

@@ -26,7 +26,7 @@
 	                </td>
                 </tr>
             </table>
-            <input style="width: 800px; font-size: 9px" type="hidden" id="toc_order" name="toc_order" />
+            <input style="width: 800px; font-size: 9px" type="hidden" id="sectionlist" name="sectionlist" />
             </fieldset>
 
         </fieldset>
@@ -183,8 +183,8 @@ Thank you
                     console.log("Found related sections");
                     console.log(resp);
                     
-                    var toc_order = "<%= typeof toc_order != "undefined" ? toc_order : "" %>";
-                    var sorted = _.sortBy( resp, function( row ) { return toc_order.indexOf(row.value._id); } );
+                    var sectionlist = "<%= typeof sectionlist != "undefined" ? sectionlist : "" %>";
+                    var sorted = _.sortBy( resp, function( row ) { return sectionlist.indexOf(row.value._id); } );
                     _.each( sorted, function(model) {
                         model.value.id = model.value._id;
                         that.sections.add(model.value)
@@ -198,7 +198,9 @@ Thank you
         initialize: function( section ){
             console.log("build the table");
             console.log(section);
-            var feelist = section.get("feelist").split(",");
+            var feelist = section.get("feelist");
+            console.log("Feetable feelist");
+            console.log(feelist);
             var obj = {
                    keys: feelist
             };
@@ -467,7 +469,7 @@ Thank you
             sections = $("#toc_list").sortable('toArray').toString();
             console.log("Update order of sections");
             console.log(sections);
-            $("#toc_order").val( sections );
+            $("#sectionlist").val( sections );
         }
     });
     ClientsView = Backbone.View.extend({
