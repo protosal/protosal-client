@@ -267,44 +267,14 @@
                 sections = $("#sortablefees").sortable('toArray').toString();
                 console.log(sections);
                 $("#feelist").val( sections );
-                if( typeof event != "undefined" ){
-                if( event.get("preloaded") != true ){
-                    $.ajax({
-                        type: "PUT",
-                        url: "data/" + section_backbone.section_id,
-                        data: "feelist=" + $("#feelist").val()
-                    })
-                    event.set({ "preloaded": false });
-                }
-                } else {
-                      $.ajax({
-                        type: "PUT",
-                        url: "data/" + section_backbone.section_id,
-                        data: "feelist=" + $("#feelist").val()
-                    })
-                }
+                
             },
             removeFee: function ( id ) {
                 
-                //section_backbone.updateFeeValues();
-                console.log(this.fees.get( id ));
-                console.log("nomepha");
-                // this.fees.url = "delete/section_fee/get_section";
-                 $.ajax({
-                    type: "DELETE",
-                    url: "delete/section_fee/"+cur_doc_id +"/" + id,
-                    dataType: "json",
-                    contentType: "application/json",
-                        success: function( data ){
-                            
-                            console.log(data);
+               
                             section_backbone.updateFeeValues();
                                 
-                        }
-                    })
-                 
-           
-            //appview.fees.get().remove();
+                        
             
             },
             checkEnter: function(e){
