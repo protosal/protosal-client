@@ -165,7 +165,107 @@ function emit_doc(id, res) {
     }
 }
 
-function create_new_proposal_section(proposal_id, section_id, author) {
+function new_section_fee( section_id, fee_id, author, callback ) {
+    var db = new(cradle.Connection)().database('app');
+
+    /* Generate the new section_fee document. */
+    var new_section_fee = {
+        section_id: section_id,
+        fee_id: fee_id,
+        created_at: Date.now(),
+        last_modified: Date.now(),
+        type: 'sectionfee',
+        author: author
+    }
+
+
+    /* Finally, create the new section_fee document. */
+    db.save(new_section_fee, function(err, new_doc) {
+        if( err ) {
+            return callback( err );
+        } else {
+            return callback( null, new_doc );
+        }
+    });
+}
+
+function new_section_fees_from_array( section_id, fee_doc_arr, author, callback ) { 
+    async.forEach(
+        fee_doc_arr,
+        function( instance_fee_doc, local_callback ) {
+            new_section_fee(
+                section_id,
+                instance_fee_doc.id,
+                author,
+                local_callback
+            );
+        },
+        function( err ) {
+            if( err ) return callback( err );
+        }
+    );
+}
+
+function get_section_fee_records(template_section_id, callback) {
+    /* Get all section_fee records associated with the section. */
+    var db = new(cradle.Connection)().database('app');
+
+    db.view('section_fee/list_by_parent', { key: docid }, function(err, doc_arr) {
+        if( err ) {
+            return callback( err );
+        } else {
+            return callback(null, doc_arr);
+        }
+    });
+}
+
+function check_doc_auth(docid, username, callback) {
+    /* Check auth details, returning the associated document. */
+
+    var db = new(cradle.Connection)().database('app');
+    
+    db.get(docid, function(err, doc) {
+        if( err ) return callback( err );
+
+        if( doc.author == username ) {
+            return callback( null, doc );
+        } else {
+            /* Indicate failure. */
+            return callback( false );
+        }
+    });
+}
+
+function new_doc_instance(doc, callback) {
+    var db = new(cradle.Connection)().database('app');
+
+    /* Save a copy of the doc._id as we will delete it. */
+    var template_id = doc._id;
+
+    /* Delete _id and _rev so we create a new record. */
+    delete doc._id;
+    delete doc._rev;
+
+    /* Indicate the new document is an instance. */
+    doc.template = false;
+    /* Record the template this document was generated from. */
+    doc.template_id = template_id;
+
+    /* Set the new created and modified times. */
+    doc.created_at = Date.now();
+    doc.last_modified = Date.now();
+
+    db.save(doc, function(err, doc) {
+        if( err ) {
+            return callback( err );
+        } else {
+            /* Return the template id and the saved doc details. */
+            return callback( null, doc );
+        }
+    });
+}
+
+function new_proposal_section(proposal_id, section_id, author, callback) {
     /* Create a relationship between the proposal and the
      * section instance.
      */
@@ -180,152 +280,116 @@ function create_new_proposal_section(proposal_id, section_id, author) {
 
     db.save(new_proposal_section, function(err, doc) {
         if( err ) {
-            throw new ServerError( err );
+            return callback( err );
+        } else {
+            return callback( null, doc );
+        }
+    });
+}
+
+function clone_docs_series(doc_arr, callback) {
+    console.log("doc_arr:");
+
+    async.mapSeries(doc_arr, new_doc_instance, function(err, result) {
+        if( err ) {
+            return callback( err );
+        } else {
+            return callback( null, result );
+        }
+    });
+}
+
+function new_fee_list( section_id, fee_docs, callback ) {
+    var db = new(cradle.Connection)().database('app');
+
+    console.log("fee docs:");
+
+    var fee_ids = fee_docs.map(function( doc ) {
+        return doc.id;
+    });
+
+    db.merge( section_id, { feelist: fee_ids }, function( err, doc ) {
+        if( err ) {
+            return callback( err );
+        } else {
+            return callback( null, doc );
+        }
+    });
+}
+
+function get_docs( doc_ids, callback ) {
+    var db = new(cradle.Connection)().database('app');
+
+    db.get( doc_ids, function(err, docs) {
+        if( err ) {
+            return callback( err );
+        } else {
+            return callback( null, docs );
         }
     });
 }
 
 app.get('/data/newinstance/:proposal_id/:section_id', function(req, res) {
     var db = new(cradle.Connection)().database('app');
+    var template_section_doc = {};
+    var instance_section_id = '';
 
-    db.get(req.params.section_id, function(err, doc) {
+    async.waterfall([
+        function( callback ) {
+            check_doc_auth(
+                req.params.section_id,
+                req.session.username,
+                callback
+            );
+        },
+        function( section_doc, callback ) {
+            console.log("new section instance");
+
+            template_section_doc = section_doc;
+            
+            new_doc_instance( section_doc, callback );
+        },
+        function( section_instance_doc, callback ) {
+            console.log("get fee docs");
+            console.log(template_section_doc);
+
+            instance_section_id = section_instance_doc.id;
+
+            get_docs( template_section_doc.feelist, callback );
+        },
+        function( template_fee_docs, callback ) {
+            console.log("clone docs series");
+
+            console.log(template_fee_docs);
+
+            clone_docs_series( template_fee_docs, callback ); 
+        },
+        function( instance_fee_docs, callback ) {
+            console.log("new fee list");
+            console.log(instance_fee_docs);
+            
+            new_fee_list( instance_section_id, instance_fee_docs, callback );
+        },
+        function( doc, callback ) {
+            console.log("new proposal section");
+            console.log(doc);
+
+            new_proposal_section(
+                req.params.proposal_id,
+                instance_section_id,
+                req.session.username,
+                callback
+            );
+        }
+    ],
+    function( err ) {
         if( err ) {
-            throw new ServerError( err );
+            console.log( err );
+            console.log( new Error().stack );
+
+            res.send({}, 500);
         } else {
-            if( doc.author == req.session.username ) {
-                /* Save a copy of the doc._id as we will delete it. */
-                var docid = doc._id;
-
-                /* Delete _id and _rev so we create a new record. */
-                delete doc._id;
-                delete doc._rev;
-
-                /* Indicate the new document is an instance. */
-                doc.template = false;
-                /* Record the template this document was generated from. */
-                doc.template_id = req.params.section_id;
-
-                /* Set the new created and modified times. */
-                doc.created_at = Date.now();
-                doc.last_modified = Date.now();
-
-                /* Create the new section document. */
-                db.save(doc, function(err, new_doc) {
-                    console.log('new section document');
-                    console.log(new_doc);
-
-                    if( err ) {
-                        throw new ServerError( err );
-                    } else {
-                       create_new_proposal_section(
-                           req.params.proposal_id,
-                           new_doc._id,
-                           req.session.username
-                        ); 
-
-                        /* Get all section_fee records associated with the section. */
-                        db.view('section_fee/list_by_parent', { key: docid }, function(err, res_arr) {
-                            if( err ) {
-                                throw new ServerError( err );
-                            } else {
-                                console.log('res_arr');
-                                console.log(res_arr);
-
-                                /* Loop through section_fee records. */
-                                res_arr.forEach(function(row) {
-
-                                    /* Get the fee record. */
-                                    db.get(row.fee_id, function(err, doc1) {
-                                        console.log('Fee Document:');
-                                        console.log(doc1);
-
-                                        if( err ) {
-                                            throw new ServerError( err );
-                                        } else {
-                                            /* Delete _id and _rev so we create a new record. */
-                                            delete doc1._id;
-                                            delete doc1._rev;
-
-                                            /* Indicate the new document is an instance. */
-                                            doc1.template = false;
-                                            /* Record the template this document was generated from. */
-                                            doc1.template_id = row.fee_id;
-
-                                            /* Set the new created and modified times. */
-                                            doc1.created_at = Date.now();
-                                            doc1.last_modified = Date.now();
-                                            
-                                            /* Create the new fee record. */
-                                            db.save(doc1, function(err, doc2) {
-                                                console.log('New Fee Document:');
-                                                console.log(doc2);
-
-                                                if( err ) {
-                                                    throw new ServerError( err );
-                                                }
-
-                                                /* Generate the new section_fee document. */
-                                                var new_section_fee = {
-                                                    section_id: new_doc._id,
-                                                    fee_id: doc2._id,
-                                                    created_at: Date.now(),
-                                                    last_modified: Date.now(),
-                                                    type: 'sectionfee',
-                                                    author: req.session.author
-                                                }
-                                                
-                                                /* Finally, create the new section_fee document. */
-                                                db.save(new_section_fee, function(err, doc3) {
-                                                    console.log('New section_fee:');
-                                                    console.log(doc3);
-
-                                                    if( err ) {
-                                                        throw new ServerError( err );
-                                                    } else {
-                                                        /* Now, we build the new feelist. */
-                                                        db.view('section_fee/list_by_parent', { key: new_doc._id }, function(err, res_arr) {
-                                                            console.log('building new feelist');
-                                                            console.log(res_arr);
-                                                            if( err ) {
-                                                                throw new ServerError( err );
-                                                            } else {
-                                                                /* Calculate the new feelist. */
-                                                                var new_feelist = _.map(res_arr, function(row) {
-                                                                    return row.value.fee_id;
-                                                                });
-                                                                new_feelist = new_feelist.join(',');
-                                                                console.log('new feelist');
-                                                                console.log(new_feelist);
-
-                                                                /* Update the section instance with the new feelist. */
-                                                                db.merge(new_doc._id, {feelist: new_feelist}, function(err, doc4) {
-                                                                    if( err ) {
-                                                                        throw new ServerError( err );
-                                                                    } else {
-                                                                        console.log('This makes me want to vomit.');
-                                                                        console.log(doc4);
-                                                                    }
-                                                                });
-                                                            }
-                                                        });
-                                                    }
-                                                }); 
-                                            });
-                                        }
-                                    });
-                                });
-                            } 
-                        });
-
-                        
-
-                        /* Return a value to the client. */
-                        emit_doc(new_doc._id, res);
-                    }
-                });
-            } else {
-                rCommon.auth_error(res);
-            }
+            res.send({}, 200);
         }
     });
 });
