@@ -276,7 +276,6 @@ function get_docs( doc_ids, callback ) {
 }
 
 app.get('/data/newinstance/:proposal_id/:section_id', function(req, res) {
-    var db = new(cradle.Connection)().database('app');
     var template_section_doc = {};
     var instance_section_id = '';
 
