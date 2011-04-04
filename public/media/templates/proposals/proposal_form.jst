@@ -145,15 +145,7 @@ Thank you
 			this.bind("remove", this.deleteRelation );
         },
         deleteRelation: function( model ){
-			console.log("delete triggered");
-			console.log(model);
-			id = model.id;
-			proposalid = proposal_view.proposalid;
-			$.ajax("delete/proposal_section/" + proposalid + "/" + id, 
-			{ type: "DELETE",
-				success: function( resp ) {
-				}
-			})
+			// This is deprecated
 		},
         addToPreview: function(section) {
             console.log("adding to preview");
