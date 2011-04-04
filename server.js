@@ -165,30 +165,6 @@ function emit_doc(id, res) {
     }
 }
 
-function new_section_fee( section_id, fee_id, author, callback ) {
-    var db = new(cradle.Connection)().database('app');
-
-    /* Generate the new section_fee document. */
-    var new_section_fee = {
-        section_id: section_id,
-        fee_id: fee_id,
-        created_at: Date.now(),
-        last_modified: Date.now(),
-        type: 'sectionfee',
-        author: author
-    }
-
-
-    /* Finally, create the new section_fee document. */
-    db.save(new_section_fee, function(err, new_doc) {
-        if( err ) {
-            return callback( err );
-        } else {
-            return callback( null, new_doc );
-        }
-    });
-}
-
 function get_doc(docid, username, callback) {
     /* Check auth details, returning the associated document. */
 
@@ -300,7 +276,6 @@ function get_docs( doc_ids, callback ) {
 }
 
 app.get('/data/newinstance/:proposal_id/:section_id', function(req, res) {
-    var db = new(cradle.Connection)().database('app');
     var template_section_doc = {};
     var instance_section_id = '';
 
@@ -570,27 +545,6 @@ app.get('/:list_type/:view', function(req, res) {
             couch_response(err, doc, res);
         }
     );
-});
-
-app.put('/user', function(req, res) {
-    /* Updated the supplied user record. */
-    var db = new(cradle.Connection)().database('app');
-    var docid = 'org.couchdb.user:' + req.session.username;
-    req.body.last_modified = Date.now();
-
-    var new_contents = {};
-    new_contents.author = req.session.username;
-
-    if( typeof req.body.name != 'undefined' ) {
-        new_contents.name = req.body.name;
-    }
-    if( typeof req.body.address != 'undefined' ) {
-        new_contents.address = req.body.address;
-    }
-    
-    db.merge(docid, new_contents, function(err, doc) {
-        couch_response(err, doc, res); 
-    });
 });
 
 app.put('/data/:id', function(req, res) {
@@ -910,23 +864,6 @@ app.delete('/data/:id/:rev', function(req, res) {
             } else {
                 rCommon.auth_error(res);
             }
-        }
-    });
-});
-
-/* Delete the relationship */
-app.delete('/delete/:controller/:parent_id/:child_id', function(req, res) {
-    var db = new(cradle.Connection)().database('app');
-
-    var key = {key: [req.params.parent_id, req.params.child_id]};
-    db.view(req.params.controller + '/list', key, function(err, rel_doc) {
-        if( err ) {
-            throw new ServerError( err );
-        } else {
-            /* Delete the relationship document.
-             * Views always return an array of objects.
-             */
-            couch_remove(db, rel_doc[0], res);
         }
     });
 });
