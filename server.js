@@ -165,30 +165,6 @@ function emit_doc(id, res) {
     }
 }
 
-function new_section_fee( section_id, fee_id, author, callback ) {
-    var db = new(cradle.Connection)().database('app');
-
-    /* Generate the new section_fee document. */
-    var new_section_fee = {
-        section_id: section_id,
-        fee_id: fee_id,
-        created_at: Date.now(),
-        last_modified: Date.now(),
-        type: 'sectionfee',
-        author: author
-    }
-
-
-    /* Finally, create the new section_fee document. */
-    db.save(new_section_fee, function(err, new_doc) {
-        if( err ) {
-            return callback( err );
-        } else {
-            return callback( null, new_doc );
-        }
-    });
-}
-
 function get_doc(docid, username, callback) {
     /* Check auth details, returning the associated document. */
 
