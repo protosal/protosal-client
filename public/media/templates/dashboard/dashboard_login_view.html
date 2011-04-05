@@ -28,7 +28,7 @@
                     <fieldset> 
                         <legend></legend> 
                         <ol>
-                            <li><label for="username">Email</label><input class="required" minlength="3"  value="" id="username" name="username" type="text" /></li>
+                            <li><label for="username">Email</label><input class="required" minlength="3"  value="<%= typeof route_id != "undefined" ? route_id : "" %>" id="username" name="username" type="text" /></li>
                             <li><label for="password">Password</label><input type="password" name="password" id="password" value="" class="required" minlength="6" /></li>
                         </ol>
                     </fieldset>

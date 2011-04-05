@@ -85,6 +85,7 @@
             var ProtosalController = Backbone.Controller.extend({
             
               routes: {
+                
                 "/:controller/:action":                 "defaultRoute",
                 "/:controller/:action/:vid":                 "defaultRoute",
                 "/logout":                 "logout",
@@ -104,7 +105,7 @@
                 landingPage: function(){
                   window.location = "#/dashboard/login"
                 },
-              defaultRoute: function(controller, action, vid) {
+              defaultRoute: function(controller, action, vid, parameters) {
                     /* Redirect people to the home page if they try
                        to access the login page when they are already
                        authenticated.
@@ -146,6 +147,7 @@
                         obj.username= GLOBALS.username;
                         obj.controller = GLOBALS.controller;
                         obj.action = GLOBALS.action;
+                        obj.route_id = GLOBALS.route_id;
                         if ( GLOBALS.action == "list" ) {
                             template_name = "common_list";
                         } else if( GLOBALS.action == "edit" ) {

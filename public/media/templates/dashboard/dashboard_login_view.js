@@ -57,7 +57,14 @@ dashboard_login_view = Backbone.View.extend({
     
     var loginview = new LoginView;
     
-    setTimeout( function (){     $("#username").focus(); }, 100);
+    setTimeout( function (){ 
+        if( options.route_id ) {   
+            $("#password").focus();
+            $.jGrowl("Your account has been activated",{  theme: 'green', position: "top-right"});
+        } else {
+            $("#username").focus();
+        }
+         }, 100);
     $("button").button();
     $(".userpage").click( function(){
         tab = $(this).attr("href");
