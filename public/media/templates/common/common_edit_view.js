@@ -71,7 +71,7 @@ common_edit_view = Backbone.View.extend({
 
                 }
                 // Append the header for this page
-                _.jstTemplate($("#" + options.controller + "_pageheader"), $("#page_header_template"), header_options);
+                    _.jstTemplate($("#" + options.controller + "_pageheader"), $("#page_header_template"), header_options);
 
 
                 // If an id is present we are editing a document, if the id is null we are creating a new object.   _Note: For the settings page a bit of hackery goes on in the nested else statement_
