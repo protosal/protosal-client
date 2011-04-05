@@ -87,9 +87,10 @@ function couch_response(err, doc, res) {
 // the id or rev of a document.
 //
 // We want to search in this order:
-// * doc.id
-// * doc._id
-// * doc.value._id
+//
+// * `doc.id`
+// * `doc._id`
+// * `doc.value._id`
 function get_doc_property(doc, prop_name) {
     
     var property = '';
@@ -271,6 +272,7 @@ function get_docs( doc_ids, callback ) {
 // supplied proposal.
 // 
 // **Returns:** Section instance document, HTTP 200
+//
 // **Error:** error object, HTTP 500
 app.get('/data/newinstance/:proposal_id/:section_id', function(req, res) {
     var template_section_doc = {};
@@ -328,6 +330,7 @@ app.get('/data/newinstance/:proposal_id/:section_id', function(req, res) {
 // Get the document with the specified id.
 //
 // **Returns:** document, HTTP 200
+//
 // **Error:** error object, HTTP 500
 app.get('/data/:id', function(req, res) {
     async.waterfall([
@@ -368,7 +371,7 @@ function get_docs_from_view( view, doc_ids, callback ) {
 
     var db = new(cradle.Connection)().database('app');
 
-    /* Return all corresponding child documents. */
+    // Return all corresponding child documents.
     db.view(view + '/list_by_id', {'keys': doc_ids}, function(err, docs) {
         if( err ) {
             return callback( err );
@@ -383,6 +386,7 @@ function get_docs_from_view( view, doc_ids, callback ) {
 // **Example:** `/related2/section_fee/GUID`
 //
 // **Returns:** array of child documents, HTTP 200
+//
 // **Error:** error object, HTTP 500
 app.get('/related2/:view/:id', function( req, res ){
     var db = new(cradle.Connection)().database('app');
@@ -421,6 +425,7 @@ function send_attachment( doc_id, attachment_name, res ) {
 // Return the user's logo document.
 //
 // **Returns:** Some type of image called `logo.[ext]`, HTTP 200
+//
 // **Error:** error object, HTTP 404
 app.get('/logo/:user_id', function(req, res) {
     var db = new(cradle.Connection)().database('app');
@@ -443,7 +448,7 @@ app.get('/logo/:user_id', function(req, res) {
             }
         }
 
-        /* If we didn't find a logo, return a default logo. */
+        // If we didn't find a logo, return a default logo.
         res.sendfile('public/media/images/default_logo.png');
     });
 });
@@ -451,6 +456,7 @@ app.get('/logo/:user_id', function(req, res) {
 // Get the user profile document for the currently logged in user.
 //
 // **Returns:** User profile document, HTTP 200
+//
 // **Error:** error document, HTTP 500
 app.get('/user', function(req, res) {
     var db = new(cradle.Connection)().database('app');
@@ -465,13 +471,14 @@ app.get('/user', function(req, res) {
 //
 // **Returns:** _Nothing_, user is redirected to login page for
 // client side handling.
+//
 // **Error:** error object, HTTP 500
 app.get('/register/:activation_key', function(req, res) {
     var db = new(cradle.Connection)().database('app');
     var key = { key: req.params.activation_key };
 
     db.view('user/register', key, function(err, doc_arr) {
-        /* If a document is returned, the activation link was valid. */
+        // If a document is returned, the activation link was valid.
         if( doc_arr.length == 1 ) {
             db.merge(doc_arr[0].id, {activated: true}, function(err, doc) {
                 if( err ) {
@@ -488,6 +495,7 @@ app.get('/register/:activation_key', function(req, res) {
 // Get the sum of proposals grouped by proposal status.
 //
 // **Returns:** array of proposal status counts, HTTP 200
+//
 // **Error:** error object, HTTP 500
 app.get('/proposal/stats', function(req, res) {
     var db = new(cradle.Connection)().database('app');
@@ -503,6 +511,7 @@ app.get('/proposal/stats', function(req, res) {
 });
 
 // Return the details of proposals, with the follow _optional_ parameters:
+//
 // * `limit`: Number of proposals to return. Specify `all` to get everything.
 // * `status`: Filter by status, e.g. `accepted`
 // * `startdate`: Epoch value for the start of the date range
@@ -511,6 +520,7 @@ app.get('/proposal/stats', function(req, res) {
 // _NB: Parameters cannot be specified out of order._
 //
 // **Returns:** Array of proposal documents, HTTP 200
+//
 // **Error:** error object, HTTP 500
 app.get('/proposal/:limit?/:status?/:startdate?/:enddate?', function(req, res) {
     var db = new(cradle.Connection)().database('app');
@@ -545,6 +555,7 @@ app.get('/proposal/:limit?/:status?/:startdate?/:enddate?', function(req, res) {
 // e.g. `/list_by_author/user`
 //
 // **Returns:** array of documents, HTTP 200
+//
 // **Error:** error object, HTTP 500
 app.get('/:list_type/:view', function(req, res) {
     var db = new(cradle.Connection)().database('app');
@@ -561,6 +572,7 @@ app.get('/:list_type/:view', function(req, res) {
 // supplied fields.
 //
 // **Returns:** _id and _rev of updated doc, HTTP 200
+//
 // **Error:** error object, HTTP 500
 app.put('/data/:id', function(req, res) {
     var db = new(cradle.Connection)().database('app');
@@ -584,7 +596,7 @@ app.put('/data/:id', function(req, res) {
     
 });
 
-// Change a user's password
+// Change a user's password.
 function change_password(
         username,
         old_password,
@@ -671,6 +683,7 @@ function change_password(
 //
 // **Returns:** _Nothing_, user is redirected to login page for
 // client side handling.
+//
 // **Error:** error object, HTTP 500
 app.post('/user', function(req, res) {
     var con = new(cradle.Connection)();
@@ -788,12 +801,14 @@ app.post('/user', function(req, res) {
 // Generate a pdf and return it to the client.
 //
 // **Expects:**
+//
 // * pdfdata: HTML to generate pdf from
 // * ProposalName: name of the proposal (with the .pdf extension)
 //
 // _NB: names are case sensitive._
 // 
 // **Returns:** Pdf document, HTTP 200
+//
 // **Error:** error object, HTTP 500
 app.post('/pdf', function(req, res) {
     pdfcrowd.generate_pdf(
@@ -813,6 +828,7 @@ app.post('/pdf', function(req, res) {
 // Email a pdf to the client.
 //
 // **Expects:**
+//
 // * `pdfdata`: HTML to generate pdf from
 // * `to`: Email address to send the email to
 // * `subject`: Email subject
@@ -822,6 +838,7 @@ app.post('/pdf', function(req, res) {
 // _NB: names are case sensitive._
 // 
 // **Returns:** {}, HTTP 200
+//
 // **Error:** error object, HTTP 500
 app.post('/pdf/email', function(req, res) {
     pdfcrowd.generate_pdf(
@@ -861,9 +878,11 @@ app.post('/pdf/email', function(req, res) {
 // Get 1 or more documents at once.
 //
 // **Expects:**
+//
 // * `keys`: Array of document ids
 //
 // **Returns:** Array of documents, HTTP 200
+//
 // **Error:** error object, HTTP 500
 app.post('/data/bulk_docs', function(req, res) {
     var db = new(cradle.Connection)().database('app');
@@ -892,11 +911,12 @@ app.post('/data/bulk_docs', function(req, res) {
 // JSON object to be used as the new document
 //
 // **Returns:** _id and _rev of the newly created document, HTTP 200
+//
 // **Error:** error object, HTTP 500
 app.post('/data', function(req, res) {
     var db = new(cradle.Connection)().database('app');
 
-    /* Set the author. */
+    // Set the author.
     req.body.author = req.session.username;
     req.body.created_at = Date.now();
     req.body.last_modified = Date.now();
@@ -911,6 +931,7 @@ app.post('/data', function(req, res) {
 // Delete the specified document. A document revision must be provided.
 //
 // **Returns:** Details of the deleted document, HTTP 200
+//
 // **Error:** error object, HTTP 500
 app.delete('/data/:id/:rev', function(req, res) {
     var db = new(cradle.Connection)().database('app');
