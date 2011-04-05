@@ -27,25 +27,16 @@ app.configure(function() {
     app.use(express.responseTime());  
     app.use(express.bodyParser());
 
-    app.use(express.methodOverride());
-    //app.use(express.logger());
-
     // Enable static file serving
     app.use(express.static(__dirname + '/public'));
-    //app.use(express.errorHandler({ dumpExceptions: true }));
-    //app.use(connect.logger({ format: ':method :url' }));
+
+    app.use(express.errorHandler({ dumpExceptions: true }));
     app.use(connect.cookieParser());
     app.use(connect.session({ secret: 'foobar' }));
-    app.use(rCommon.authCheck );
+
+    // Our custom authentication check
+    app.use(rCommon.authCheck);
 });
-
-function BadJSON(msg) {
-    this.name = 'BadJSON';
-    Error.call(this, msg);
-    Error.captureStackTrace(this, arguments.callee);
-}
-
-BadJSON.prototype.__proto__ = Error.prototype;
 
 function AuthRequired(msg) {
     this.name = 'AuthRequired';
@@ -58,7 +49,7 @@ AuthRequired.prototype.__proto__ = Error.prototype;
 function ServerError(msg) {
     this.name = 'ServerError';
     if( typeof msg == 'object' ) {
-        /* Stringify couchdb error objects. */
+        // Stringify couchdb error objects.
         this.message = 'Error: ' + msg.error + '. Reason: ' + msg.reason;
     }
     Error.call(this, msg);
@@ -67,10 +58,10 @@ function ServerError(msg) {
 
 ServerError.prototype.__proto__ = Error.prototype;
 
+// Should exceptions thrown from within the application.
+// May have to re-think the exception handling paradigm
 app.error(function(err, req, res, next){
-    if(err instanceof BadJSON) {
-        res.send(err, 400);
-    } else if(err instanceof AuthRequired) {
+    if(err instanceof AuthRequired) {
         rCommon.auth_error(res);
     } else if(err instanceof ServerError) {
         res.send({'error':'internal server error'}, 500);
@@ -91,16 +82,16 @@ function couch_response(err, doc, res) {
     }
 }
 
-function get_property(doc, prop_name) {
-    /* Get a property from a couchdb document.
-     * This function is only designed for getting
-     * the id or rev of a document.
-     *
-     * We want to search in this order:
-     * doc.id
-     * doc._id
-     * doc.value._id
-     */
+// Get a property from a couchdb document.
+// This function is only designed for getting
+// the id or rev of a document.
+//
+// We want to search in this order:
+// doc.id
+// doc._id
+// doc.value._id
+function get_doc_property(doc, prop_name) {
+    
     var property = '';
     if( typeof doc[prop_name] != 'undefined' ) {
         property = doc[prop_name];
@@ -116,7 +107,7 @@ function get_property(doc, prop_name) {
 
 function couch_remove(db, doc, res) {
     console.log('Before docid');
-    var docid = get_property(doc, 'id');
+    var docid = get_doc_property(doc, 'id');
     console.log('Doc Id: ' + docid);
 
     if( doc.template ) {
@@ -131,7 +122,7 @@ function couch_remove(db, doc, res) {
         });
     } else {
         console.log('REMOVE IT!');
-        var revid = get_property(doc, 'rev');
+        var revid = get_doc_property(doc, 'rev');
 
         db.remove(docid, revid,
             function(err, doc) {
@@ -165,8 +156,8 @@ function emit_doc(id, res) {
     }
 }
 
+// Check auth details, returning the associated document.
 function get_doc(docid, username, callback) {
-    /* Check auth details, returning the associated document. */
 
     var db = new(cradle.Connection)().database('app');
     
@@ -176,8 +167,7 @@ function get_doc(docid, username, callback) {
         if( doc.author == username ) {
             return callback( null, doc );
         } else {
-            /* Indicate failure. */
-            return callback( false );
+            return callback( {error: 'unauthorized' } );
         }
     });
 }
@@ -185,19 +175,19 @@ function get_doc(docid, username, callback) {
 function new_doc_instance(doc, callback) {
     var db = new(cradle.Connection)().database('app');
 
-    /* Save a copy of the doc._id as we will delete it. */
+    // Save a copy of the doc._id as we will delete it.
     var template_id = doc._id;
 
-    /* Delete _id and _rev so we create a new record. */
+    // Delete _id and _rev so we create a new record.
     delete doc._id;
     delete doc._rev;
 
-    /* Indicate the new document is an instance. */
+    // Indicate the new document is an instance.
     doc.template = false;
-    /* Record the template this document was generated from. */
+    // Record the template this document was generated from.
     doc.template_id = template_id;
 
-    /* Set the new created and modified times. */
+    // Set the new created and modified times.
     doc.created_at = Date.now();
     doc.last_modified = Date.now();
 
@@ -205,16 +195,13 @@ function new_doc_instance(doc, callback) {
         if( err ) {
             return callback( err );
         } else {
-            /* Return the template id and the saved doc details. */
             return callback( null, doc );
         }
     });
 }
 
+// Create a relationship between the proposal and the section instance.
 function new_proposal_section(proposal_id, section_id, author, callback) {
-    /* Create a relationship between the proposal and the
-     * section instance.
-     */
     var db = new(cradle.Connection)().database('app');
 
     var new_proposal_section = {
@@ -234,8 +221,6 @@ function new_proposal_section(proposal_id, section_id, author, callback) {
 }
 
 function clone_docs_series(doc_arr, callback) {
-    console.log("doc_arr:");
-
     async.mapSeries(doc_arr, new_doc_instance, function(err, result) {
         if( err ) {
             return callback( err );
@@ -247,8 +232,6 @@ function clone_docs_series(doc_arr, callback) {
 
 function new_fee_list( section_id, fee_docs, callback ) {
     var db = new(cradle.Connection)().database('app');
-
-    console.log("fee docs:");
 
     var fee_ids = fee_docs.map(function( doc ) {
         return doc.id;
@@ -275,6 +258,11 @@ function get_docs( doc_ids, callback ) {
     });
 }
 
+// Create a new instance of the supplied section, attaching it to the
+// supplied proposal.
+// 
+// **Returns:** Section instance document, HTTP 200
+// **Error:** error object, HTTP 500
 app.get('/data/newinstance/:proposal_id/:section_id', function(req, res) {
     var template_section_doc = {};
     var instance_section_id = '';
@@ -288,43 +276,26 @@ app.get('/data/newinstance/:proposal_id/:section_id', function(req, res) {
             );
         },
         function( section_doc, callback ) {
-            console.log("new section instance");
-
             template_section_doc = section_doc;
             
             new_doc_instance( section_doc, callback );
         },
         function( section_instance_doc, callback ) {
-            console.log("get fee docs");
-            console.log(template_section_doc);
-
             instance_section_id = section_instance_doc.id;
 
             get_docs( template_section_doc.feelist, callback );
         },
         function( template_fee_docs, callback ) {
-            console.log("clone docs series");
-
-            console.log(template_fee_docs);
-
             var template_fee_docs = template_fee_docs.map(function( doc ) {
                 return doc;
             });
 
-            console.log(template_fee_docs);
-
             clone_docs_series( template_fee_docs, callback ); 
         },
         function( instance_fee_docs, callback ) {
-            console.log("new fee list");
-            console.log(instance_fee_docs);
-            
             new_fee_list( instance_section_id, instance_fee_docs, callback );
         },
         function( doc, callback ) {
-            console.log("new proposal section");
-            console.log(doc);
-
             new_proposal_section(
                 req.params.proposal_id,
                 instance_section_id,
@@ -345,27 +316,34 @@ app.get('/data/newinstance/:proposal_id/:section_id', function(req, res) {
             console.log( err );
             console.log( new Error().stack );
 
-            res.send({}, 500);
+            res.send( err, 500 );
         }
     });
 });
 
+// Get the document with the specified id.
+//
+// **Returns:** document, HTTP 200
+// **Error:** error object, HTTP 500
 app.get('/data/:id', function(req, res) {
-    var db = new(cradle.Connection)().database('app');
-
-    db.get(req.params.id, function(err, doc) {
-        if( err ) {
-            throw new ServerError( err );
-        } else {
-            if( doc.author == req.session.username ) {
-                res.send(doc);
-            } else {
-                rCommon.auth_error(res);
-            }
+    async.waterfall([
+        function( callback ) {
+            get_doc( req.params.id, req.session.username, callback );
+        },
+        function( doc, callback ) {
+            res.send( doc, 200 );
+            return callback( null );
         }
+    ],
+    function( err ) {
+        if( err ) res.send( {}, 500 );
     });
 });
 
+// Assumes that related documents are stored in a property
+// called `[doc_type]list`, e.g. `feelist` or `sectionlist`.
+//
+// We should assume that this list is an array.
 function get_related_doc_ids(parent_id, doc_type, callback) {
     var db = new(cradle.Connection)().database('app');
 
@@ -373,14 +351,14 @@ function get_related_doc_ids(parent_id, doc_type, callback) {
         if( err ) {
             return callback( err );
         } else {
-            console.log("get_related_doc_ids");
-            console.log(doc);
             var doc_list = doc[doc_type + 'list'];
             return callback( null, doc_list );
         }
     });
 }
 
+// Return the documents corresponding to the document ids in
+// `doc_ids` from the `view`.
 function get_docs_from_view( view, doc_ids, callback ) {
     if( doc_ids.length == 0 ) return callback( null, [] );
 
@@ -396,15 +374,13 @@ function get_docs_from_view( view, doc_ids, callback ) {
     });
 }
 
+// This route returns all child documents in a relationship.
+//
+// It takes a relationship view expected to be named
+// `parent_child`, where both parent and child are
+// valid views. For example 'section_fee', where both
+// 'section' and 'fee' are valid views.
 app.get('/related2/:view/:id', function( req, res ){
-    /* This route returns all child documents in a relationship.
-     *
-     * It takes a relationship view expected to be named
-     * 'parent_child', where both parent and child are
-     * valid views. For example 'section_fee', where both
-     * 'section' and 'fee' are valid views.
-     */
-
     var db = new(cradle.Connection)().database('app');
 
     var child = req.params.view.split('_')[1];
@@ -414,8 +390,6 @@ app.get('/related2/:view/:id', function( req, res ){
             get_related_doc_ids( req.params.id, child, callback );
         },
         function( doc_ids, callback ) {
-            console.log("doc_ids");
-            console.log(doc_ids);
             get_docs_from_view( child, doc_ids, callback );
         },
         function( docs, callback ) {
@@ -431,6 +405,7 @@ app.get('/related2/:view/:id', function( req, res ){
     });
 });
 
+/* This is some text above a function. */
 app.get('/logo/:user_id', function(req, res) {
     var db = new(cradle.Connection)().database('app');
     var docid = 'org.couchdb.user:' + req.params.user_id;
