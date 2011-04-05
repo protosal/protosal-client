@@ -1,3 +1,4 @@
+       
         // ## Configuration
         // The globals below have no threat to security, session is only used for presentation and never for transaction.   In the case that session is used acidentally the server has protection against spoofing anyway.
         var GLOBALS = {
@@ -18,39 +19,6 @@
         
         // This simply redirects all url's that aren't expected to the homepage
         if(window.location.pathname != "/") window.location = "/";
-        
-        // Dustin Diaz script loader
-        $script([
-            'http://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.js',
-            '/media/js/underscore.js',
-            '/media/js/backbone.js'
-            ],function(){
-                $script([
-                '/media/js/jquery/plugins/ryth/rythjsthtml.js',
-                '/media/js/common.js',
-                '/media/js/jquery.corner.js',
-                'https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.9/jquery-ui.min.js',
-                '/media/js/jgrowl.min.js',
-                '/media/js/jquery/plugins/ryth/rythbutton.js',
-                '/media/js/jquery.dataTables.js',
-               	'/media/js/backbone_extensions.js'
-                ],
-            // Load functions sequentially for fun, might just scratch this off
-             function(){
-             	$script(['/media/templates/all.js'],
-             	 function(){
-		            loadMain();
-		            $script([
-		                '/media/highchart/js/highcharts.js',
-		                '/media/ckeditor/ckeditor.js',
-		                '/media/js/jquery.json-2.2.min.js',
-		                '/media/js/jquery.defaultvalue.js',
-		            ], function(){ 
-		                $script('/media/ckeditor/adapters/jquery.js', function(){})
-        })
-        })
-        })
-        });
         
         
        function loadMain() {
@@ -112,7 +80,6 @@
                      
                 }
             });
-            
             // ## Protosals Main Route Controller
             // Jimmy neutron
             var ProtosalController = Backbone.Controller.extend({
@@ -295,3 +262,4 @@
             $(".variables_close").button();          
         };
         
+            loadMain();
