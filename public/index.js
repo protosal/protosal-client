@@ -19,7 +19,7 @@
         // This simply redirects all url's that aren't expected to the homepage
         if(window.location.pathname != "/") window.location = "/";
         
-        // Dynamically load CSS files.
+        // Dustin Diaz script loader
         $script([
             'http://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.js',
             '/media/js/underscore.js',
@@ -52,27 +52,24 @@
         })
         });
         
+        
        function loadMain() {
-            console.log("Head.js has finished loading");
-            
-			// Now this function loads the main code
-     
-
-            
             d = new Date();
             $.ajax({ 
                 url: "media/templates/all.html?" +   d.getTime(),
                 success: function(response){
+                        // Once the html is loaded we can start rendering the pages
                         $("body").append(response);
                         
+                        // Add this prefilter to handle errors
                          $.ajaxPrefilter(function( options ) {
-                          
                            options.error = function(data){
                                 if( typeof $.parseJSON( data.responseText ).redirect != "undefined" ) {
                                     redirect( $.parseJSON( data.responseText ).redirect );
                                 }
                            }
                         });
+                        
                         var url = GLOBALS.server_base + "/user";
                         $.ajax( url, {
                             dataType: "json",
@@ -84,6 +81,7 @@
                                     body = $.parseJSON( headers.responseText );
                                     GLOBALS.username = body._id.replace("org.couchdb.user:", "");
                                 }
+                                    // We are setting error messages here this has to go somewhere else
                                     $.ajaxPrefilter( function( options, originalOptions, jqXHR ) {
                                         errorMessages = {
                                             "already registered": "This username has already been taken",
@@ -115,6 +113,8 @@
                 }
             });
             
+            // ## Protosals Main Route Controller
+            // Jimmy neutron
             var ProtosalController = Backbone.Controller.extend({
             
               routes: {
@@ -156,7 +156,8 @@
                         GLOBALS.action = action;
                         GLOBALS.route_id = vid;
 
-                        $('.maintabs li').removeClass('ui-state-active').removeClass('ui-tabs-selected'); //Make all tabs inactive
+                        $('.maintabs li').removeClass('ui-state-active').removeClass('ui-tabs-selected'); 
+                        //Make all tabs inactive
                         $("#" + GLOBALS.controller).addClass('ui-state-active').addClass('ui-tabs-selected');
                         $("#contentpane div").fadeOut(300);
                         //get URL for the ajax call
