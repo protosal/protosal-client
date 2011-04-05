@@ -25,27 +25,22 @@ cradle.setup(rCommon.cradle_config);
 
 app.configure(function() {
     app.use(express.responseTime());  
-    app.use(express.bodyParser());
 
-    app.use(express.methodOverride());
-    //app.use(express.logger());
+    // Let express parse the request body
+    // into the JSON object
+    //
+    //     req.body
+    app.use(express.bodyParser());
 
     // Enable static file serving
     app.use(express.static(__dirname + '/public'));
-    //app.use(express.errorHandler({ dumpExceptions: true }));
+
+    app.use(express.errorHandler({ dumpExceptions: true }));
     //app.use(connect.logger({ format: ':method :url' }));
     app.use(connect.cookieParser());
     app.use(connect.session({ secret: 'foobar' }));
-    app.use(rCommon.authCheck );
+    app.use(rCommon.authCheck);
 });
-
-function BadJSON(msg) {
-    this.name = 'BadJSON';
-    Error.call(this, msg);
-    Error.captureStackTrace(this, arguments.callee);
-}
-
-BadJSON.prototype.__proto__ = Error.prototype;
 
 function AuthRequired(msg) {
     this.name = 'AuthRequired';
@@ -68,9 +63,7 @@ function ServerError(msg) {
 ServerError.prototype.__proto__ = Error.prototype;
 
 app.error(function(err, req, res, next){
-    if(err instanceof BadJSON) {
-        res.send(err, 400);
-    } else if(err instanceof AuthRequired) {
+    if(err instanceof AuthRequired) {
         rCommon.auth_error(res);
     } else if(err instanceof ServerError) {
         res.send({'error':'internal server error'}, 500);
@@ -406,6 +399,7 @@ app.get('/related2/:view/:id', function( req, res ){
     });
 });
 
+/* This is some text above a function. */
 app.get('/logo/:user_id', function(req, res) {
     var db = new(cradle.Connection)().database('app');
     var docid = 'org.couchdb.user:' + req.params.user_id;
