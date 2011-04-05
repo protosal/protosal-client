@@ -9,29 +9,29 @@ var async = require('async');
 var uuid = require('node-uuid')
 var postmark = require('postmark')('473b864e-b165-473c-9435-68981a3bbeef');
 
-exports.defaultSalt = '1';
+var ryth = exports;
 
-function get_master_auth() {
-    return { username: 'ryth', password: 'abCD--12' };
-}
-
-function auth_error(res, reason) {
-    if( reason == null )
-        reason = 'incorrect user';
-    res.send( {error: 'unauthorized', reason: reason}, 401 ); 
-}
-
-exports.auth_error = auth_error;
-
-exports.cradle_config = {
+ryth.cradle_config = {
     host: '127.0.0.1',
     port: 5984,
     auth: get_master_auth()
 }
 
-cradle.setup(exports.cradle_config);
+cradle.setup(ryth.cradle_config);
 
-function couchdb_error(err, callback) {
+ryth.defaultSalt = '1';
+
+function get_master_auth() {
+    return { username: 'ryth', password: 'abCD--12' };
+}
+
+ryth.auth_error = function(res, reason) {
+    if( reason == null )
+        reason = 'incorrect user';
+    res.send( {error: 'unauthorized', reason: reason}, 401 ); 
+}
+
+ryth.couchdb_error = function(err, callback) {
     var err_obj = {
         body: err,
         statusCode: 500
@@ -39,11 +39,14 @@ function couchdb_error(err, callback) {
     return callback(err_obj);
 }
 
-exports.couchdb_error = couchdb_error;
+// Return an appropriately encoded username.
+ryth.username_docid = function( username ) {
+    return 'org.couchdb.user:' + encodeURIComponent( username );
+}
 
 function register(req, res) {
     console.log('we are registering.');
-    var docid = 'org.couchdb.user:' + req.body.email;
+    var docid = ryth.username_docid( req.body.email );
 
     var con = new(cradle.Connection)();
     var db = con.database('_users');
@@ -52,7 +55,7 @@ function register(req, res) {
         function( callback ) {
             /* Check to see if the user document already exists in the _users table. */
             db.head(docid, function(err, doc) {
-                if( err ) return couchdb_error(err, callback);
+                if( err ) return ryth.couchdb_error(err, callback);
 
                 /* If the etag is undefined, this user has not yet registered. */
                 if( typeof doc.etag == 'undefined' ) {
@@ -77,14 +80,14 @@ function register(req, res) {
             var newUser = {
                 _id: docid,
                 name: req.body.email,
-                password_sha: Hash.hex_sha1(req.body.password + exports.defaultSalt),
-                salt: exports.defaultSalt,
+                password_sha: Hash.hex_sha1(req.body.password + ryth.defaultSalt),
+                salt: ryth.defaultSalt,
                 type: 'user',
                 roles: []
             }
 
             db.save(newUser, function(err, doc) {
-                if( err ) return couchdb_error(err, callback);
+                if( err ) return ryth.couchdb_error(err, callback);
 
                 return callback(null);
             });
@@ -105,7 +108,7 @@ function register(req, res) {
             var db2 = new(cradle.Connection)().database('app');
 
             db2.save(newUserProfile, function(err, doc) { 
-                if( err ) return couchdb_error(err, callback);
+                if( err ) return ryth.couchdb_error(err, callback);
                 
                 return callback(null, newUserProfile.activation_key);
             });
@@ -153,7 +156,7 @@ function register(req, res) {
 
 function login(req, res) {
     if( req.method != 'POST' ) {
-        auth_error(res);
+        ryth.auth_error(res);
         return;    
     }
 
@@ -166,22 +169,22 @@ function login(req, res) {
 
         con.request('GET', '/_session', function(err, doc) {
             if( err ) {
-                auth_error(res, 'incorrect credentials');
+                ryth.auth_error(res, 'incorrect credentials');
             } else {
                 var db = con.database('app');
-                var docid = 'org.couchdb.user:' + req.body.username;
+                var docid = ryth.username_docid( req.body.username );
 
                 /* Check that the user has activated their account. */
                 db.get(docid, function(err, doc) {
                     if( err ) {
-                        auth_error(res, 'user not found');
+                        ryth.auth_error(res, 'user not found');
                     } else {
                         if( doc.activated ) {
                             req.session.auth = true;
                             req.session.username = req.body.username;
                             res.send({}, 200);
                         } else {
-                            auth_error(res, 'not activated');
+                            ryth.auth_error(res, 'not activated');
                         }
                     }
                 });
@@ -191,7 +194,7 @@ function login(req, res) {
         /* Put auth details back to the way they were. */
         cradle.auth = get_master_auth();
     } else {
-        auth_error(res);
+        ryth.auth_error(res);
         return;    
     }
 }
@@ -201,7 +204,7 @@ function logout(req, res) {
     res.send({}, 200);
 }
 
-exports.authCheck = function (req, res, next) {
+ryth.authCheck = function (req, res, next) {
     url = req.urlp = urlparser.parse(req.url, true);
 
     // ####
@@ -239,7 +242,7 @@ exports.authCheck = function (req, res, next) {
     } else if ( url.pathname == '/user/login' ) {
         login(req, res);
     } else {
-        auth_error(res);
+        ryth.auth_error(res);
     }
 }
 

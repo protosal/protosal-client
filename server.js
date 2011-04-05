@@ -1,7 +1,7 @@
 // Require the orm and framework
 var express = require('express');
 var http = require('http');
-var rCommon = require('./node-server/common')
+var ryth = require('./node-server/ryth')
 var connect = require('connect');
 var _ = require('underscore');
 var Exceptional = require('./node-server/exceptional').Exceptional;
@@ -21,7 +21,7 @@ var app = express.createServer(
   form({ keepExtensions: true })
 );
 
-cradle.setup(rCommon.cradle_config);
+cradle.setup(ryth.cradle_config);
 
 app.configure(function() {
     app.use(express.responseTime());  
@@ -35,7 +35,7 @@ app.configure(function() {
     app.use(connect.session({ secret: 'foobar' }));
 
     // Our custom authentication check
-    app.use(rCommon.authCheck);
+    app.use(ryth.authCheck);
 });
 
 function AuthRequired(msg) {
@@ -62,7 +62,7 @@ ServerError.prototype.__proto__ = Error.prototype;
 // May have to re-think the exception handling paradigm.
 app.error(function(err, req, res, next){
     if(err instanceof AuthRequired) {
-        rCommon.auth_error(res);
+        ryth.auth_error(res);
     } else if(err instanceof ServerError) {
         res.send({'error':'internal server error'}, 500);
     } else {
@@ -429,7 +429,7 @@ function send_attachment( doc_id, attachment_name, res ) {
 // **Error:** error object, HTTP 404
 app.get('/logo/:user_id', function(req, res) {
     var db = new(cradle.Connection)().database('app');
-    var docid = 'org.couchdb.user:' + req.params.user_id;
+    var docid = ryth.username_docid( req.params.user_id );
 
     db.get(docid, function(err, doc) {
         if (err) return res.send(err, 404);
@@ -460,7 +460,7 @@ app.get('/logo/:user_id', function(req, res) {
 // **Error:** error document, HTTP 500
 app.get('/user', function(req, res) {
     var db = new(cradle.Connection)().database('app');
-    var docid = 'org.couchdb.user:' + req.session.username;
+    var docid = ryth.username_docid( req.session.username );
 
     db.get(docid, function(err, doc) {
         couch_response(err, doc, res); 
@@ -480,12 +480,12 @@ app.get('/register/:activation_key', function(req, res) {
     db.view('user/register', key, function(err, doc_arr) {
         // If a document is returned, the activation link was valid.
         if( doc_arr.length == 1 ) {
-            db.merge(doc_arr[0].id, {activated: true}, function(err, doc) {
+            db.merge(encodeURIComponent( doc_arr[0].id ), {activated: true}, function(err, doc) {
                 if( err ) {
                     throw new ServerError( err );
                 } else {
                     var user_login = doc_arr[0].id.replace('org.couchdb.user:', '');
-                    res.redirect('#/dashboard/login/activated/' + user_login);
+                    res.redirect('#/dashboard/login/' + user_login);
                 }
             });
         }
@@ -604,7 +604,7 @@ function change_password(
         confirm_password,
         parent_callback) {
 
-    var docid = 'org.couchdb.user:' + username;
+    var docid = ryth.username_docid( username );
 
     var user_db = new(cradle.Connection)().database('_users');
     
@@ -633,9 +633,9 @@ function change_password(
 
             user_db.get(docid, function(err, doc) {
                 if( err ) {
-                    callback( err );
+                    return callback( err );
                 } else {
-                    callback( null, doc );
+                    return callback( null, doc );
                 }
             });
         },
@@ -643,9 +643,9 @@ function change_password(
             // If the old password and the password in the database match.
 
             if( doc.password_sha == Hash.hex_sha1(old_password + doc.salt) ) {
-                callback( null, doc ); 
+                return callback( null, doc ); 
             } else {
-                callback( {error: 'old_password_incorrect'} );
+                return callback( {error: 'old_password_incorrect'} );
             }
         },
         function( doc, callback ) {
@@ -657,18 +657,18 @@ function change_password(
 
             user_db.merge(docid, user_doc, function(err, doc) {
                 if( err ) {
-                    callback( err );
+                    return callback( err );
                 } else {
-                    callback( null );
+                    return callback( null );
                 }
             });
         }
     ],
     function( err ) {
         if( err ) {
-            parent_callback( err );
+            return parent_callback( err );
         } else {
-            parent_callback( null );
+            return parent_callback( null );
         }
     });
 }
@@ -688,7 +688,7 @@ function change_password(
 app.post('/user', function(req, res) {
     var con = new(cradle.Connection)();
     var db = con.database('app');
-    var docid = 'org.couchdb.user:' + req.session.username;
+    var docid = ryth.username_docid( req.session.username );
 
     req.form.complete(function(err, fields, files) {
         if( err ) throw new ServerError( err );
@@ -711,10 +711,10 @@ app.post('/user', function(req, res) {
 
                 db.merge(docid, fields, function(err, doc) {
                     if( err ) {
-                        callback( err );
+                        return callback( err );
                     } else {
                         if( typeof files.image != 'undefined' ) {
-                            callback( null, doc );
+                            return callback( null, doc );
                         } else {
                             // We terminate here, as no image was uploaded.
                             res.redirect('#/user/edit');
@@ -726,9 +726,9 @@ app.post('/user', function(req, res) {
                 // Get attachment details.
                 db.get(doc.id, function(err, doc) {
                     if( err ) {
-                        callback( err );
+                        return callback( err );
                     } else {
-                        callback( null, doc );
+                        return callback( null, doc );
                     }
                 });
             },
@@ -752,15 +752,15 @@ app.post('/user', function(req, res) {
 
                     con.request('DELETE', path, options, function(err, doc) {
                         if( err ) {
-                            callback( err );
+                            return callback( err );
                         } else {
                             // Send the new new revision returned by CouchDB.
-                            callback( null, doc.rev );
+                            return callback( null, doc.rev );
                         }
                     });
                 } else {
                     // Send the existing revision, as the doc hasn't been updated.
-                    callback( null, doc._rev );
+                    return callback( null, doc._rev );
                 }
             },
             function( rev, callback ) {
@@ -775,12 +775,12 @@ app.post('/user', function(req, res) {
                     fs.createReadStream(files.image.path),
                     function(err, doc) {
                         if( err ) {
-                            callback( err );
+                            return callback( err );
                         } else {
                             // Delete the file once we have finished uploading.
                             fs.unlink(files.image.path);
 
-                            callback( null );
+                            return callback( null );
                         }
                     }
                 );
@@ -846,7 +846,6 @@ app.post('/pdf/email', function(req, res) {
     ).on('complete', function(data, response) {
         try {
             // Send an email with the pdf as an attachment.
-            // var docid = 'org.couchdb.user:' + req.session.username;
             console.log(req.session.username);
             postmark.send({
                 'From': req.session.username,
@@ -942,7 +941,7 @@ app.delete('/data/:id/:rev', function(req, res) {
             if( doc.author == req.session.username ) {
                 couch_remove(db, doc, res);
             } else {
-                rCommon.auth_error(res);
+                ryth.auth_error(res);
             }
         }
     });
