@@ -521,7 +521,8 @@ proposal_form_view = Backbone.View.extend({
                 console.log("Get the proposal id");
                 that.proposalid = data.id;
                 
-                if( options.client_id != "" ){
+                if( typeof options.client_id != "undefined" ){
+                    
                     $.ajax( "data/" + options.client_id ,{
                         dataType: "json",
                         success: function(data){
