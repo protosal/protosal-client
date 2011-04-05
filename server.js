@@ -59,7 +59,7 @@ function ServerError(msg) {
 ServerError.prototype.__proto__ = Error.prototype;
 
 // Should exceptions thrown from within the application.
-// May have to re-think the exception handling paradigm
+// May have to re-think the exception handling paradigm.
 app.error(function(err, req, res, next){
     if(err instanceof AuthRequired) {
         rCommon.auth_error(res);
@@ -78,7 +78,7 @@ function couch_response(err, doc, res) {
     if( err ) {
         res.send( err, 500 );
     } else {
-        res.send( doc );
+        res.send( doc, 200 );
     }
 }
 
@@ -87,9 +87,10 @@ function couch_response(err, doc, res) {
 // the id or rev of a document.
 //
 // We want to search in this order:
-// doc.id
-// doc._id
-// doc.value._id
+//
+// * `doc.id`
+// * `doc._id`
+// * `doc.value._id`
 function get_doc_property(doc, prop_name) {
     
     var property = '';
@@ -137,6 +138,15 @@ function couch_remove(db, doc, res) {
                 }
             }
         );
+    }
+}
+
+function async_error( err, res ) {
+    if( err ) {
+        console.log( err );
+        console.log( new Error().stack );
+
+        res.send( err, 500 );
     }
 }
 
@@ -262,6 +272,7 @@ function get_docs( doc_ids, callback ) {
 // supplied proposal.
 // 
 // **Returns:** Section instance document, HTTP 200
+//
 // **Error:** error object, HTTP 500
 app.get('/data/newinstance/:proposal_id/:section_id', function(req, res) {
     var template_section_doc = {};
@@ -312,18 +323,14 @@ app.get('/data/newinstance/:proposal_id/:section_id', function(req, res) {
         }
     ],
     function( err ) {
-        if( err ) {
-            console.log( err );
-            console.log( new Error().stack );
-
-            res.send( err, 500 );
-        }
+        async_error( err, res );
     });
 });
 
 // Get the document with the specified id.
 //
 // **Returns:** document, HTTP 200
+//
 // **Error:** error object, HTTP 500
 app.get('/data/:id', function(req, res) {
     async.waterfall([
@@ -336,7 +343,7 @@ app.get('/data/:id', function(req, res) {
         }
     ],
     function( err ) {
-        if( err ) res.send( {}, 500 );
+        async_error( err, res );
     });
 });
 
@@ -364,7 +371,7 @@ function get_docs_from_view( view, doc_ids, callback ) {
 
     var db = new(cradle.Connection)().database('app');
 
-    /* Return all corresponding child documents. */
+    // Return all corresponding child documents.
     db.view(view + '/list_by_id', {'keys': doc_ids}, function(err, docs) {
         if( err ) {
             return callback( err );
@@ -376,10 +383,11 @@ function get_docs_from_view( view, doc_ids, callback ) {
 
 // This route returns all child documents in a relationship.
 //
-// It takes a relationship view expected to be named
-// `parent_child`, where both parent and child are
-// valid views. For example 'section_fee', where both
-// 'section' and 'fee' are valid views.
+// **Example:** `/related2/section_fee/GUID`
+//
+// **Returns:** array of child documents, HTTP 200
+//
+// **Error:** error object, HTTP 500
 app.get('/related2/:view/:id', function( req, res ){
     var db = new(cradle.Connection)().database('app');
 
@@ -397,15 +405,28 @@ app.get('/related2/:view/:id', function( req, res ){
         }
     ],
     function( err ) {
-        if( err ) {
-            console.log( err );
-            
-            res.send({}, 500);
-        }
+        async_error( err, res );
     });
 });
 
-/* This is some text above a function. */
+function send_attachment( doc_id, attachment_name, res ) {
+    // Proxy the response from couchdb to the res object.
+    db.getAttachment(doc_id, attachment_name).on('response', function(response) {
+        response.on('data', function(chunk) {
+            res.write(chunk, 'binary');
+        }); 
+
+        response.on('end', function() {
+            res.end();
+        });
+    });
+}
+
+// Return the user's logo document.
+//
+// **Returns:** Some type of image called `logo.[ext]`, HTTP 200
+//
+// **Error:** error object, HTTP 404
 app.get('/logo/:user_id', function(req, res) {
     var db = new(cradle.Connection)().database('app');
     var docid = 'org.couchdb.user:' + req.params.user_id;
@@ -413,36 +434,30 @@ app.get('/logo/:user_id', function(req, res) {
     db.get(docid, function(err, doc) {
         if (err) return res.send(err, 404);
 
-        /* Loop through all attachment documents. */
+        // Loop through all attachment documents.
         for( var name in doc._attachments ) {
-            /* Stopping at the first document containing 'logo'.
-             * This works because every time a new logo is updated,
-             * all other attachements on the user profile document
-             * are deleted.
-             */
+            // Stopping at the first document containing 'logo'.
+            // This works because every time a new logo is updated,
+            // all other attachements on the user profile document
+            // are deleted.
             if( name.indexOf('logo') != -1 ) {
                 console.log(doc._id);
                 console.log(name);
-                /* Proxy the response from couchdb. */
-                db.getAttachment(doc._id, name).on('response', function(response) {
-                    response.on('data', function(chunk) {
-                        res.write(chunk, 'binary');
-                    }); 
-
-                    response.on('end', function() {
-                        res.end();
-                    });
-                });
-
-                return;
+                
+                return send_attachment( doc._id, name, res );
             }
         }
 
-        /* If we didn't find a logo, return a default logo. */
+        // If we didn't find a logo, return a default logo.
         res.sendfile('public/media/images/default_logo.png');
     });
 });
 
+// Get the user profile document for the currently logged in user.
+//
+// **Returns:** User profile document, HTTP 200
+//
+// **Error:** error document, HTTP 500
 app.get('/user', function(req, res) {
     var db = new(cradle.Connection)().database('app');
     var docid = 'org.couchdb.user:' + req.session.username;
@@ -452,12 +467,18 @@ app.get('/user', function(req, res) {
     });
 });
 
+// Activate the user's account.
+//
+// **Returns:** _Nothing_, user is redirected to login page for
+// client side handling.
+//
+// **Error:** error object, HTTP 500
 app.get('/register/:activation_key', function(req, res) {
     var db = new(cradle.Connection)().database('app');
     var key = { key: req.params.activation_key };
 
     db.view('user/register', key, function(err, doc_arr) {
-        /* If a document is returned, the activation link was valid. */
+        // If a document is returned, the activation link was valid.
         if( doc_arr.length == 1 ) {
             db.merge(doc_arr[0].id, {activated: true}, function(err, doc) {
                 if( err ) {
@@ -471,6 +492,11 @@ app.get('/register/:activation_key', function(req, res) {
     });
 });
 
+// Get the sum of proposals grouped by proposal status.
+//
+// **Returns:** array of proposal status counts, HTTP 200
+//
+// **Error:** error object, HTTP 500
 app.get('/proposal/stats', function(req, res) {
     var db = new(cradle.Connection)().database('app');
     var options = {
@@ -484,6 +510,18 @@ app.get('/proposal/stats', function(req, res) {
     });
 });
 
+// Return the details of proposals, with the follow _optional_ parameters:
+//
+// * `limit`: Number of proposals to return. Specify `all` to get everything.
+// * `status`: Filter by status, e.g. `accepted`
+// * `startdate`: Epoch value for the start of the date range
+// * `enddate`: Epoch value for the end of the date range
+//
+// _NB: Parameters cannot be specified out of order._
+//
+// **Returns:** Array of proposal documents, HTTP 200
+//
+// **Error:** error object, HTTP 500
 app.get('/proposal/:limit?/:status?/:startdate?/:enddate?', function(req, res) {
     var db = new(cradle.Connection)().database('app');
     var options = {
@@ -491,7 +529,7 @@ app.get('/proposal/:limit?/:status?/:startdate?/:enddate?', function(req, res) {
         endkey: [req.session.username, {}],
     };
 
-    /* If a limit is present and not set to all, add it to the key. */
+    // If a limit is present and not set to all, add it to the key.
     if( req.params.limit && req.params.limit != 'all' )
         options.limit = req.params.limit;
     
@@ -511,6 +549,14 @@ app.get('/proposal/:limit?/:status?/:startdate?/:enddate?', function(req, res) {
     });
 });
 
+// Proxy requests from the client to the appropriate design doc
+// and view, filtered for the current user.
+//
+// e.g. `/list_by_author/user`
+//
+// **Returns:** array of documents, HTTP 200
+//
+// **Error:** error object, HTTP 500
 app.get('/:list_type/:view', function(req, res) {
     var db = new(cradle.Connection)().database('app');
 
@@ -522,6 +568,12 @@ app.get('/:list_type/:view', function(req, res) {
     );
 });
 
+// Merge the document with the specified id with the
+// supplied fields.
+//
+// **Returns:** _id and _rev of updated doc, HTTP 200
+//
+// **Error:** error object, HTTP 500
 app.put('/data/:id', function(req, res) {
     var db = new(cradle.Connection)().database('app');
 
@@ -529,9 +581,8 @@ app.put('/data/:id', function(req, res) {
         if( err ) {
             throw new ServerError( err );
         } else if( doc.author == req.session.username ) {
-            /* Only save if the author of the document is
-             * trying to update it.
-             */
+            // Only save if the author of the document is
+            // trying to update it.
 
             req.body.last_modified = Date.now();
             db.merge(req.params.id, req.body, function(err, doc) {
@@ -545,6 +596,7 @@ app.put('/data/:id', function(req, res) {
     
 });
 
+// Change a user's password.
 function change_password(
         username,
         old_password,
@@ -558,7 +610,7 @@ function change_password(
     
     async.waterfall([
         function( callback ) {
-            /* If all password fields have been provided. */
+            // If all password fields have been provided.
 
             if( old_password && new_password && confirm_password ) {
                 if( new_password == confirm_password ) {
@@ -567,18 +619,17 @@ function change_password(
                     return callback( {'error': 'password_mistyped'} );
                 }
             } else if( old_password || new_password || confirm_password ) {
-                /* If we get here, it means a user has filled out some,
-                 * but not all password fields. */
+                // If we get here, it means a user has filled out some,
+                // but not all password fields.
                 return callback( {'error': 'missing_password_fields'} );
             } else {
-                /* Otherwise, they don't want to change their password.
-                 * In that case, carry on processing the parent callback chain. 
-                 */
+                // Otherwise, they don't want to change their password.
+                // In that case, carry on processing the parent callback chain. 
                 return parent_callback( null );
             }
         },
         function( callback ) {
-            /* Retreive the user document. */
+            // Retreive the user document.
 
             user_db.get(docid, function(err, doc) {
                 if( err ) {
@@ -589,7 +640,7 @@ function change_password(
             });
         },
         function( doc, callback ) {
-            /* If the old password and the password in the database match. */
+            // If the old password and the password in the database match.
 
             if( doc.password_sha == Hash.hex_sha1(old_password + doc.salt) ) {
                 callback( null, doc ); 
@@ -598,7 +649,7 @@ function change_password(
             }
         },
         function( doc, callback ) {
-            /* Save the new password. */
+            // Save the new password.
 
             var user_doc = {
                 password_sha: Hash.hex_sha1(new_password + doc.salt)
@@ -622,6 +673,18 @@ function change_password(
     });
 }
 
+// This route handles the user settings form.
+// As part of the request object, it expects:
+//
+// * `old_password`
+// * `new_password`
+// * `conform_password`
+// * _image_ as an attachment
+//
+// **Returns:** _Nothing_, user is redirected to login page for
+// client side handling.
+//
+// **Error:** error object, HTTP 500
 app.post('/user', function(req, res) {
     var con = new(cradle.Connection)();
     var db = con.database('app');
@@ -632,7 +695,7 @@ app.post('/user', function(req, res) {
  
         async.waterfall([
             function( callback ) {
-                /* Change password if the user specifies. */
+                // Change password if the user specifies.
                 change_password(
                     req.session.username,
                     fields.old_password,
@@ -642,7 +705,7 @@ app.post('/user', function(req, res) {
                 );
             },
             function( callback ) {
-                /* Merge the uploaded form fields with the user profile doc. */
+                // Merge the uploaded form fields with the user profile doc.
 
                 fields.last_modified = Date.now();
 
@@ -653,14 +716,14 @@ app.post('/user', function(req, res) {
                         if( typeof files.image != 'undefined' ) {
                             callback( null, doc );
                         } else {
-                            /* We terminate here, as no image was uploaded. */
+                            // We terminate here, as no image was uploaded.
                             res.redirect('#/user/edit');
                         }
                     }
                 });
             },
             function( doc, callback ) {
-                /* Get attachment details. */
+                // Get attachment details.
                 db.get(doc.id, function(err, doc) {
                     if( err ) {
                         callback( err );
@@ -670,15 +733,13 @@ app.post('/user', function(req, res) {
                 });
             },
             function( doc, callback ) {
-                /* Delete the previous attachment.
-                 * There should only ever be one, as the previous
-                 * attachment is always deleted here when a new
-                 * one is uploaded.
-                 */
+                // Delete the previous attachment.
+                // There should only ever be one, as the previous
+                // attachment is always deleted here when a new
+                // one is uploaded.
 
-                /* Extract filenames from attachments.
-                 * There should only be one.
-                 */
+                // Extract filenames from attachments.
+                // There should only be one.
                 var files = [];
                 for( var file in doc._attachments ) {
                     files.push(file);
@@ -693,17 +754,17 @@ app.post('/user', function(req, res) {
                         if( err ) {
                             callback( err );
                         } else {
-                            /* Send the new new revision returned by CouchDB. */
+                            // Send the new new revision returned by CouchDB.
                             callback( null, doc.rev );
                         }
                     });
                 } else {
-                    /* Send the existing revision, as the doc hasn't been updated. */
+                    // Send the existing revision, as the doc hasn't been updated.
                     callback( null, doc._rev );
                 }
             },
             function( rev, callback ) {
-                /* Upload the image to the database. */
+                // Upload the image to the database.
 
                 var logo_filename = 'logo.' + files.image.name.split('.').pop();
 
@@ -716,7 +777,7 @@ app.post('/user', function(req, res) {
                         if( err ) {
                             callback( err );
                         } else {
-                            /* Delete the file once we have finished uploading. */
+                            // Delete the file once we have finished uploading.
                             fs.unlink(files.image.path);
 
                             callback( null );
@@ -726,31 +787,37 @@ app.post('/user', function(req, res) {
             }
         ],
         function(err) {
-            /* Error handler. */
             if( err ) {
                 res.send(err, 500);
             } else {
-                /* Indicate success. */
+                // TODO: Implement AJAX submission on the client so
+                // this isn't so clunky.
                 res.redirect('#/user/edit');
             }
         });
     });
-
-    /* connect-form adds the req.form object.
-     * We can (optionally) define onComplete, passing
-     * the exception (if any) fields parsed, and files parsed.
-     */
 });
 
+// Generate a pdf and return it to the client.
+//
+// **Expects:**
+//
+// * pdfdata: HTML to generate pdf from
+// * ProposalName: name of the proposal (with the .pdf extension)
+//
+// _NB: names are case sensitive._
+// 
+// **Returns:** Pdf document, HTTP 200
+//
+// **Error:** error object, HTTP 500
 app.post('/pdf', function(req, res) {
     pdfcrowd.generate_pdf(
         req.body.pdfdata,
         req.body.ProposalName
     ).on('complete', function(data, response) {
-        /* Actually send the data. Hack it so that the
-         * headers and status code are what pdfcrowd
-         * responded with.
-         */
+        // Actually send the data. Hack it so that the
+        // headers and status code are what pdfcrowd
+        // responded with.
         res.send(data, response.headers, response.statusCode);
     }).on('error', function(data, response) {
         console.log('error generating pdf');
@@ -758,6 +825,21 @@ app.post('/pdf', function(req, res) {
     });
 });
 
+// Email a pdf to the client.
+//
+// **Expects:**
+//
+// * `pdfdata`: HTML to generate pdf from
+// * `to`: Email address to send the email to
+// * `subject`: Email subject
+// * `HtmlBody`: HTML body of the email
+// * `ProposalName`: Name of the attached pdf
+//
+// _NB: names are case sensitive._
+// 
+// **Returns:** {}, HTTP 200
+//
+// **Error:** error object, HTTP 500
 app.post('/pdf/email', function(req, res) {
     pdfcrowd.generate_pdf(
         req.body.pdfdata
@@ -784,39 +866,57 @@ app.post('/pdf/email', function(req, res) {
             return res.send({error: 'sending_email_failed'}, 500);
         }
         
+        // Indicate success.
         res.send({}, 200);
+
     }).on('error', function(data, response) {
         console.log('error generating pdf for email');
         res.send({error: 'pdf_generation_failed'}, 500);
     });
 });
 
+// Get 1 or more documents at once.
+//
+// **Expects:**
+//
+// * `keys`: Array of document ids
+//
+// **Returns:** Array of documents, HTTP 200
+//
+// **Error:** error object, HTTP 500
 app.post('/data/bulk_docs', function(req, res) {
     var db = new(cradle.Connection)().database('app');
 
-    db.get(req.body.keys, function(err, doc) {
+    db.get(req.body.keys, function(err, docs) {
         if( err ) {
             throw new ServerError( err );
         } else {
-            /* Ensure all documents are owned by the
-             * user who requested them.
-             */
-            doc.forEach(function(row) {
+            // Ensure all documents are owned by the
+            // user who requested them.
+            docs.forEach(function(row) {
                 if( row.author != req.session.username ) {
                     throw new AuthRequired;
                 }
             });
 
-            /* If they are, return the documents. */
-            res.send(doc);
+            // If they are, return the documents.
+            return res.send( docs, 200 );
         }
     });
 });
 
+// Store the supplied JSON object in CouchDB.
+//
+// **Expects:**
+// JSON object to be used as the new document
+//
+// **Returns:** _id and _rev of the newly created document, HTTP 200
+//
+// **Error:** error object, HTTP 500
 app.post('/data', function(req, res) {
     var db = new(cradle.Connection)().database('app');
 
-    /* Set the author. */
+    // Set the author.
     req.body.author = req.session.username;
     req.body.created_at = Date.now();
     req.body.last_modified = Date.now();
@@ -828,6 +928,11 @@ app.post('/data', function(req, res) {
     );
 });
 
+// Delete the specified document. A document revision must be provided.
+//
+// **Returns:** Details of the deleted document, HTTP 200
+//
+// **Error:** error object, HTTP 500
 app.delete('/data/:id/:rev', function(req, res) {
     var db = new(cradle.Connection)().database('app');
     db.get(req.params.id, function(err, doc) {
@@ -843,8 +948,10 @@ app.delete('/data/:id/:rev', function(req, res) {
     });
 });
 
+// Start the server on port 3000.
 app.listen(3000);
 
+// Ensure we don't crash by catching all uncaught exceptions.
 process.on('uncaughtException', function (err) {
     console.log(err);
     console.log(err.stack);
