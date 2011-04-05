@@ -1,18 +1,18 @@
 // Require the orm and framework
 var express = require('express');
 var http = require('http');
-var rCommon = require('./common')
+var rCommon = require('./node-server/common')
 var connect = require('connect');
 var _ = require('underscore');
-var Exceptional = require('./exceptional').Exceptional;
+var Exceptional = require('./node-server/exceptional').Exceptional;
 var cradle = require('cradle');
 var form = require('connect-form');
 var async = require('async');
 var fs = require('fs');
 var sys = require('sys');
-var pdfcrowd = require('./node-pdfcrowd');
+var pdfcrowd = require('./node-server/node-pdfcrowd');
 var postmark = require('postmark')('473b864e-b165-473c-9435-68981a3bbeef');
-var Hash = require('./sha1');
+var Hash = require('./node-server/sha1');
 
 var app = express.createServer(
   // connect-form (http://github.com/visionmedia/connect-form)
