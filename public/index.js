@@ -65,7 +65,7 @@ cked = "";
             
             d = new Date();
             $.ajax({ 
-                url: "media/templates/all.jst?" +   d.getTime(),
+                url: "media/templates/all.html?" +   d.getTime(),
                 success: function(response){
                         $("body").append(response);
                         
