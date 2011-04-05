@@ -10,7 +10,6 @@ common_edit_view = Backbone.View.extend({
         if (typeof options.success == "undefined") {
             options.success = function() {
                 redirect(GLOBALS.controller + "/list");
-                killck();
             }
         }
 
@@ -152,7 +151,7 @@ common_edit_view = Backbone.View.extend({
 
 
 
-            },
+            }
 
         });
 

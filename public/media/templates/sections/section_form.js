@@ -123,7 +123,7 @@ section_form_view = Backbone.View.extend({
                             "id" : row.value._id,
                             "label" : row.value.name,
                             "value" : row.value.name,
-                            "rev" : row.value._rev,
+                            "rev" : row.value._rev
                         };
                     });
                     
@@ -161,7 +161,7 @@ section_form_view = Backbone.View.extend({
                                         "name": ui.item.label,
                                         "price": ui.item.price,
                                         "price": ui.item.price,
-                                        "rev": model.rev,
+                                        "rev": model.rev
                                     } );
                                 
                                 }
@@ -203,7 +203,7 @@ section_form_view = Backbone.View.extend({
             },
             events: {
                 "click #add-fee":  "feemodal",
-                "keypress #fees":  "checkEnter",
+                "keypress #fees":  "checkEnter"
             },
             addFee: function (model) {
                 console.log(model);

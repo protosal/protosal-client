@@ -10,7 +10,7 @@ dashboard_login_view = Backbone.View.extend({
         },
         events: {
             "click #loginbutton": "requestLogin",
-            "click #registerbutton": "requestRegister",
+            "click #registerbutton": "requestRegister"
         },
         requestLogin: function() {
             console.log("hi");

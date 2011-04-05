@@ -28,6 +28,9 @@ function refresh () {
 })(jQuery);
 
 _.mixin({
+    console: function( data ) {
+        console.log( data );
+    },
     capitalize : function(string) {
         return string.charAt(0).toUpperCase() + string.substring(1).toLowerCase();
     },

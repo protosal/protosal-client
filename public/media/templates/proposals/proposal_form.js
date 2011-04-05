@@ -293,7 +293,7 @@ proposal_form_view = Backbone.View.extend({
                 title: "New Fee",
                 modal: true, 
                 hide: 'drop',
-                width: "550px",
+                width: "550px"
             }); 
                 
             proposal_view.section_chooser.activemodal.dialog("open");

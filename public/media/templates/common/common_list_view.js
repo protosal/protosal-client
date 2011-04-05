@@ -8,7 +8,7 @@ common_list_view =  Backbone.View.extend({
                             'text': 'New ' + _(GLOBALS.controller).capitalize(),
                             'href': '#/' + GLOBALS.controller + '/edit',
                             'classes': 'addbutton'
-                },
+                }
             ]
             
         }
@@ -42,7 +42,7 @@ common_list_view =  Backbone.View.extend({
                   
                   
                 $("#common_list_view_table_container").fadeIn(400);
-            },
+            }
         });
         
         ListView = Backbone.View.extend({
@@ -65,7 +65,7 @@ common_list_view =  Backbone.View.extend({
             },
             events: {
                 "click .delete":  "removeRow",
-                "click .edit":  "editPage",
+                "click .edit":  "editPage"
             },
             removeRow: function(event){
                 if( confirm("Are you sure you want to delete this?") ){

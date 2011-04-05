@@ -1,12 +1,5 @@
-cked = "";
-        function killck(){
-                                    if( cked != "" ){
-                            cked.ckeditor(function(){ // a hack to make jck editor work on page refresh
-                            
-                                this.destroy();
-                            });
-                        }
-        }
+        // ## Configuration
+        // The globals below have no threat to security, session is only used for presentation and never for transaction.   In the case that session is used acidentally the server has protection against spoofing anyway.
         var GLOBALS = {
             "route_id": null,
             "controller": null,
@@ -14,14 +7,17 @@ cked = "";
             "server_base": window.location.protocol + "//" + window.location.host,
             "session": false,
         };
+        // Default ckeditor options are defined here until we get a configuration file
         ckeditor_options = {  
                 toolbar: [
                     ['Bold', 'Italic', '-', 'NumberedList', 'BulletedList', '-', 'Link', 'Unlink','-','About'],['Styles','Format','Font','FontSize'],
                     ['TextColor','BGColor'],
                     ['Maximize', 'ShowBlocks','-','About','Source']
                 ]
-            };
-        if(window.location.pathname != "/") window.location = "/"; //handles 404 errors
+        };
+        
+        // This simply redirects all url's that aren't expected to the homepage
+        if(window.location.pathname != "/") window.location = "/";
         
         // Dynamically load CSS files.
         $script([

@@ -127,7 +127,7 @@ dashboard_home_view = Backbone.View.extend({
                         'text': 'New Client',
                         'href': '#/client/edit',
                         'classes': 'addbutton'
-            },
+            }
         ]
         
     }
