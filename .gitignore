@@ -1,2 +1,6 @@
 *.swp
 *all.jst
+*all.js
+docs/
+.couchappignore
+.couchapprc

@@ -1,22 +1,6 @@
 <script type="text/template" id="common_edit_view_template">
 
-<% typeof success == "undefined" ? success = function() { redirect(GLOBALS.controller + "/list"); killck(); } : success = success; %>
-<% typeof templateid == "undefined" ? templateid = "" : templateid = templateid; %>
-<%  
-    if( typeof documentid == "undefined") {
-        /* if you have nested edits then the document id can only be valid
-         if the current controller is equal to globals controller */
-        
-        current_doc_id = "";
-        
-        if( GLOBALS.controller == controller) {
-            current_doc_id = GLOBALS.route_id;
-        }
-        
-    } else {
-        current_doc_id = documentid;
-    }
- %>
+
 
 
 
@@ -25,105 +9,6 @@
 <div id="<%= controller %>_formc"></div>
 </div>
 <jst>
-_rev = ""
-    EditView = Backbone.View.extend({
-            el: $("#<%=controller %>_edit_view_container"),
 
-            initialize: function () {
-                exitAction = "Back";
-                exitActionClass = "back-button";
-                if( "<%= typeof modal != 'undefined' ? modal : '' %>" == "yes" ){
-                    exitAction = "Close";
-                    exitActionClass = "close-button";
-                    
-                }
-                options = {
-                    'title': '<%= _(controller).capitalize() %> Edit',
-                    'buttons': [{
-                                    'text': 'Save',
-                                    'classes': '<%= controller %>_save',
-                                    'controller': '<%= controller %>'
-                        },{
-                                    'text': exitAction,
-                                    'classes': exitActionClass
-                        }
-                        <% if( typeof buttons != "undefined" ){ _.each( buttons, function(button){  %>
-							,{
-										'text': '<%= button.text %>',
-										'classes': '<%= button.class %>'
-							}
-                        <% })} %>
-                    ]
-                    
-                }
-                
-				_.jstTemplate( $("#<%= controller %>_pageheader"), $("#page_header_template"), options );  
-                
-                
-                /*
-                If  a route id is present load the data for that document
-                If this template receives a document id user that instead
-                */
-                id = "<%= current_doc_id %>";
-                templateid = "<%= templateid %>";
-                if( id ){
-                    var url = GLOBALS.server_base + "/data/" + id;
-                    $.ajax( url, {
-                        dataType: "json",
-                        success: function(data){
-                            data.success = <%= success %>;
-                            data.documentid = "<%= current_doc_id %>";
-                            data.controller = "<%= controller %>";
-                            console.log("Let's see some data:");
-                            console.log(data);
-                            $("#<%= controller %>_formc").append( _.template( $("#<%= controller %>_form_template").jsthtml(), data ) );
-                            
-                            cked = "";
-                                setTimeout( function() { cked = ($(".jckeditor", $("#<%= controller %>_formc") )); cked.ckeditor(ckeditor_options); }, 200);
-    
-                            if (typeof data._rev != "undefined")
-                                _rev = data._rev; 
-                            
-                            $(".<%= controller %>_save").click({
-                                _rev: _rev,
-                                _id: id,
-                                templateid: templateid,
-                                success: <%= success %>
-                            }, window.saveclickHandler );
-                        }
-                    });
-                } else if("<%= controller %>" == "user") {
-                    var url = '/user';
-                    $.ajax( url, {
-                        dataType: "json",
-                        success: function(data){
-                            
-                            $("#<%= controller %>_formc").append( _.template( $("#<%= controller %>_form_template").jsthtml(), data ) );
-                        }
-                    });
-                } else {
-                    $(".<%= controller %>_save").click({
-                        _rev: "",
-                        _id: "",
-                        templateid: "",
-                        documentid: "",
-                        success: <%= success %>
-                    }, window.saveclickHandler );
-                    
-                        _.jstTemplate( $("#<%= controller %>_formc"), $("#<%= controller %>_form_template"), { controller: "<%= controller %>", success: <%= success %>, documentid: "" } );  
-                 
-                                    cked = "";
-                setTimeout( function() { cked = ($(".jckeditor", $("#<%= controller %>_formc") )); cked.ckeditor(ckeditor_options); }, 200);
-                setTimeout( function(){ $("input:first").focus(); }, 400 );
-
-                }
-                
-    
-                
-            },
-
-    });
-    editview = new EditView;
-    
 </jst>
 </script>
