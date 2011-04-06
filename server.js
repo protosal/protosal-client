@@ -210,26 +210,6 @@ function new_doc_instance(doc, callback) {
     });
 }
 
-// Create a relationship between the proposal and the section instance.
-function new_proposal_section(proposal_id, section_id, author, callback) {
-    var db = new(cradle.Connection)().database('app');
-
-    var new_proposal_section = {
-        'proposal_id' : proposal_id,
-        'section_id' : section_id,
-        'type' : 'proposal_section',
-        'author' : author 
-    }
-
-    db.save(new_proposal_section, function(err, doc) {
-        if( err ) {
-            return callback( err );
-        } else {
-            return callback( null, doc );
-        }
-    });
-}
-
 function clone_docs_series(doc_arr, callback) {
     async.mapSeries(doc_arr, new_doc_instance, function(err, result) {
         if( err ) {
@@ -268,21 +248,17 @@ function get_docs( doc_ids, callback ) {
     });
 }
 
-// Create a new instance of the supplied section, attaching it to the
-// supplied proposal.
-// 
-// **Returns:** Section instance document, HTTP 200
-//
-// **Error:** error object, HTTP 500
-app.get('/data/newinstance/:proposal_id/:section_id', function(req, res) {
+// Create and return the new section instance document with
+// all associated fees instantiated.
+function new_section_instance( proposal_id, section_id, username, cb ) {
     var template_section_doc = {};
     var instance_section_id = '';
 
     async.waterfall([
         function( callback ) {
             get_doc(
-                req.params.section_id,
-                req.session.username,
+                section_id,
+                username,
                 callback
             );
         },
@@ -307,24 +283,42 @@ app.get('/data/newinstance/:proposal_id/:section_id', function(req, res) {
             new_fee_list( instance_section_id, instance_fee_docs, callback );
         },
         function( doc, callback ) {
-            new_proposal_section(
-                req.params.proposal_id,
-                instance_section_id,
-                req.session.username,
-                callback
-            );
+            get_doc( instance_section_id, username, callback );
         },
         function( doc, callback ) {
-            get_doc( instance_section_id, req.session.username, callback );
-        },
-        function( doc, callback ) {
-            res.send( doc, 200 );
+            cb( null, doc );
             callback( null );
         }
     ],
     function( err ) {
-        async_error( err, res );
+        if( err ) return cb( err );
     });
+}
+
+// Create a new instance of the supplied section, attaching it to the
+// supplied proposal.
+// 
+// **Returns:** Section instance document, HTTP 200
+//
+// **Error:** error object, HTTP 500
+app.get('/data/newinstance/:proposal_id/:section_id', function(req, res) {
+    async.waterfall([
+        function( callback ) {
+            new_section_instance(
+                req.params.proposal_id,
+                req.params.section_id,
+                req.session.username,
+                callback 
+            );
+        },
+        function( doc, callback ) {
+            res.send( doc, 200 );
+            return callback( null );
+        },
+    ],
+    function( err ) {
+        async_error( err, res );
+    }); 
 });
 
 // Get the document with the specified id.
