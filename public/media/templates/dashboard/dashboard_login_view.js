@@ -63,7 +63,7 @@ dashboard_login_view = Backbone.View.extend({
             $.jGrowl("Your account has been activated",{  theme: 'green', position: "top-right"});
         } else {
             $("#username").focus();
-        }
+        }  
          }, 100);
     $("button").button();
     $(".userpage").click( function(){
