@@ -159,6 +159,9 @@ proposal_form_view = Backbone.View.extend({
                 proposal_view.applyVariables( ".section_" + section.cid );
             } else {
                 $("#section_container_test ol").append( _.template( $("#proposal_preview_section").html(), { section: section } ) );
+                
+                // If the section we chose is not a template generate an instance of it
+                if( !options.template ) {
                 $.ajax({
                     url: "data/newinstance/" + proposal_view.proposalid + "/" + section.get("template_id"),
                     success: function( response ){
@@ -171,6 +174,21 @@ proposal_form_view = Backbone.View.extend({
                         proposal_view.applyVariables( ".section_" + section.cid );
                     }
                 });
+                } else {
+                    // Else lets just insert the template
+                        $.ajax({
+                    url: "data/" + section.get("template_id"),
+                    success: function( response ){
+                        $(".section_content", ".section_" + section.cid).html( _.template( $("#proposal_preview_section_content").html(), response ) );
+                        section.set({ id: response._id});
+                        section.set(response);
+                        var feetable = new FeeTableView( section );
+                        $("li[id='" + section.cid + "']").attr("id", response._id);
+                        proposal_view.toc.updateOrder();
+                        proposal_view.applyVariables( ".section_" + section.cid );
+                    }
+                    });
+                }
             }
         },
         openEdit: function( event ) {   
@@ -498,6 +516,11 @@ proposal_form_view = Backbone.View.extend({
             })   
         }
     });
+    StatusRadioView = Backbone.View.extend({
+        initialize: function(){
+            $("#column3").html( $("#proposal_status_radio").html() );
+        }
+    });
     ProposalView = Backbone.View.extend({
     
         el: $("#proposal_form_container"),
@@ -519,7 +542,7 @@ proposal_form_view = Backbone.View.extend({
                 console.log("Get the proposal id");
                 that.proposalid = data.id;
                 
-                if( typeof options.client_id != "undefined" ){
+                if( typeof options.client_id != "undefined" && options.client_id != ""){
                     
                     $.ajax( "data/" + options.client_id ,{
                         dataType: "json",
@@ -542,8 +565,15 @@ proposal_form_view = Backbone.View.extend({
                 this.allsections = new SectionCollection;
                 this.allsections.getAllTemplates();
 
-                this.clients = new ClientCollection;
-                this.clients.getAllClients();
+                if( !options.template ) {
+                    this.clients = new ClientCollection;
+                    this.clients.getAllClients();
+                    this.statusradios = new StatusRadioView;
+                } else {
+                    
+                    console.log($("#proposal_pageheader h3"));
+                    $("#proposal_pageheader h3").html("Proposal Templating");
+                }
                 console.log(this.clients);
                 this.fees = new FeeCollection;
                 
