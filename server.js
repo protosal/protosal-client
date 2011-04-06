@@ -185,21 +185,21 @@ function get_doc(docid, username, callback) {
 function new_doc_instance(doc, callback) {
     var db = new(cradle.Connection)().database('app');
 
-    // Save a copy of the doc._id as we will delete it.
-    var template_id = doc._id;
+    // Indicate the new document is an instance.
+    doc.template = false;
+    // Record the template this document was generated from.
+    doc.template_id = doc._id;
 
     // Delete _id and _rev so we create a new record.
     delete doc._id;
     delete doc._rev;
 
-    // Indicate the new document is an instance.
-    doc.template = false;
-    // Record the template this document was generated from.
-    doc.template_id = template_id;
-
     // Set the new created and modified times.
     doc.created_at = Date.now();
     doc.last_modified = Date.now();
+
+    console.log('new doc');
+    console.log(doc);
 
     db.save(doc, function(err, doc) {
         if( err ) {
@@ -237,6 +237,10 @@ function new_fee_list( section_id, fee_docs, callback ) {
 }
 
 function get_docs( doc_ids, callback ) {
+    if( doc_ids.length < 1 ) {
+        return callback( null, [] );
+    }
+
     var db = new(cradle.Connection)().database('app');
 
     db.get( doc_ids, function(err, docs) {
@@ -250,7 +254,7 @@ function get_docs( doc_ids, callback ) {
 
 // Create and return the new section instance document with
 // all associated fees instantiated.
-function new_section_instance( proposal_id, section_id, username, cb ) {
+function new_section_instance( section_id, username, cb ) {
     var template_section_doc = {};
     var instance_section_id = '';
 
@@ -273,9 +277,15 @@ function new_section_instance( proposal_id, section_id, username, cb ) {
             get_docs( template_section_doc.feelist, callback );
         },
         function( template_fee_docs, callback ) {
+            console.log('template_fee_docs');
+            console.log(template_fee_docs);
+
             var template_fee_docs = template_fee_docs.map(function( doc ) {
                 return doc;
             });
+
+            console.log('template_fee_docs');
+            console.log(template_fee_docs);
 
             clone_docs_series( template_fee_docs, callback ); 
         },
@@ -301,11 +311,10 @@ function new_section_instance( proposal_id, section_id, username, cb ) {
 // **Returns:** Section instance document, HTTP 200
 //
 // **Error:** error object, HTTP 500
-app.get('/data/newinstance/:proposal_id/:section_id', function(req, res) {
+app.get('/data/newinstance/:section_id', function(req, res) {
     async.waterfall([
         function( callback ) {
             new_section_instance(
-                req.params.proposal_id,
                 req.params.section_id,
                 req.session.username,
                 callback 
