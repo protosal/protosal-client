@@ -194,8 +194,16 @@
 
                 if( typeof formdata.feelist != "undefined" ) {
                     formdata.feelist = formdata.feelist.split(",");
+
+                    if( formdata.feelist[0] == '' ) {
+                        formdata.feelist = [];
+                    }
                 } else if( typeof formdata.sectionlist != "undefined" ) {
                     formdata.sectionlist = formdata.sectionlist.split(",");
+
+                    if( formdata.sectionlist[0] == '' ) {
+                        formdata.sectionlist = [];
+                    }
                 }
                 
                 formdata.type = savebuttoncontroller;
