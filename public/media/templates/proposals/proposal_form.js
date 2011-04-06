@@ -96,9 +96,7 @@ proposal_form_view = Backbone.View.extend({
                     console.log("Found related sections");
                     console.log(resp);
                     
-                    var sectionlist = options.sectionlist;
-                    var sorted = _.sortBy( resp, function( row ) { return sectionlist.indexOf(row.value._id); } );
-                    _.each( sorted, function(model) {
+                    _.each( resp, function(model) {
                         model.value.id = model.value._id;
                         that.sections.add(model.value)
                     })
