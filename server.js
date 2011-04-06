@@ -220,14 +220,14 @@ function clone_docs_series(doc_arr, callback) {
     });
 }
 
-function new_fee_list( section_id, fee_docs, callback ) {
+function new_child_list( docid, child_docs, callback ) {
     var db = new(cradle.Connection)().database('app');
 
-    var fee_ids = fee_docs.map(function( doc ) {
+    var child_ids = child_docs.map(function( doc ) {
         return doc.id;
     });
 
-    db.merge( section_id, { feelist: fee_ids }, function( err, doc ) {
+    db.merge( docid, { feelist: child_ids }, function( err, doc ) {
         if( err ) {
             return callback( err );
         } else {
@@ -252,48 +252,48 @@ function get_docs( doc_ids, callback ) {
     });
 }
 
-// Create and return the new section instance document with
-// all associated fees instantiated.
-function new_section_instance( section_id, username, cb ) {
-    var template_section_doc = {};
-    var instance_section_id = '';
+// Create and return the new instance document with
+// all associated children instantiated.
+function new_parent_instance( docid, username, cb ) {
+    var template_doc = {};
+    var instance_id = '';
 
     async.waterfall([
         function( callback ) {
             get_doc(
-                section_id,
+                docid,
                 username,
                 callback
             );
         },
-        function( section_doc, callback ) {
-            template_section_doc = section_doc;
+        function( doc, callback ) {
+            template_doc = doc;
             
-            new_doc_instance( section_doc, callback );
+            new_doc_instance( template_doc, callback );
         },
-        function( section_instance_doc, callback ) {
-            instance_section_id = section_instance_doc.id;
+        function( instance_doc, callback ) {
+            instance_id = instance_doc.id;
 
-            get_docs( template_section_doc.feelist, callback );
+            get_docs( template_doc.feelist, callback );
         },
-        function( template_fee_docs, callback ) {
+        function( template_child_docs, callback ) {
             console.log('template_fee_docs');
-            console.log(template_fee_docs);
+            console.log(template_child_docs);
 
-            var template_fee_docs = template_fee_docs.map(function( doc ) {
+            var template_child_docs = template_child_docs.map(function( doc ) {
                 return doc;
             });
 
             console.log('template_fee_docs');
-            console.log(template_fee_docs);
+            console.log(template_child_docs);
 
-            clone_docs_series( template_fee_docs, callback ); 
+            clone_docs_series( template_child_docs, callback ); 
         },
-        function( instance_fee_docs, callback ) {
-            new_fee_list( instance_section_id, instance_fee_docs, callback );
+        function( instance_child_docs, callback ) {
+            new_child_list( instance_id, instance_child_docs, callback );
         },
         function( doc, callback ) {
-            get_doc( instance_section_id, username, callback );
+            get_doc( instance_id, username, callback );
         },
         function( doc, callback ) {
             cb( null, doc );
@@ -314,7 +314,7 @@ function new_section_instance( section_id, username, cb ) {
 app.get('/data/newinstance/:section_id', function(req, res) {
     async.waterfall([
         function( callback ) {
-            new_section_instance(
+            new_parent_instance(
                 req.params.section_id,
                 req.session.username,
                 callback 
