@@ -40,13 +40,19 @@ ryth.couchdb_error = function(err, callback) {
 }
 
 // Return an appropriately encoded username.
-ryth.username_docid = function( username ) {
-    return 'org.couchdb.user:' + encodeURIComponent( username );
+ryth.username_docid = function( username, raw ) {
+    var base = 'org.couchdb.user:'; 
+
+    if( raw ) {
+        return base + username;
+    } else {
+        return  base + encodeURIComponent( username );
+    }
 }
 
 function register(req, res) {
     console.log('we are registering.');
-    var docid = ryth.username_docid( req.body.email );
+    var docid = ryth.username_docid( req.body.email, 'raw' );
 
     var con = new(cradle.Connection)();
     var db = con.database('_users');
@@ -54,7 +60,8 @@ function register(req, res) {
     async.waterfall([
         function( callback ) {
             /* Check to see if the user document already exists in the _users table. */
-            db.head(docid, function(err, doc) {
+            var encoded_docid = encodeURIComponent( docid );
+            db.head(encoded_docid, function(err, doc) {
                 if( err ) return ryth.couchdb_error(err, callback);
 
                 /* If the etag is undefined, this user has not yet registered. */
@@ -87,7 +94,10 @@ function register(req, res) {
             }
 
             db.save(newUser, function(err, doc) {
-                if( err ) return ryth.couchdb_error(err, callback);
+                if( err ) {
+                    console.log( err );
+                    return ryth.couchdb_error(err, callback);
+                }
 
                 return callback(null);
             });

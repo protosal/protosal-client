@@ -67,10 +67,7 @@ section_form_view = Backbone.View.extend({
                         success: function(data){
                             if( !data.error ){
                                 if( data.length > 0 ){
-                                    var feelist = options.feelist;
-                                    console.log("feelist: " + feelist);
-                                    var sorted = _.sortBy( data, function( row ) { return feelist.indexOf(row.value._id); } );
-                                    _.each( sorted, function( model ) {
+                                    _.each( data, function( model ) {
                                         model = model.value;
                                         section_backbone.fees.add( {
                                             "id": model._id,

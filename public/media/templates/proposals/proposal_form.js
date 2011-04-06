@@ -163,7 +163,7 @@ proposal_form_view = Backbone.View.extend({
                 // If the section we chose is not a template generate an instance of it
                 if( !options.template ) {
                 $.ajax({
-                    url: "data/newinstance/" + proposal_view.proposalid + "/" + section.get("template_id"),
+                    url: "data/newinstance/" + section.get("template_id"),
                     success: function( response ){
                         $(".section_content", ".section_" + section.cid).html( _.template( $("#proposal_preview_section_content").html(), response ) );
                         section.set({ id: response._id});

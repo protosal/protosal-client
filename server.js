@@ -185,43 +185,23 @@ function get_doc(docid, username, callback) {
 function new_doc_instance(doc, callback) {
     var db = new(cradle.Connection)().database('app');
 
-    // Save a copy of the doc._id as we will delete it.
-    var template_id = doc._id;
+    // Indicate the new document is an instance.
+    doc.template = false;
+    // Record the template this document was generated from.
+    doc.template_id = doc._id;
 
     // Delete _id and _rev so we create a new record.
     delete doc._id;
     delete doc._rev;
 
-    // Indicate the new document is an instance.
-    doc.template = false;
-    // Record the template this document was generated from.
-    doc.template_id = template_id;
-
     // Set the new created and modified times.
     doc.created_at = Date.now();
     doc.last_modified = Date.now();
 
+    console.log('new doc');
+    console.log(doc);
+
     db.save(doc, function(err, doc) {
-        if( err ) {
-            return callback( err );
-        } else {
-            return callback( null, doc );
-        }
-    });
-}
-
-// Create a relationship between the proposal and the section instance.
-function new_proposal_section(proposal_id, section_id, author, callback) {
-    var db = new(cradle.Connection)().database('app');
-
-    var new_proposal_section = {
-        'proposal_id' : proposal_id,
-        'section_id' : section_id,
-        'type' : 'proposal_section',
-        'author' : author 
-    }
-
-    db.save(new_proposal_section, function(err, doc) {
         if( err ) {
             return callback( err );
         } else {
@@ -240,14 +220,14 @@ function clone_docs_series(doc_arr, callback) {
     });
 }
 
-function new_fee_list( section_id, fee_docs, callback ) {
+function new_child_list( docid, child_docs, callback ) {
     var db = new(cradle.Connection)().database('app');
 
-    var fee_ids = fee_docs.map(function( doc ) {
+    var child_ids = child_docs.map(function( doc ) {
         return doc.id;
     });
 
-    db.merge( section_id, { feelist: fee_ids }, function( err, doc ) {
+    db.merge( docid, { feelist: child_ids }, function( err, doc ) {
         if( err ) {
             return callback( err );
         } else {
@@ -257,6 +237,10 @@ function new_fee_list( section_id, fee_docs, callback ) {
 }
 
 function get_docs( doc_ids, callback ) {
+    if( doc_ids.length < 1 ) {
+        return callback( null, [] );
+    }
+
     var db = new(cradle.Connection)().database('app');
 
     db.get( doc_ids, function(err, docs) {
@@ -268,63 +252,82 @@ function get_docs( doc_ids, callback ) {
     });
 }
 
+// Create and return the new instance document with
+// all associated children instantiated.
+function new_parent_instance( docid, username, cb ) {
+    var template_doc = {};
+    var instance_id = '';
+
+    async.waterfall([
+        function( callback ) {
+            get_doc(
+                docid,
+                username,
+                callback
+            );
+        },
+        function( doc, callback ) {
+            template_doc = doc;
+            
+            new_doc_instance( template_doc, callback );
+        },
+        function( instance_doc, callback ) {
+            instance_id = instance_doc.id;
+
+            get_docs( template_doc.feelist, callback );
+        },
+        function( template_child_docs, callback ) {
+            console.log('template_fee_docs');
+            console.log(template_child_docs);
+
+            var template_child_docs = template_child_docs.map(function( doc ) {
+                return doc;
+            });
+
+            console.log('template_fee_docs');
+            console.log(template_child_docs);
+
+            clone_docs_series( template_child_docs, callback ); 
+        },
+        function( instance_child_docs, callback ) {
+            new_child_list( instance_id, instance_child_docs, callback );
+        },
+        function( doc, callback ) {
+            get_doc( instance_id, username, callback );
+        },
+        function( doc, callback ) {
+            cb( null, doc );
+            callback( null );
+        }
+    ],
+    function( err ) {
+        if( err ) return cb( err );
+    });
+}
+
 // Create a new instance of the supplied section, attaching it to the
 // supplied proposal.
 // 
 // **Returns:** Section instance document, HTTP 200
 //
 // **Error:** error object, HTTP 500
-app.get('/data/newinstance/:proposal_id/:section_id', function(req, res) {
-    var template_section_doc = {};
-    var instance_section_id = '';
-
+app.get('/data/newinstance/:section_id', function(req, res) {
     async.waterfall([
         function( callback ) {
-            get_doc(
+            new_parent_instance(
                 req.params.section_id,
                 req.session.username,
-                callback
+                callback 
             );
-        },
-        function( section_doc, callback ) {
-            template_section_doc = section_doc;
-            
-            new_doc_instance( section_doc, callback );
-        },
-        function( section_instance_doc, callback ) {
-            instance_section_id = section_instance_doc.id;
-
-            get_docs( template_section_doc.feelist, callback );
-        },
-        function( template_fee_docs, callback ) {
-            var template_fee_docs = template_fee_docs.map(function( doc ) {
-                return doc;
-            });
-
-            clone_docs_series( template_fee_docs, callback ); 
-        },
-        function( instance_fee_docs, callback ) {
-            new_fee_list( instance_section_id, instance_fee_docs, callback );
-        },
-        function( doc, callback ) {
-            new_proposal_section(
-                req.params.proposal_id,
-                instance_section_id,
-                req.session.username,
-                callback
-            );
-        },
-        function( doc, callback ) {
-            get_doc( instance_section_id, req.session.username, callback );
         },
         function( doc, callback ) {
             res.send( doc, 200 );
-            callback( null );
-        }
+            return callback( null );
+        },
     ],
     function( err ) {
         async_error( err, res );
-    });
+    }); 
 });
 
 // Get the document with the specified id.
