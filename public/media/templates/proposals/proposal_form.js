@@ -160,7 +160,7 @@ proposal_form_view = Backbone.View.extend({
             } else {
                 $("#section_container_test ol").append( _.template( $("#proposal_preview_section").html(), { section: section } ) );
                 $.ajax({
-                    url: "data/newinstance/" + proposal_view.proposalid + "/" + section.get("template_id"),
+                    url: "data/newinstance/" + section.get("template_id"),
                     success: function( response ){
                         $(".section_content", ".section_" + section.cid).html( _.template( $("#proposal_preview_section_content").html(), response ) );
                         section.set({ id: response._id});
