@@ -205,11 +205,12 @@
                         formdata.sectionlist = [];
                     }
                 }
-                
+                formdata.template = false;
                 formdata.type = savebuttoncontroller;
-                if(event.data.templateid == "") {
+                if(event.data.templateid == "" ) {
                     formdata.template    = true;
                 }
+                
                 var url = GLOBALS.server_base + "/data";
                 type = "POST";
                 

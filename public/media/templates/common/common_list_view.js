@@ -2,7 +2,7 @@ common_list_view =  Backbone.View.extend({
     
     initialize: function( options ){
         this.renderView( "#contentpane", "#common_list_view_template", options );
-        options = {
+        header_options = {
             'title': _(GLOBALS.controller).capitalize() + ' List',
             'buttons': [{
                             'text': 'New ' + _(GLOBALS.controller).capitalize(),
@@ -12,12 +12,23 @@ common_list_view =  Backbone.View.extend({
             ]
             
         }
-        
-
-        
+        // Custom buttons for a proposal list
+        if( options.controller == "proposal" ){
+            header_options.buttons.push({
+                'text': 'New Template',
+                            'href': '#/' + GLOBALS.controller + '/edit/template',
+                            'classes': 'addbutton'
+            });
+            header_options.buttons.push({
+                'text': 'View Templates',
+                            'href': '',
+                            'classes': 'switchToTemplates findbutton'
+            });
+        }
+            
         setTimeout( function (){     $(".dataTables_filter input").focus(); }, 400);
         $(".dataTables_filter input").focusout( function(){
-            setTimeout( function (){     $(".dataTables_filter input").focus(); }, 700);
+            setTimeout( function (){ $(".dataTables_filter input").focus(); }, 700);
         });
 
         ListData = Backbone.Collection.extend({
@@ -33,9 +44,8 @@ common_list_view =  Backbone.View.extend({
                   
                 } else {
                     rows = [];
-                   
                 }
-                options = { rows: rows };
+                options.rows = rows;
                 
                 // Initialize the table view for the list
                 new common_list_view_table( options );
@@ -46,13 +56,18 @@ common_list_view =  Backbone.View.extend({
         });
         
         ListView = Backbone.View.extend({
+            templatesActive: false,
             el: $("#common_list_view_container"),
             initialize: function () {
                 
-                $("#pageheader").html( _.template( $("#page_header_template").jsthtml(), options ) );
+                $("#pageheader").html( _.template( $("#page_header_template").jsthtml(), header_options ) );
                 
-                
-                var url = GLOBALS.server_base + "/list_by_author_templates/" + GLOBALS.controller;
+                if( options.controller == "proposal" ){
+                    couch_view = "/list_by_author/";
+                } else {
+                    couch_view = "/list_by_author_templates/";
+                }
+                var url = GLOBALS.server_base + couch_view + GLOBALS.controller;
                 $.ajax( url, {
                     dataType: "json",
                     success: function(data){
@@ -65,7 +80,8 @@ common_list_view =  Backbone.View.extend({
             },
             events: {
                 "click .delete":  "removeRow",
-                "click .edit":  "editPage"
+                "click .edit":  "editPage",
+                "click .switchToTemplates": "switchToTemplates"
             },
             removeRow: function(event){
                 if( confirm("Are you sure you want to delete this?") ){
@@ -80,7 +96,38 @@ common_list_view =  Backbone.View.extend({
                 var id = row.attr("row_id");
                 redirect( GLOBALS.controller + "/edit/" + id );
                 
+            },
+            switchToTemplates: function( event ){
+                var button = $(".ui-button-text", $(event.currentTarget));
+                var that = this;
+                if( !that.templatesActive ) { 
+                var url = GLOBALS.server_base + "/list_by_author_templates/" + GLOBALS.controller;
+                $.ajax( url, {
+                    dataType: "json",
+                    success: function(data){
+                        console.log("got data")
+                        listdata.refresh(data);
+                    }
+                
+                });
+                that.templatesActive = true;
+                $(button).text("View Proposals");
+            }   else {
+                    var url = GLOBALS.server_base + "/list_by_author/" + GLOBALS.controller;
+                $.ajax( url, {
+                    dataType: "json",
+                    success: function(data){
+                        console.log("got data")
+                        listdata.refresh(data);
+                    }
+                
+                });
+                that.templatesActive = false;
+                $(button).text("View Templates");
             }
+                return false;
+            }
+            
         });
         var listdata = new ListData;
         var listview = new ListView;

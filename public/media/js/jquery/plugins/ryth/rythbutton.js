@@ -32,7 +32,8 @@
         return this.each(function() {
             $(this).button();
 			$(".addbutton").button({ icons: { primary: 'ui-icon-plusthick',	}});
-			$(".wrenchbutton").button({ icons:{ primary: "ui-icon-wrench" } } );
+			$(".addbutton").button({ icons: { primary: 'ui-icon-plusthick',	}});
+			$(".findbutton").button({ icons:{ primary: "ui-icon-circle-zoomin" } } );
         });
 
     };

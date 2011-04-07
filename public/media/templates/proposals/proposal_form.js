@@ -519,6 +519,12 @@ proposal_form_view = Backbone.View.extend({
     StatusRadioView = Backbone.View.extend({
         initialize: function(){
             $("#column3").html( $("#proposal_status_radio").html() );
+                $( "#radio" ).buttonset();
+    thechecked = options.status;
+    $("input[value='"+thechecked+"']").attr("checked", "checked")
+    
+    $( "#radio" ).buttonset('refresh');
+    
         }
     });
     ProposalView = Backbone.View.extend({
@@ -683,23 +689,32 @@ proposal_form_view = Backbone.View.extend({
 
         },
         get_id: function(){
-            if( GLOBALS.route_id == "" ){
+            if( GLOBALS.route_id == "" || GLOBALS.route_id == "template"){
                 // Get the empty form fields and serialize them sresponseo we can insert into the database
                 formdata = $(".edit_proposal_form").serializeObject();
                 // Add the type of form to the form object
                 formdata.type = "proposal";
                 formdata.status = "pending";
-                formdata.template = true;
+                if( GLOBALS.route_id == "template" ){
+                    options.template = formdata.template = true;
+                } else {
+                    options.template = formdata.template = false;
+                }
                 return $.ajax( "data", {
                         dataType: "json",
                         type: "POST",
                         contentType: "application/json",
                         data: $.toJSON(formdata),
                         success: function(resp){
+                            documenttest = "nottemplate";
+                            if( options.controller == "proposal" && GLOBALS.route_id == "template" ){
+                                
+                                documenttest = "";
+                            }
                             //Unbind the default click handler and attach a new one now that we have created a new proposal
                             $('.proposal_save').unbind('click');
                             $(".proposal_save").click({
-                                templateid: "",
+                                templateid: documenttest,
                                 _rev: resp.rev,
                                 _id: resp.id,
                                 success: options.success
@@ -713,12 +728,7 @@ proposal_form_view = Backbone.View.extend({
     });
     proposal_view = new ProposalView;
   
-    $( "#radio" ).buttonset();
     $("#email_pdf_form .button").button();
-    thechecked = options.status;
-    $("input[value='"+thechecked+"']").attr("checked", "checked")
-    
-    $( "#radio" ).buttonset('refresh');
-    
+
     }
 });

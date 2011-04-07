@@ -76,7 +76,7 @@ common_edit_view = Backbone.View.extend({
                 // If an id is present we are editing a document, if the id is null we are creating a new object.   _Note: For the settings page a bit of hackery goes on in the nested else statement_
                 id = options.current_doc_id;
                 templateid = options.templateid;
-                if (id) {
+                if (id && id != "template") {
                     // Do an ajax call to bring down any data associated with the document id
                     var url = GLOBALS.server_base + "/data/" + id;
                     $.ajax(url, {
@@ -99,6 +99,9 @@ common_edit_view = Backbone.View.extend({
 
                             if (typeof data._rev != "undefined") _rev = data._rev;
                             // Attach a configured click handler to the save button. See index.js for the saveclickHandler
+                            if( data.template == false ){
+                                templateid = "a";
+                            }
                             $("." + options.controller + "_save").click({
                                 _rev: _rev,
                                 _id: id,
@@ -120,6 +123,7 @@ common_edit_view = Backbone.View.extend({
                     });
                 } else {
                     // If this is a new document we have to configured the save button to operate differently.   Load in the template with no pre filled data.
+                    
                     $("." + options.controller + "_save").click({
                         _rev: "",
                         _id: "",
