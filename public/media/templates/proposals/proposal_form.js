@@ -140,13 +140,16 @@ proposal_form_view = Backbone.View.extend({
             $(".delete_section").live( "click", this.deleteSection );
         },
         deleteSection: function( event ) {
-			cid = $(event.currentTarget).parents("li").attr("cid");
-			model = proposal_view.sections.getByCid(cid);
-			id = model.get("id");
-			proposal_view.sections.remove(model);
-			$("#" + id ).remove();
-			$("li[cid='" + cid + "']").remove();
-            proposal_view.toc.updateOrder();
+            
+            if( confirm("Are you sure you want to delete this?") ){
+                cid = $(event.currentTarget).parents("li").attr("cid");
+                model = proposal_view.sections.getByCid(cid);
+                id = model.get("id");
+                proposal_view.sections.remove(model);
+                $("#" + id ).remove();
+                $("li[cid='" + cid + "']").remove();
+                proposal_view.toc.updateOrder();
+            }
 			return false;
 		},
         addSection: function( section ){

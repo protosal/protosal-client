@@ -205,8 +205,8 @@ section_form_view = Backbone.View.extend({
             addFee: function (model) {
                 console.log(model);
                 $("#sortablefees").append("<li id='" + model.id + "'><span style='float: left;'></span><p>" + model.get("name") + "</p><span class='delete_fee delete'>Delete</span><span class='edit_fee edit'>Edit</span></li>");
-                $(".edit").button();
-                $(".delete").button();
+                $(".edit", $(".modal_window")).button();
+                $(".delete", $(".modal_window")).button();
                 $( "#sortablefees" ).sortable({
                     update: section_backbone.updateFeeValues
                 });

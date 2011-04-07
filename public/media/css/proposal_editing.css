@@ -4,7 +4,7 @@
 .empty_variable {
 	background: #ff6666;
 }
-.section:hover {
+#section_container_test ol li:hover {
 	cursor: pointer;
 	background: #ffffcc;
 	
@@ -12,11 +12,12 @@
 .section_list_item:hover {
 	background: #f7f7f7;
 }
-.delete_section {
-	color: #ff0000 !important;
-	display: block !important;
-}
+
 .proposal_preview .toc ol li:hover{
 	background: #ffffcc url(../icons/direction.png) no-repeat right;
 		cursor: pointer;
+}
+
+.editing_buttons {
+    display: block;
 }

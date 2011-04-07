@@ -631,7 +631,7 @@ width: 720px !important;
 float: right !important;
 }
 
-.list_view .edit span, .list_view .delete span, .list_view .usetemplate span{
+.list_view .edit span, .list_view .delete span, .list_view .usetemplate span, section_preview .edit span, section_preview .delete span{
 font-size: 11px  !important;
 }
 .list_view .int {
@@ -783,7 +783,7 @@ font-weight: bold;
 	-webkit-box-shadow: 0 0 5px 5px #ccc;
 	box-shadow: 0 0 4px 4px #ccc;
 	position: absolute; 
-	top: 225px; 
+	top: 222px; 
 	left: 50%;
 	margin-left: 320px;
 	z-index: 3;
@@ -834,8 +834,7 @@ display: block;
 	width: 170px;
 }
 /* Rules for preview proposal */
-.delete_section {
-	color: #fff;
+.editing_buttons {
 	display: none;
 }
 
