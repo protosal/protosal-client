@@ -1,4 +1,5 @@
 <script type="text/template" id="proposal_form_template">
+
 <div id="proposal_form_container">
     <form id="add_proposal_form"  class="edit_proposal_form" enctype="multipart/form-data" >
         <fieldset>
@@ -26,11 +27,13 @@
     </div>
     <div id="sidemenu" style="">
     <a id="side_add_section" class=" ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button"><span class="ui-button-text">Add Section</span></a><br />
+    <% if(!template) { %>
     <br />
     <a id="side_print_preview" editing="true" class="button  ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button"><span class="ui-button-text">Print Preview</span></a><br />
     <a id="side_view_pdf" class="button  ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button"><span class="ui-button-text">View PDF</span></a>
     <a id="side_email_pdf" class="button  ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button"><span class="ui-button-text">Email Client</span></a>
     <form action="pdf" method="POST" id="pdfcrowdform"><input type="hidden" id="open_pdf_proposal" name="ProposalName" /><textarea id="pdfcrowd" name="pdfdata" style="display: none;"></textarea></form>
+    <% }; %>
     </div>
 </div>
 <div id="section_chooser_container" style="display:none;">
@@ -75,7 +78,7 @@ Thank you
 
 </script>
 <script type="text/template" id="toc_list_item">
-    <li id="<%= typeof section.id != "undefined" ? section.id : section.cid %>" template_id="<%= section.get("template_id") %>"><%= section.get("name") %></li>
+    <li class="t_<%= typeof section.id != "undefined" ? section.id : section.cid %>" id="<%= typeof section.id != "undefined" ? section.id : section.cid %>" template_id="<%= section.get("template_id") %>"><%= section.get("name") %></li>
 </script>
 <script type="text/template" id="clients_combo_form_element">
     <label for="">
@@ -99,9 +102,13 @@ Thank you
 <script type="text/template" id="section_chooser_list_template">
     <div class="ui-widget-header">
         <h3 style="text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);float: left;">Add Sections</h3>
-            <a class="add_sections button ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" style="float:right;"><span class="ui-button-text">Add to Proposal</span></a><br />
+            <a class="add_sections button ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" style="float:right;"><span class="ui-button-text">Add to Proposal</span></a>
+            
+              <a class="close-button button ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" style="float:right;"><span class="ui-button-text">Close</span></a>
+            
         <div style="clear:both;"></div>
     </div>
+    <br />
     <a class=" new_section_button ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button"><span class="ui-button-text">Add New Empty Section</span></a>
     <ul>
        
@@ -115,7 +122,7 @@ Thank you
     </div>
 </script>
 <script type="text/template" id="proposal_preview_section">
-    <li class="section_<%= section.cid %> cid" cid="<%= section.cid %>" template_id="<%= section.get("template_id") %>">
+    <li class="s_<%= section.id %> section_<%= section.cid %> cid" cid="<%= section.cid %>" template_id="<%= section.get("template_id") %>">
         <div class="section">
             <h3 class="section_heading"><%= section.get("name") %></h3>
             <div class="section_content">
@@ -175,8 +182,8 @@ Thank you
     <strong><%= details.get("companyname") != "" && typeof details.get("companyname") != "undefined" ? details.get("companyname") : "Example Company"  %></strong><br />
     <%= details.get("companyshortdescription") != "" && typeof details.get("companyshortdescription") != "undefined" ? details.get("companyshortdescription") : "Set your header details under the Setting tab" %><br />
     <br />
-    <strong>Ph</strong>: <%= details.get("phone") != "" && typeof details.get("phone") != "undefined" ? details.get("phone") : "n/a" %><br /> 
-    <strong>Fx</strong>: <%= details.get("fax") != "" && typeof details.get("fax") != "undefined" ? details.get("fax") : "n/a" %>
+    <strong>Ph</strong>: <%= details.get("phone") != "" && typeof details.get("phone") != "undefined" ? details.get("phone") : "1800 EXAMPLE" %><br /> 
+    <strong>Fx</strong>: <%= details.get("fax") != "" && typeof details.get("fax") != "undefined" ? details.get("fax") : "1300 EXAMPLE" %>
 </script>
 <script type="text/template" id="proposal_preview">
             <div class="header">
@@ -189,8 +196,28 @@ Thank you
                 
             </div>
             <div>
-            <span style="float: left;">01/04/2011</span><span style="float: right;">Ref: ??????</span>
-            </div>
+            <%
+          var m_names = new Array("January", "February", "March",
+"April", "May", "June", "July", "August", "September",
+"October", "November", "December");
+
+var d = new Date();
+var curr_date = d.getDate();
+if( curr_date == 1 ){
+    curr_date = curr_date + "st";
+} else if( curr_date == 2 ){
+    curr_date = curr_date + "nd";
+} else if( curr_date == 3 ){
+    curr_date = curr_date + "rd";
+} else {
+    curr_date = curr_date+"th";
+}
+var curr_month = d.getMonth();
+var curr_year = d.getFullYear();
+thedate = (curr_date + " " + m_names[curr_month] + " " + curr_year);
+%>
+            <span style="float: left;"><%= thedate %></span><span style="float: right;">Ref: ??????</span>
+            </div> 
             <div style="clear:both;"></div>
             <br /><br />
             <h2 id="preview_proposal_name"><%= name %></h2>
