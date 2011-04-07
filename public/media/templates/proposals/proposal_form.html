@@ -9,20 +9,12 @@
                             Name</label>
                         <input name="name" id="proposal_name" type="text" value="<%= typeof name != "undefined" ? name : "" %>" />
                     </td>
-                    <td style="padding-left: 20px;">
-                        <label for="">
-                            Client</label>
+                    <td style="padding-left: 20px;" class>
+                        
                         <div id="clients_combo_container"></div>
                     </td>
-                    <td style="padding-left: 20px;">
-                        <label for="">
-                            Status</label>
-                    	<div id="radio">
-                    	
-		                <input type="radio" class="pending" id="radio1" name="status" value="pending" /><label for="radio1">Pending</label>
-		                <input type="radio" class="accepted" id="radio2" name="status" value="accepted" /><label for="radio2">Accepted</label>
-		                <input type="radio" class="declined" id="radio3" name="status" value="declined" /><label for="radio3">Declined</label>
-	                    </div>
+                    <td style="padding-left: 20px;" id="column3">
+                        
 	                </td>
                 </tr>
             </table>
@@ -80,14 +72,14 @@ Thank you
 
 </div>
 </div>
-<jst>
 
-</jst>
 </script>
 <script type="text/template" id="toc_list_item">
     <li id="<%= typeof section.id != "undefined" ? section.id : section.cid %>" template_id="<%= section.get("template_id") %>"><%= section.get("name") %></li>
 </script>
 <script type="text/template" id="clients_combo_form_element">
+    <label for="">
+                            Client</label>
     <select name="client_id" id="client_combo">                
     <option value="">Select Client</option>
     <% _.each( models, function( clientmodel) { 
@@ -138,7 +130,24 @@ Thank you
         <div class="delete_section">Delete</div>
     </li>
 </script>
-<script type="text/template"" id="section_fee_table_template">
+
+
+<script type="text/template" id="proposal_status_radio">
+<label for="">
+        Status</label>
+    <div id="radio">
+    
+    <input type="radio" class="pending" id="radio1" name="status" value="pending" /><label for="radio1">Pending</label>
+    <input type="radio" class="accepted" id="radio2" name="status" value="accepted" /><label for="radio2">Accepted</label>
+    <input type="radio" class="declined" id="radio3" name="status" value="declined" /><label for="radio3">Declined</label>
+    </div>
+</script>
+
+
+
+
+
+<script type="text/template" id="section_fee_table_template">
 <table id="hor-minimalist-b">
     <thead>
         <tr>
