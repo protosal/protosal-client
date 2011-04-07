@@ -631,7 +631,7 @@ width: 720px !important;
 float: right !important;
 }
 
-.list_view .edit span, .list_view .delete span{
+.list_view .edit span, .list_view .delete span, .list_view .usetemplate span{
 font-size: 11px  !important;
 }
 .list_view .int {
@@ -842,6 +842,26 @@ display: block;
 
 
 
+.ui-state-attention, .ui-widget-content .ui-state-attention, .ui-widget-header .ui-state-attention, .usetemplate { 
+	
+	color: #1c4257;
+     border: 1px solid #7096ab;
+	background: url(images/bg_fallback.png) 0 -50px repeat-x;
+	background: -webkit-gradient(
+    linear,
+    left bottom,
+    left top,
+    color-stop(1, rgb(240,240,140)),
+    color-stop(0, rgb(237,237,8))
+	) !important;
+	background: -moz-linear-gradient(
+		center top,
+		rgb(185,224,245),
+		rgb(146,189,214)
+	) !important;
+}
+.ui-state-attention a, .ui-state-attention a:link, .ui-state-attention a:visited { color: #313131; text-decoration: none; }
+
 .ui-state-save, .ui-widget-content .ui-state-save, .ui-widget-header .ui-state-save { 
 	outline: none;
 	color: #1c4257; border: 1px solid #7096ab;
@@ -860,6 +880,16 @@ display: block;
 	) !important;
 }
 .ui-state-save a, .ui-state-save a:link, .ui-state-save a:visited { color: #313131; text-decoration: none; }
+
+
+
+
+
+
+
+
+
+
 
 .userlogo img{
 	float: right;

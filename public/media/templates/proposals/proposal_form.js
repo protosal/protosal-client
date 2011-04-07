@@ -120,11 +120,11 @@ proposal_form_view = Backbone.View.extend({
                 .then( function(data) {
                     //Update this collections sections
                     console.log("received fee data");
-                    $(".section_table", $(".section_" + section.cid) ).html( _.template( $("#section_fee_table_template").html(), { fees: data} ) );
-                    proposal_view.applyVariables( $(".section_" + section.cid) );
+                    $(".section_table", $(".s_" + section.id) ).html( _.template( $("#section_fee_table_template").html(), { fees: data} ) );
+                    proposal_view.applyVariables( $(".s_" + section.id) );
                 }); //When statement end
             } else {
-                $(".section_table", $(".section_" + section.cid) ).html("");
+                $(".section_table", $(".s" + section.id) ).html("");
                 
             }
             
@@ -240,10 +240,11 @@ proposal_form_view = Backbone.View.extend({
                         $.ajax({
                             url: "data/" + section.id,
                             success: function( response ){section_fee_table_template
-                                $(".section_content", ".section_" + cid).html( _.template( $("#proposal_preview_section_content").html(), response ) );
-                                $(".section_heading", ".section_" + cid).text(response.name);
-                                $("#"+section.id).text(response.name); // set the toc name
+                                $(".section_content", ".s_" + section.id).html( _.template( $("#proposal_preview_section_content").html(), response ) );
+                                $(".section_heading", ".s_" + section.id).text(response.name);
+                                $(".t_"+section.id).text(response.name); // set the toc name
                                 section.set(response);
+                                
                                 var feetable = new FeeTableView( section );
                                 proposal_view.applyVariables( ".section_" + cid );
                             }
