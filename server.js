@@ -221,11 +221,7 @@ function increment_property( docid, property, inc, cb ) {
         },
     ],
     function( err ) {
-        if( err ) {
-            return cb( err );
-        } else {
-            return cb( null, num );
-        }
+        callback( err, num );
     });
 }
 
@@ -564,6 +560,8 @@ app.get('/related2/:view/:id', function( req, res ){
 });
 
 function send_attachment( doc_id, attachment_name, res ) {
+    var db = new(cradle.Connection)().database('app');
+
     // Proxy the response from couchdb to the res object.
     db.getAttachment(doc_id, attachment_name).on('response', function(response) {
         response.on('data', function(chunk) {
@@ -797,11 +795,7 @@ function change_password(
             // Retreive the user document.
 
             user_db.get(docid, function(err, doc) {
-                if( err ) {
-                    return callback( err );
-                } else {
-                    return callback( null, doc );
-                }
+                return callback( err, doc );
             });
         },
         function( doc, callback ) {
@@ -821,20 +815,12 @@ function change_password(
             };
 
             user_db.merge(docid, user_doc, function(err, doc) {
-                if( err ) {
-                    return callback( err );
-                } else {
-                    return callback( null );
-                }
+                return callback( err, doc );
             });
         }
     ],
     function( err ) {
-        if( err ) {
-            return parent_callback( err );
-        } else {
-            return parent_callback( null );
-        }
+        return parent_callback( err );
     });
 }
 
@@ -889,13 +875,7 @@ app.post('/user', function(req, res) {
             },
             function( doc, callback ) {
                 // Get attachment details.
-                db.get(doc.id, function(err, doc) {
-                    if( err ) {
-                        return callback( err );
-                    } else {
-                        return callback( null, doc );
-                    }
-                });
+                get_doc( doc.id, req.session.username, callback );
             },
             function( doc, callback ) {
                 // Delete the previous attachment.
@@ -916,12 +896,8 @@ app.post('/user', function(req, res) {
                     var options = {rev: doc._rev};
 
                     con.request('DELETE', path, options, function(err, doc) {
-                        if( err ) {
-                            return callback( err );
-                        } else {
-                            // Send the new new revision returned by CouchDB.
-                            return callback( null, doc.rev );
-                        }
+                        // Send the new new revision returned by CouchDB.
+                        return callback( err, doc.rev );
                     });
                 } else {
                     // Send the existing revision, as the doc hasn't been updated.
