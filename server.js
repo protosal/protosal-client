@@ -1,18 +1,20 @@
-// Require the orm and framework
-var express = require('express');
-var http = require('http');
-var ryth = require('./node-server/ryth')
 var connect = require('connect');
+var RedisStore = require('connect-redis');
+var express = require('express');
+
 var _ = require('underscore');
-var Exceptional = require('./node-server/exceptional').Exceptional;
 var cradle = require('cradle');
 var form = require('connect-form');
 var async = require('async');
 var fs = require('fs');
-var sys = require('sys');
+var Hash = require('./node-server/sha1');
+var uuid = require('node-uuid')
+
 var pdfcrowd = require('./node-server/node-pdfcrowd');
 var postmark = require('postmark')('473b864e-b165-473c-9435-68981a3bbeef');
-var Hash = require('./node-server/sha1');
+var Exceptional = require('./node-server/exceptional').Exceptional;
+
+var ryth = require('./node-server/ryth')
 
 var app = express.createServer(
   // connect-form (http://github.com/visionmedia/connect-form)
@@ -24,7 +26,7 @@ var app = express.createServer(
 cradle.setup(ryth.cradle_config);
 
 app.configure(function() {
-    app.use(express.responseTime());  
+    app.use(express.responseTime());
     app.use(express.bodyParser());
 
     // Enable static file serving
@@ -32,10 +34,20 @@ app.configure(function() {
 
     app.use(express.errorHandler({ dumpExceptions: true }));
     app.use(connect.cookieParser());
-    app.use(connect.session({ secret: 'foobar' }));
+
+    // Generate a new UUID as the session secret.
+    app.use(connect.session({ store: new RedisStore, secret: uuid() }));
 
     // Our custom authentication check
     app.use(ryth.authCheck);
+});
+
+app.configure('development', function() {
+    console.log('=== Development Server Running ==='); 
+});
+
+app.configure('production', function() {
+    console.log('=== Production Server Running ==='); 
 });
 
 function AuthRequired(msg) {

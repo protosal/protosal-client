@@ -9,3 +9,5 @@ npm install async
 npm install node-uuid
 npm install request
 npm install postmark
+npm install optimist
+npm install connect-redis
