@@ -177,6 +177,7 @@ function get_doc(docid, username, callback) {
         if( doc.author == username ) {
             return callback( null, doc );
         } else {
+            console.log(doc);
             return callback( {error: 'unauthorized' } );
         }
     });
@@ -198,9 +199,6 @@ function new_doc_instance(doc, callback) {
     doc.created_at = Date.now();
     doc.last_modified = Date.now();
 
-    console.log('new doc');
-    console.log(doc);
-
     db.save(doc, function(err, doc) {
         if( err ) {
             return callback( err );
@@ -210,8 +208,8 @@ function new_doc_instance(doc, callback) {
     });
 }
 
-function clone_docs_series(doc_arr, callback) {
-    async.mapSeries(doc_arr, new_doc_instance, function(err, result) {
+function clone_docs(doc_arr, callback) {
+    async.map(doc_arr, new_doc_instance, function(err, result) {
         if( err ) {
             return callback( err );
         } else {
@@ -220,14 +218,17 @@ function clone_docs_series(doc_arr, callback) {
     });
 }
 
-function new_child_list( docid, child_docs, callback ) {
+function merge_single_property( docid, key, value, callback ) {
+    if( key == '' ) {
+        return callback( null );
+    }
+
     var db = new(cradle.Connection)().database('app');
 
-    var child_ids = child_docs.map(function( doc ) {
-        return doc.id;
-    });
+    var obj = {};
+    obj[key] = value;
 
-    db.merge( docid, { feelist: child_ids }, function( err, doc ) {
+    db.merge( docid, obj, function( err, doc ) {
         if( err ) {
             return callback( err );
         } else {
@@ -252,11 +253,70 @@ function get_docs( doc_ids, callback ) {
     });
 }
 
+// Searches for a property containing the supplied serarch string.
+function find_property( doc, searchstr ) {
+    // Loop through all properties of the document.
+    for( var key in doc ) {
+        // Ensuring we don't check inherited properties.
+        if( doc.hasOwnProperty( key ) ) {
+            if( key.indexOf( searchstr ) == -1 ) {
+                continue;
+            } else {
+                // Return the first matching instance of searchstr.
+                return key;
+            }
+        }
+    }
+
+    // If nothing was found, return an empty string.
+    return '';
+}
+
+function get_child_ids( doc ) {
+    var property_name = find_property( doc, 'list' );
+
+    if( property_name != '' ) {
+        // Ensure we don't get crazy reference problems.
+        return _.clone( doc[property_name] );
+    } else {
+        return [];
+    }
+}
+
+// An async wrapper around new_parent_instance() to create
+// multiple parent documents at once.
+function new_parent_instances( docs, username, callback ) {
+    async.forEach( docs,
+        function( doc, cb ) {
+            var child_ids = get_child_ids( doc );
+
+            // If this document has children, it must be instantiated.
+            if( child_ids.length > 0 ) {
+                new_parent_instance( doc._id, username, cb );
+            } else {
+                // Otherwise continue on.
+                cb( null );
+            }
+        },
+        function( err ) {
+            if( err ) {
+                return callback( err );
+            } else {
+                console.log('--- new_parent_instances --- returning');
+                return callback( null );
+            }
+        }
+    );
+}
+
 // Create and return the new instance document with
 // all associated children instantiated.
 function new_parent_instance( docid, username, cb ) {
-    var template_doc = {};
     var instance_id = '';
+    var template_doc = {};
+    var temp_template_child_docs = [];
+
+    console.log(docid + '--- new_parent_instance');
 
     async.waterfall([
         function( callback ) {
@@ -267,41 +327,79 @@ function new_parent_instance( docid, username, cb ) {
             );
         },
         function( doc, callback ) {
+            console.log( docid + ' --- new_doc_instance' );
+
             template_doc = doc;
             
             new_doc_instance( template_doc, callback );
         },
         function( instance_doc, callback ) {
+            console.log( docid + ' --- get_docs' );
+
             instance_id = instance_doc.id;
 
-            get_docs( template_doc.feelist, callback );
+            var template_child_ids = get_child_ids( template_doc );
+
+            get_docs( template_child_ids, callback );
         },
         function( template_child_docs, callback ) {
-            console.log('template_fee_docs');
-            console.log(template_child_docs);
+            console.log( docid + ' --- clone_docs' );
 
             var template_child_docs = template_child_docs.map(function( doc ) {
                 return doc;
             });
 
-            console.log('template_fee_docs');
-            console.log(template_child_docs);
+            // A hack to copy the array and nested objects.
+            temp_template_child_docs = template_child_docs.slice().map(
+                function( doc ) {
+                    return _.clone( doc );
+                }
+            );
 
-            clone_docs_series( template_child_docs, callback ); 
+            clone_docs( template_child_docs, callback ); 
         },
         function( instance_child_docs, callback ) {
-            new_child_list( instance_id, instance_child_docs, callback );
+            console.log( docid + ' --- new_parent_instances' );
+
+            // This is just a hack so I can use the callback for
+            // sequential control flow. 
+            async.waterfall([
+                function( cb2 ) {
+                    new_parent_instances( temp_template_child_docs, username, cb2 );
+                },
+            ],
+            function( err ) {
+                if( err ) {
+                    return callback( err );
+                } else {
+                    var instance_child_ids = instance_child_docs.map(
+                        function( doc ) { return doc.id; }
+                    );
+
+                    console.log(instance_child_ids + ' --- new_child_list');
+
+                    // Update the `[name]list` property.
+                    var list_name = find_property( template_doc, 'list' );
+                    merge_single_property( instance_id, list_name, instance_child_ids, callback );
+                }
+            });
         },
         function( doc, callback ) {
+            console.log( docid + ' --- get_doc' );
+
             get_doc( instance_id, username, callback );
         },
         function( doc, callback ) {
-            cb( null, doc );
-            callback( null );
+            console.log( doc._id + ' --- final_callback' );
+
+            return cb( null, doc );
         }
     ],
     function( err ) {
-        if( err ) return cb( err );
+        if( err ) {
+            console.log(docid + ' --- new_instance_ERROR');
+            return cb( err );
+        }
     });
 }
 
@@ -311,11 +409,11 @@ function new_parent_instance( docid, username, cb ) {
 // **Returns:** Section instance document, HTTP 200
 //
 // **Error:** error object, HTTP 500
-app.get('/data/newinstance/:section_id', function(req, res) {
+app.get('/data/newinstance/:parent_id', function(req, res) {
     async.waterfall([
         function( callback ) {
             new_parent_instance(
-                req.params.section_id,
+                req.params.parent_id,
                 req.session.username,
                 callback 
             );
