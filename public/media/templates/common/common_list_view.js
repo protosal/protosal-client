@@ -22,7 +22,7 @@ common_list_view =  Backbone.View.extend({
             header_options.buttons.push({
                 'text': 'View Templates',
                             'href': '',
-                            'classes': 'switchToTemplates findbutton'
+                            'classes': 'switchToTemplates findbutton ui-state-attention'
             });
         }
             
@@ -46,10 +46,17 @@ common_list_view =  Backbone.View.extend({
                     rows = [];
                 }
                 options.rows = rows;
-                
+                // Show Use Template Button if proposal templates
+                options.templateButton = false;
+                if( listview.templatesActive ){
+                    options.templateButton = true;
+                }
                 // Initialize the table view for the list
                 new common_list_view_table( options );
-                  
+                  setTimeout( function (){     $(".dataTables_filter input").focus(); }, 400);
+        $(".dataTables_filter input").focusout( function(){
+            setTimeout( function (){ $(".dataTables_filter input").focus(); }, 700);
+        });
                   
                 $("#common_list_view_table_container").fadeIn(400);
             }
@@ -81,7 +88,8 @@ common_list_view =  Backbone.View.extend({
             events: {
                 "click .delete":  "removeRow",
                 "click .edit":  "editPage",
-                "click .switchToTemplates": "switchToTemplates"
+                "click .switchToTemplates": "switchToTemplates",
+                "click .usetemplate": "useTemplate"
             },
             removeRow: function(event){
                 if( confirm("Are you sure you want to delete this?") ){
@@ -111,7 +119,7 @@ common_list_view =  Backbone.View.extend({
                 
                 });
                 that.templatesActive = true;
-                $(button).text("View Proposals");
+                $(button).text("Back to Proposals");
             }   else {
                     var url = GLOBALS.server_base + "/list_by_author/" + GLOBALS.controller;
                 $.ajax( url, {
@@ -125,6 +133,18 @@ common_list_view =  Backbone.View.extend({
                 that.templatesActive = false;
                 $(button).text("View Templates");
             }
+                return false;
+            },
+            useTemplate: function( event ){
+                
+                var id = $(event.currentTarget).parents("tr").attr("row_id");
+                $.ajax({
+                    url: "data/newinstance/" + id,
+                    dataType: "json",
+                    success: function( data ) {
+                        redirect("proposal/edit/"+data._id);
+                    }
+                });
                 return false;
             }
             
