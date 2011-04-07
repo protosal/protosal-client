@@ -205,19 +205,19 @@ function get_doc_noauth( docid, callback ) {
 // This is some hacky bullshit.
 // 
 // **Returns:** The new incremented value.
-function increment_property( docid, property, inc, cb ) {
+function increment_property( docid, property, inc, callback ) {
     var db = new(cradle.Connection)().database('app');
     var num = 0;
 
     async.waterfall([
-        function( callback ) {
-            get_doc_noauth( docid, callback ); 
+        function( cb ) {
+            get_doc_noauth( docid, cb ); 
         },
-        function( doc, callback ) {
+        function( doc, cb ) {
             // Assume num and inc are integers.
             num = doc[property] + inc;
 
-            merge_single_property( docid, property, num, callback );
+            merge_single_property( docid, property, num, cb );
         },
     ],
     function( err ) {
@@ -384,7 +384,11 @@ function new_parent_instance( docid, username, cb ) {
             new_doc_instance( template_doc, callback );
         },
         function( instance_doc, callback ) {
-            increment_proposal_num( instance_doc.id, username, callback );
+            if( template_doc.type == 'proposal' ) {
+                increment_proposal_num( instance_doc.id, username, callback );
+            } else {
+                callback( instance_doc.id );
+            }
         },
         function( new_instance_id, callback ) {
             console.log( docid + ' --- get_docs' );
