@@ -189,44 +189,98 @@ function get_doc(docid, username, callback) {
         if( doc.author == username ) {
             return callback( null, doc );
         } else {
-            console.log(doc);
             return callback( {error: 'unauthorized' } );
         }
     });
 }
 
-function new_doc_instance(doc, callback) {
+function get_doc_noauth( docid, callback ) {
     var db = new(cradle.Connection)().database('app');
 
-    // Indicate the new document is an instance.
-    doc.template = false;
-    // Record the template this document was generated from.
-    doc.template_id = doc._id;
+    db.get(docid, function(err, doc) {
+        return callback( err, doc );
+    });
+}
+
+// This is some hacky bullshit.
+// 
+// **Returns:** The new incremented value.
+function increment_property( docid, property, inc, cb ) {
+    var db = new(cradle.Connection)().database('app');
+    var num = 0;
+
+    async.waterfall([
+        function( callback ) {
+            get_doc_noauth( docid, callback ); 
+        },
+        function( doc, callback ) {
+            // Assume num and inc are integers.
+            num = doc[property] + inc;
+
+            merge_single_property( docid, property, num, callback );
+        },
+    ],
+    function( err ) {
+        if( err ) {
+            return cb( err );
+        } else {
+            return cb( null, num );
+        }
+    });
+}
+
+function increment_proposal_num( proposal_id, username, callback ) {
+    var proposal_num_property = 'proposal_num';
+
+    async.waterfall([
+        function( cb ) {
+            get_profile_doc( username, cb );
+        },
+        function( doc, cb ) {
+            increment_property(
+                ryth.username_docid( username ),
+                proposal_num_property,
+                1,
+                cb
+            );
+        },
+        function( value, cb ) {
+            merge_single_property( proposal_id, proposal_num_property, value, cb );
+        },
+    ],
+    function( err ) {
+        return callback( err, proposal_id );
+    });
+}
+
+function clone_doc( doc, callback ) {
+    var db = new(cradle.Connection)().database('app');
 
     // Delete _id and _rev so we create a new record.
     delete doc._id;
     delete doc._rev;
 
+    db.save(doc, function(err, doc) {
+        return callback( err, doc );
+    });
+}
+
+function new_doc_instance( doc, callback ) {
+    // Indicate the new document is an instance.
+    doc.template = false;
+    // Record the template this document was generated from.
+    doc.template_id = doc._id;
+
     // Set the new created and modified times.
     doc.created_at = Date.now();
     doc.last_modified = Date.now();
 
-    db.save(doc, function(err, doc) {
-        if( err ) {
-            return callback( err );
-        } else {
-            return callback( null, doc );
-        }
-    });
+    clone_doc( doc, callback );
 }
 
 function clone_docs(doc_arr, callback) {
     async.map(doc_arr, new_doc_instance, function(err, result) {
-        if( err ) {
-            return callback( err );
-        } else {
-            return callback( null, result );
-        }
+        return callback( err, result );
     });
 }
 
@@ -241,11 +295,7 @@ function merge_single_property( docid, key, value, callback ) {
     obj[key] = value;
 
     db.merge( docid, obj, function( err, doc ) {
-        if( err ) {
-            return callback( err );
-        } else {
-            return callback( null, doc );
-        }
+        return callback( err, doc );
     });
 }
 
@@ -257,11 +307,7 @@ function get_docs( doc_ids, callback ) {
     var db = new(cradle.Connection)().database('app');
 
     db.get( doc_ids, function(err, docs) {
-        if( err ) {
-            return callback( err );
-        } else {
-            return callback( null, docs );
-        }
+        return callback( err, docs );
     });
 }
 
@@ -311,12 +357,8 @@ function new_parent_instances( docs, username, callback ) {
             }
         },
         function( err ) {
-            if( err ) {
-                return callback( err );
-            } else {
-                console.log('--- new_parent_instances --- returning');
-                return callback( null );
-            }
+            console.log('--- new_parent_instances --- returning');
+            return callback( err );
         }
     );
 }
@@ -346,9 +388,12 @@ function new_parent_instance( docid, username, cb ) {
             new_doc_instance( template_doc, callback );
         },
         function( instance_doc, callback ) {
+            increment_proposal_num( instance_doc.id, username, callback );
+        },
+        function( new_instance_id, callback ) {
             console.log( docid + ' --- get_docs' );
 
-            instance_id = instance_doc.id;
+            instance_id = new_instance_id;
 
             var template_child_ids = get_child_ids( template_doc );
 
@@ -486,11 +531,7 @@ function get_docs_from_view( view, doc_ids, callback ) {
 
     // Return all corresponding child documents.
     db.view(view + '/list_by_id', {'keys': doc_ids}, function(err, docs) {
-        if( err ) {
-            return callback( err );
-        } else {
-            return callback( null, docs );
-        }
+        return callback( err, docs );
     });
 }
 
@@ -566,17 +607,28 @@ app.get('/logo/:user_id', function(req, res) {
     });
 });
 
+function get_profile_doc( username, callback ) {
+    var docid = ryth.username_docid( username );
+
+    get_doc_noauth( docid, callback );
+}
+
 // Get the user profile document for the currently logged in user.
 //
 // **Returns:** User profile document, HTTP 200
 //
 // **Error:** error document, HTTP 500
 app.get('/user', function(req, res) {
-    var db = new(cradle.Connection)().database('app');
-    var docid = ryth.username_docid( req.session.username );
-
-    db.get(docid, function(err, doc) {
-        couch_response(err, doc, res); 
+    async.waterfall([
+        function( cb ) {
+            get_profile_doc( req.session.username, cb );
+        },
+        function( doc, cb ) {
+            res.send( doc, 200 );
+        }
+    ],
+    function( err ) {
+        async_error( err, res );
     });
 });
 

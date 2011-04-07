@@ -112,7 +112,8 @@ function register(req, res) {
                 author: req.body.email,
                 activation_key: uuid(),
                 type: 'user',
-                activated: false
+                activated: false,
+                proposal_num: 0
             }
 
             var db2 = new(cradle.Connection)().database('app');
