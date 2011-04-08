@@ -100,6 +100,7 @@ common_edit_view = Backbone.View.extend({
                             if (typeof data._rev != "undefined") _rev = data._rev;
                             // Attach a configured click handler to the save button. See index.js for the saveclickHandler
                             if( data.template == false ){
+                                alert("asD");
                                 templateid = "a";
                             }
                             $("." + options.controller + "_save").click({
