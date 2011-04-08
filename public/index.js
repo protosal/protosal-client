@@ -207,7 +207,7 @@
                 }
                 formdata.template = false;
                 formdata.type = savebuttoncontroller;
-                if(event.data.templateid == "" ) {
+                if(event.data.templateid == "" || GLOBALS.route_id == "template") {
                     formdata.template    = true;
                 }
                 
