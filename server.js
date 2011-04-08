@@ -387,7 +387,7 @@ function new_parent_instance( docid, username, cb ) {
             if( template_doc.type == 'proposal' ) {
                 increment_proposal_num( instance_doc.id, username, callback );
             } else {
-                callback( instance_doc.id );
+                callback( null, instance_doc.id );
             }
         },
         function( new_instance_id, callback ) {
