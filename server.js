@@ -1,5 +1,6 @@
 var connect = require('connect');
 var RedisStore = require('connect-redis');
+var connectCouchDB = require('../connect-couchdb');
 var express = require('express');
 
 var _ = require('underscore');
@@ -35,8 +36,9 @@ app.configure(function() {
     app.use(express.errorHandler({ dumpExceptions: true }));
     app.use(connect.cookieParser());
 
-    // Generate a new UUID as the session secret.
-    app.use(connect.session({ store: new RedisStore, secret: uuid() }));
+    var store_opts = _.clone( ryth.cradle_config );
+    store_opts.database = 'sessions';
+    app.use(connect.session({ store: new connectCouchDB(store_opts), secret: 's3cr3+' }));
 
     // Our custom authentication check
     app.use(ryth.authCheck);
@@ -81,9 +83,9 @@ app.error(function(err, req, res, next){
         console.log('shiiiiiiiiiiiiiit, what is this new error?');
     }
 
-    Exceptional.handle(err);
     console.log(err);
     console.log(err.stack);
+    Exceptional.handle(err);
 }); 
 
 function couch_response(err, doc, res) {
@@ -1049,6 +1051,19 @@ app.post('/data/bulk_docs', function(req, res) {
     });
 });
 
+function save_doc( doc, username, callback ) {
+    var db = new(cradle.Connection)().database('app');
+
+    // Set the author.
+    doc.author = username;
+    doc.created_at = Date.now();
+    doc.last_modified = Date.now();
+
+    db.save(doc, function(err, doc) {
+        callback( err, doc );
+    });
+}
+
 // Store the supplied JSON object in CouchDB.
 //
 // **Expects:**
@@ -1058,18 +1073,17 @@ app.post('/data/bulk_docs', function(req, res) {
 //
 // **Error:** error object, HTTP 500
 app.post('/data', function(req, res) {
-    var db = new(cradle.Connection)().database('app');
-
-    // Set the author.
-    req.body.author = req.session.username;
-    req.body.created_at = Date.now();
-    req.body.last_modified = Date.now();
-
-    db.save(req.body,
-        function(err, doc) {
-            couch_response(err, doc, res);
-        }
-    );
+    async.waterfall([
+        function( callback ) {
+            save_doc( req.body, req.session.username, callback );
+        },
+        function( doc, callback ) {
+            res.send( doc, 200 );
+        },
+    ],
+    function( err ) {
+        async_error( err, res );
+    });
 });
 
 // Delete the specified document. A document revision must be provided.

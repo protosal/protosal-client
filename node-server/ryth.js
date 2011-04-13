@@ -14,6 +14,7 @@ var ryth = exports;
 ryth.cradle_config = {
     host: '127.0.0.1',
     port: 5984,
+    cache: false,
     auth: get_master_auth()
 }
 
