@@ -403,7 +403,9 @@ section_form_view = Backbone.View.extend({
                             ui.item.option.selected = true;
                             
                             console.log(section_backbone);
+                            if(ui.item.option.id != ""){
                             section_backbone.testingAdd(event, ui);
+                        }
                             $(event.currentTarget).val("");
                             return false;
                             self._trigger( "selected", event, {
