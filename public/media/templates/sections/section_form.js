@@ -205,8 +205,8 @@ section_form_view = Backbone.View.extend({
             addFee: function (model) {
                 console.log(model);
                 $("#sortablefees").append("<li id='" + model.id + "'><span style='float: left;'></span><p>" + model.get("name") + "</p><span class='delete_fee delete'>Delete</span><span class='edit_fee edit'>Edit</span></li>");
-                $(".edit", $(".modal_window")).button();
-                $(".delete", $(".modal_window")).button();
+                $(".edit", $("#sortablefees")).button();
+                $(".delete", $("#sortablefees")).button();
                 $( "#sortablefees" ).sortable({
                     update: section_backbone.updateFeeValues
                 });
@@ -241,21 +241,38 @@ section_form_view = Backbone.View.extend({
             feemodal: function(id) {
                 if( typeof id != "string" ){
                     id = "";
+                    alert("hey");
                 }
             $("#fee_form_modal").html("");
             var temp = $("#fee_form_modal");
             temp.hide();
             $("body").append(temp);
+            
+                if( id != "" ){
+                    alert("me");
+            var successfunc = function(data){
+               
+                    $("#" + data.id + " p").text(data.name);
+                        
+                             $("#fee_form_modal").dialog("close");
+        }
+    } else {
+            var successfunc = function(data){
+                     section_backbone.fees.add( {
+                                        "id": data.id,
+                                        "name": data.name,
+                                        "price": data.price,
+                                        "rev": data.rev
+                                    } );
+                    
+                             $("#fee_form_modal").dialog("close");
+                }
+    }
             var modal_options = { 
                 controller: "fee",
                 documentid: id,
                 modal: "yes",
-                success: function(data){
-                   console.log($.toJSON(data));
-                    $("#" + data.id + " p").text(data.name);
-                             $("#fee_form_modal").dialog("close");
-                             //redirect("client/list");
-                },
+                success: successfunc,
                 targetPane: "#fee_form_modal"
             };
             new common_edit_view( modal_options );

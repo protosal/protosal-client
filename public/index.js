@@ -207,7 +207,9 @@
                 }
                 formdata.template = false;
                 formdata.type = savebuttoncontroller;
-                if(event.data.templateid == "" || GLOBALS.route_id == "template") {
+                
+                if(event.data.templateid == "" ) {
+                     $.jGrowl("Saved Template",{  theme: 'green', position: "top-right"});  
                     formdata.template    = true;
                 }
                 

@@ -229,7 +229,9 @@ proposal_form_view = Backbone.View.extend({
                 targetPane: "#atestform"
                 
             };
-            
+            if( section.get("template") ){
+                modal_options.templateid = "";
+            }
             new common_edit_view( modal_options );   
             var mydialog = $(temp).dialog({
 		        autoOpen: false,
@@ -711,7 +713,7 @@ proposal_form_view = Backbone.View.extend({
                         data: $.toJSON(formdata),
                         success: function(resp){
                             documenttest = "nottemplate";
-                            if( options.controller == "proposal" && GLOBALS.route_id == "template" ){
+                            if( options.controller == "proposal" && options.template ){
                                 
                                 documenttest = "";
                             }
