@@ -124,6 +124,11 @@ section_form_view = Backbone.View.extend({
                         };
                     });
                     
+                    $("#fee_combo_container").html( _.template( $("#fee_combo_template").html()  , {fees: fees } ));
+                    
+                    
+                    $( "#fee_combo" ).combobox();
+                    
                     
                      $( "#fees" ).autocomplete({
                         source: fees,
@@ -198,16 +203,56 @@ section_form_view = Backbone.View.extend({
                 
                
             },
+            testingAdd: function(event, ui ){
+                             console.log(ui);
+                             console.log(event);
+                             console.log("ssss");
+                            if( section_backbone.fees.get( ui.item.option.id ) ){
+                              $.jGrowl("You have already added this",{  theme: 'apple', position: "bottom-right"});
+                              $.jGrowl("Please try again",{  theme: 'apple', position: "bottom-right"});
+                                $( "#fees" ).val("").focus();
+                                return false;
+                            }else{
+                                
+                                obj = {
+                                    section_id: section_backbone.section_id,
+                                    fee_id: ui.item.id,
+                                    type: "sectionfee"
+                                }
+                                $.ajax({
+                                type: "POST",
+                                url: "/data",
+                                data: $.toJSON(obj),
+                                dataType: "json",
+                                contentType: "application/json",
+                                success: function( model ){
+                                    
+                                    console.log("Relationship added, add it to the backbone collection");
+                                    console.log("as");
+                                    console.log(ui.item);
+                                    section_backbone.fees.add( {
+                                        "id": ui.item.option.id,
+                                        "name": ui.item.label,
+                                        "rev": model.rev
+                                    } );
+                                
+                                }
+                                });
+                                
+                            }
+                            $( "#fees" ).val("").focus();
+                            return false;
+                        },
             events: {
                 "click #add-fee":  "feemodal",
                 "keypress #fees":  "checkEnter"
             },
             addFee: function (model) {
                 console.log(model);
-                $("#sortablefees").append("<li id='" + model.id + "'><span style='float: left;'></span><p>" + model.get("name") + "</p><span class='delete_fee delete'>Delete</span><span class='edit_fee edit'>Edit</span></li>");
-                $(".edit", $("#sortablefees")).button();
-                $(".delete", $("#sortablefees")).button();
-                $( "#sortablefees" ).sortable({
+                $("#sortablefees3").append("<li id='" + model.id + "'><div class='" + model.id + "' style='float: left; width: 170px; overflow: hidden;'>" + model.get("name") + "</div><span class='delete_fee delete'>Delete</span><span class='edit_fee edit'>Edit</span></li>");
+                $(".edit", $("#sortablefees3")).button();
+                $(".delete", $("#sortablefees3")).button();
+                $( "#sortablefees3" ).sortable({
                     update: section_backbone.updateFeeValues
                 });
                 
@@ -216,7 +261,7 @@ section_form_view = Backbone.View.extend({
             },
             updateFeeValues: function(event, ui){
                        
-                sections = $("#sortablefees").sortable('toArray').toString();
+                sections = $("#sortablefees3").sortable('toArray').toString();
                 console.log(sections);
                 $("#feelist").val( sections );
                 
@@ -241,7 +286,6 @@ section_form_view = Backbone.View.extend({
             feemodal: function(id) {
                 if( typeof id != "string" ){
                     id = "";
-                    alert("hey");
                 }
             $("#fee_form_modal").html("");
             var temp = $("#fee_form_modal");
@@ -249,10 +293,8 @@ section_form_view = Backbone.View.extend({
             $("body").append(temp);
             
                 if( id != "" ){
-                    alert("me");
             var successfunc = function(data){
-               
-                    $("#" + data.id + " p").text(data.name);
+                    $("." + data.id).html(data.name);
                         
                              $("#fee_form_modal").dialog("close");
         }
@@ -324,15 +366,118 @@ section_form_view = Backbone.View.extend({
         
         $(".edit_fee").die("click");
         
+    
+        
+        
+        (function( $ ) {
+        $.widget( "ui.combobox", {
+            _create: function() {
+                var self = this,
+                    select = this.element.hide(),
+                    selected = select.children( ":selected" ),
+                    value = selected.val() ? selected.text() : "";
+                var input = this.input = $( "<input type='text' style='height: 14px; width: 100px;display: inline-block'>" )
+                    .insertAfter( select )
+                    .val( value )
+                    .autocomplete({
+                        delay: 0,
+                        minLength: 0,
+                        source: function( request, response ) {
+                            var matcher = new RegExp( $.ui.autocomplete.escapeRegex(request.term), "i" );
+                            response( select.children( "option" ).map(function() {
+                                var text = $( this ).text();
+                                if ( this.value && ( !request.term || matcher.test(text) ) )
+                                    return {
+                                        label: text.replace(
+                                            new RegExp(
+                                                "(?![^&;]+;)(?!<[^<>]*)(" +
+                                                $.ui.autocomplete.escapeRegex(request.term) +
+                                                ")(?![^<>]*>)(?![^&;]+;)", "gi"
+                                            ), "<strong>$1</strong>" ),
+                                        value: text,
+                                        option: this
+                                    };
+                            }) );
+                        },
+                        select: function( event, ui ) {
+                            ui.item.option.selected = true;
+                            
+                            console.log(section_backbone);
+                            section_backbone.testingAdd(event, ui);
+                            $(event.currentTarget).val("");
+                            return false;
+                            self._trigger( "selected", event, {
+                                item: ui.item.option
+                            });
+                        },
+                        change: function( event, ui ) {
+                            if ( !ui.item ) {
+                                var matcher = new RegExp( "^" + $.ui.autocomplete.escapeRegex( $(this).val() ) + "$", "i" ),
+                                    valid = false;
+                                select.children( "option" ).each(function() {
+                                    if ( $( this ).text().match( matcher ) ) {
+                                        this.selected = valid = true;
+                                        return false;
+                                    }
+                                });
+                                if ( !valid ) {
+                                    // remove invalid value, as it didn't match anything
+                                    $( this ).val( "" );
+                                    select.val( "" );
+                                    input.data( "autocomplete" ).term = "";
+                                    return false;
+                                }
+                            }
+                        }
+                    })
+                    .addClass( "ui-widget ui-widget-content ui-corner-left" );
+
+                input.data( "autocomplete" )._renderItem = function( ul, item ) {
+                    return $( "<li></li>" )
+                        .data( "item.autocomplete", item )
+                        .append( "<a>" + item.label + "</a>" )
+                        .appendTo( ul );
+                };
+
+                this.button = $( "<button type='button'>&nbsp;</button>" )
+                    .attr( "tabIndex", -1 )
+                    .attr( "title", "Show All Items" )
+                    .insertAfter( input )
+                    .button({
+                        icons: {
+                            primary: "ui-icon-triangle-1-s"
+                        },
+                        text: false
+                    })
+                    .removeClass( "ui-corner-all" )
+                    .addClass( "ui-corner-right ui-button-icon" )
+                    .click(function() {
+                        // close if already visible
+                        if ( input.autocomplete( "widget" ).is( ":visible" ) ) {
+                            input.autocomplete( "close" );
+                            return;
+                        }
+
+                        // pass empty string as value to search for, displaying all results
+                        input.autocomplete( "search", "" );
+                        input.focus();
+                    });
+            },
+
+            destroy: function() {
+                this.input.remove();
+                this.button.remove();
+                this.element.show();
+                $.Widget.prototype.destroy.call( this );
+            }
+        });
+    })( jQuery );
+
         
         
         
         
-        
-        
-        
-        
-        
+        $("#add-fee").button();
         
         
         
@@ -346,3 +491,4 @@ section_form_view = Backbone.View.extend({
     }
 
 });
+

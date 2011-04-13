@@ -137,6 +137,7 @@ proposal_form_view = Backbone.View.extend({
             console.log(this.el)
             $(".cid").die( "click" );
             $(".cid").live( "click", this.openEdit );
+            $(".delete_section").die("click");
             $(".delete_section").live( "click", this.deleteSection );
         },
         deleteSection: function( event ) {

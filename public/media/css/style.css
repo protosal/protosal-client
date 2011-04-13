@@ -604,7 +604,7 @@ cursor: pointer;
 #sectionlist li span.section_name{
 font-size: 18px;
 }
-.ui-sortable-placeholder {
+#sectionlist .ui-sortable-placeholder {
 background: #ccc !important;
 margin: 10px !important;
 height: 80px !important;
@@ -637,43 +637,43 @@ font-size: 11px  !important;
 .list_view .int {
 text-align: center;
 }
-.edit:hover {
+.edit:hover,.edit_fee:hover {
   outline: none;
     color: #1c4257; border: 1px solid #da7c0c !important;
-    background: #faa51a url(images/bg_fallback.png) 0 -50px repeat-x;
+    background: #faa51a url(images/bg_fallback.png) 0 -50px repeat-x !important;
     background: -webkit-gradient(
     linear,
     left bottom,
     left top,
     color-stop(2, #faa51a),
     color-stop(0, #f47a20)
-    );
+    ) !important;
     background: -moz-linear-gradient(
         center top,
         #faa51a,
         #f47a20
-    );
-    -webkit-box-shadow: none;
-    -moz-box-shadow: none;
+    ) !important;
+    -webkit-box-shadow: none !important;
+    -moz-box-shadow: none !important;
 }
-.delete:hover{
+.delete:hover,.delete_fee:hover{
   outline: none;
     color: #1c4257; border: 1px solid #FF8080 !important;
-    background: rgb(255,130,130) url(images/bg_fallback.png) 0 -50px repeat-x;
+    background: rgb(255,130,130) url(images/bg_fallback.png) 0 -50px repeat-x !important;
     background: -webkit-gradient(
     linear,
     left bottom,
     left top,
     color-stop(2, rgb(255,130,130)),
     color-stop(0, rgb(230,95,95))
-    );
+    ) !important;
     background: -moz-linear-gradient(
         center top,
         rgb(255,130,130),
         rgb(230,95,95)
-    );
-    -webkit-box-shadow: none;
-    -moz-box-shadow: none;
+    ) !important;
+    -webkit-box-shadow: none !important;
+    -moz-box-shadow: none !important;
 }
  
 .ui-dialog-titlebar {
@@ -816,23 +816,44 @@ font-weight: bold;
 	
 	
 }
-#sortablefees{
-	list-style:none;
-	padding: 5px;
+#sortablefees3{
+	padding: 15px;
+    list-style: none;
+    
 }
-#sortablefees li {
+#sortablefees4 li {
 	padding-right: 10px;
 display: block;
+cursor: pointer;
 }
-#sortablefees li span{
+#sortablefees3 li{
+cursor: pointer;
+margin-bottom: 5px;
+
+}
+#sortablefees3 li:hover {
+
+background: #ffffcc url(../icons/direction.png) no-repeat right;
+}
+#sortablefees3 li span{
+font-size: 10px;
+}
+#sortablefees4 li span{
 	font-size: 10px;
 	float: right;
 }
-#sortablefees li p{
-	float: left;
+#sortablefees3 li p{
+float: left;
 	height: 25px;
 	width: 170px;
 }
+#sectionlist .ui-sortable-placeholder {
+background: #ccc !important;
+margin: 10px !important;
+height: 80px !important;
+}
+
+
 /* Rules for preview proposal */
 .editing_buttons {
 	display: none;

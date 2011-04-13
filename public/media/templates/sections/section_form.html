@@ -13,17 +13,22 @@
 
 
                 <br />
-                <br />
       <label for="">
                     Attach fees 
-                </label>
-          
-                <input type="text" id="fees" /><button type="button" id="add-fee">Addd</button> 
+                </label><div style='text-align: center;'>
+                <span style="float: left;">
+            <div id="fee_combo_container">
+        </div>
+        </span>
+                <input type="hidden" id="fees" />
+                <button type="button" style="float: left;" id="add-fee">Create New Fee</button> <br />
                 <div style="clear:both;"></div>
+                
+                </div>
                                <label for="">
                     Current fees
                 </label>
-                <ul id="sortablefees"></ul>
+                <ul id="sortablefees3"></ul>
                    </div>
         </div>
         <div class="stack2of3">
@@ -39,6 +44,10 @@
            
              </div>
         </div>
+        <div style="clear:both;"></div>
+      
+        
+        
 </div>
     </form>
 
@@ -49,4 +58,12 @@
 
 
     </jst>
+</script>
+<script type="text/template" id="fee_combo_template">
+    <select id="fee_combo">
+        <option>Select Fee</option>
+        <% _.each( fees, function( fee ){ %>
+        <option id="<%= fee.id %>"><%= fee.label %></option>
+        <% }); %>
+    </select>
 </script>
