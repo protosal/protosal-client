@@ -120,8 +120,12 @@ proposal_form_view = Backbone.View.extend({
                 .then( function(data) {
                     //Update this collections sections
                     console.log("received fee data");
+                    console.log(data)
+                    console.log(section);
                     $(".section_table", $(".s_" + section.id) ).html( _.template( $("#section_fee_table_template").html(), { fees: data} ) );
+                    console.log("hey");
                     proposal_view.applyVariables( $(".s_" + section.id) );
+                    console.log("o");
                 }); //When statement end
             } else {
                 $(".section_table", $(".s" + section.id) ).html("");
@@ -157,7 +161,11 @@ proposal_form_view = Backbone.View.extend({
             console.log("Add to sections container")
             console.log($("#proposal_preview_section").html())
             if( typeof section.attributes.description != "undefined" ) {
+               
                  $("#section_container_test ol").append( _.template( $("#proposal_preview_section").html(), { section: section } ) );
+                 alert("preloaded");
+                 console.log("a");
+                 console.log(section);
                  var feetable = new FeeTableView( section );
                 $(".section_content", ".section_" + section.cid).html( _.template( $("#proposal_preview_section_content").html(), section.attributes ) );
                 proposal_view.applyVariables( ".section_" + section.cid );
@@ -169,9 +177,14 @@ proposal_form_view = Backbone.View.extend({
                 $.ajax({
                     url: "data/newinstance/" + section.get("template_id"),
                     success: function( response ){
+                        $(".section_" + section.cid).addClass("s_"+response._id);
                         $(".section_content", ".section_" + section.cid).html( _.template( $("#proposal_preview_section_content").html(), response ) );
                         section.set({ id: response._id});
                         section.set(response);
+                        
+                        alert("ASD");
+                        console.log(response);
+                        console.log(section);
                         var feetable = new FeeTableView( section );
                         $("li[id='" + section.cid + "']").attr("id", response._id);
                         proposal_view.toc.updateOrder();
@@ -183,6 +196,8 @@ proposal_form_view = Backbone.View.extend({
                         $.ajax({
                     url: "data/" + section.get("template_id"),
                     success: function( response ){
+                        
+                        $(".section_" + section.cid).addClass("s_"+response._id);
                         $(".section_content", ".section_" + section.cid).html( _.template( $("#proposal_preview_section_content").html(), response ) );
                         section.set({ id: response._id});
                         section.set(response);
