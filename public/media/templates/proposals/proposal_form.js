@@ -163,9 +163,6 @@ proposal_form_view = Backbone.View.extend({
             if( typeof section.attributes.description != "undefined" ) {
                
                  $("#section_container_test ol").append( _.template( $("#proposal_preview_section").html(), { section: section } ) );
-                 alert("preloaded");
-                 console.log("a");
-                 console.log(section);
                  var feetable = new FeeTableView( section );
                 $(".section_content", ".section_" + section.cid).html( _.template( $("#proposal_preview_section_content").html(), section.attributes ) );
                 proposal_view.applyVariables( ".section_" + section.cid );
@@ -182,7 +179,6 @@ proposal_form_view = Backbone.View.extend({
                         section.set({ id: response._id});
                         section.set(response);
                         
-                        alert("ASD");
                         console.log(response);
                         console.log(section);
                         var feetable = new FeeTableView( section );
@@ -526,6 +522,7 @@ proposal_form_view = Backbone.View.extend({
     UserDetails = Backbone.Model.extend({
         initialize: function(){
             var that = this;
+            console.log("hey"); 
             $.ajax({
                 url: "user",
                 dataType: "json",
@@ -580,7 +577,8 @@ proposal_form_view = Backbone.View.extend({
                             if( typeof data.email != "undefined" ){
                                 $("#email_pdf_client").val(data.email);
                             }
-                            that.applyVariables( ".proposal_view" );
+                            console.log("can't apply variables");
+                            that.applyVariables( ".proposal_preview" );
                         }
                     })
                 }
@@ -682,6 +680,7 @@ proposal_form_view = Backbone.View.extend({
                         $(this).remove();
                     })
                     var previewhtml = $(element).html();
+                
                     var matches = previewhtml.match(/\{\{([^}]+)\}\}/g);
                     for (i in matches) {
                         variable = matches[i].substr(2, matches[i].length-4);
