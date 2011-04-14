@@ -175,7 +175,7 @@ function get_doc(docid, username, callback) {
         if( doc.author == username ) {
             return callback( null, doc );
         } else {
-            return callback( {error: 'unauthorized' } );
+            return callback( { error: 'unauthorized' } );
         }
     });
 }
@@ -356,14 +356,19 @@ function new_parent_instance( docid, username, cb ) {
 
     async.waterfall([
         function( callback ) {
-            get_doc(
-                docid,
-                username,
-                callback
-            );
+            // Handle the case where we are instantiating blank
+            // proposal template.
+            if( docid === 'proposal_template' ) {
+                get_doc_noauth( docid, callback );
+            } else {
+                get_doc( docid, username, callback );
+            }
         },
         function( doc, callback ) {
             console.log( docid + ' --- new_doc_instance' );
+
+            // Ensure we have the appropriate author set.
+            doc.author = username;
 
             template_doc = doc;
             
