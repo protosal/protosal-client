@@ -1,6 +1,8 @@
 proposal_form_view = Backbone.View.extend({
 
     initialize: function( options ) {
+        console.log("FUCK THE WHAT");
+        console.log( options );
         this.renderView("#proposal_formc", "#proposal_form_template", options );
     
     FeeModel = Backbone.Model.extend({
@@ -178,9 +180,6 @@ proposal_form_view = Backbone.View.extend({
                         $(".section_content", ".section_" + section.cid).html( _.template( $("#proposal_preview_section_content").html(), response ) );
                         section.set({ id: response._id});
                         section.set(response);
-                        
-                        console.log(response);
-                        console.log(section);
                         var feetable = new FeeTableView( section );
                         $("li[id='" + section.cid + "']").attr("id", response._id);
                         proposal_view.toc.updateOrder();
@@ -562,11 +561,14 @@ proposal_form_view = Backbone.View.extend({
             $("body").append("<div class='proposal_preview_container'><div style='' class='proposalcontainer proposal_preview container'>Yo</div></div>");
 
             $.when( this.get_id() ).then( $.proxy( function(data){
-                $(".proposalcontainer").html( _.template( $("#proposal_preview").html(), { name: $("#proposal_name").val() } ) );
+                $(".proposalcontainer").html( _.template( $("#proposal_preview").html(), options) );
                 console.log(arguments);
                 console.log("Get the proposal id");
+                if( typeof data._id != "undefined"){
+                that.proposalid = data._id;
+            } else {
                 that.proposalid = data.id;
-                
+            }
                 if( typeof options.client_id != "undefined" && options.client_id != ""){
                     
                     $.ajax( "data/" + options.client_id ,{
@@ -721,23 +723,25 @@ proposal_form_view = Backbone.View.extend({
                 } else {
                     options.template = formdata.template = false;
                 }
-                return $.ajax( "data", {
+                return $.ajax( "data/newinstance/proposal_template", {
                         dataType: "json",
-                        type: "POST",
+                        type: "GET",
                         contentType: "application/json",
-                        data: $.toJSON(formdata),
                         success: function(resp){
                             documenttest = "nottemplate";
                             if( options.controller == "proposal" && options.template ){
                                 
                                 documenttest = "";
                             }
+                            
+                            options.proposal_num = (resp.proposal_num);
+                            
                             //Unbind the default click handler and attach a new one now that we have created a new proposal
                             $('.proposal_save').unbind('click');
                             $(".proposal_save").click({
                                 templateid: documenttest,
-                                _rev: resp.rev,
-                                _id: resp.id,
+                                _rev: resp._rev,
+                                _id: resp._id,
                                 success: options.success
                             }, window.saveclickHandler );
                         }

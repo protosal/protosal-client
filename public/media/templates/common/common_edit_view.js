@@ -88,7 +88,8 @@ common_edit_view = Backbone.View.extend({
                             data.controller = options.controller;
                             
                             var edit_options = data;
-                            
+                            console.log( edit_options );
+                            console.log("WHAT THE FUFCK");
                             new window[ options.controller + "_form_view"]( edit_options );
 
                             cked = "";
