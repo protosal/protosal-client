@@ -38,7 +38,7 @@ app.configure(function() {
     app.use(connect.session(
         {
             store: new RedisStore( { db: 'sessions' } ),
-            secret: 's3cr3+'
+            secret: '05267BE1-B904-47EB-B323-401D242D3884'
         }
     ));
 
