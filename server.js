@@ -164,22 +164,6 @@ function async_error( err, res ) {
     }
 }
 
-function emit_doc(id, res) {
-    if( res != null ) {
-        var db = new(cradle.Connection)().database('app');
-
-        db.get(id,  function(err, doc) {
-            if( err ) {
-                throw new ServerError( err );
-            } else {
-                res.send(doc);
-            }
-        });
-    } else {
-        return false;
-    }
-}
-
 // Check auth details, returning the associated document.
 function get_doc(docid, username, callback) {
 
