@@ -62,8 +62,8 @@
                                                 var reason = $.parseJSON(response.responseText).reason;
                                                 if( typeof errorMessages[reason] != "undefined") {
                                                     $.jGrowl( errorMessages[reason] ,{  theme: 'apple', position: "top-right"});    
-                                                } else if ( reason == "incorrect user" ){ 
-                                                   redirect(""); 
+                                                } else  if ( reason == "incorrect user" ){ 
+                                                   redirect("login"); 
                                                    $.jGrowl("Your session has timed out, please log in again",{  theme: 'apple', position: "top-right"});   
                                                 } else {
                                                     $.jGrowl("Something went wrong! Refresh the page if it continues to happen",{  theme: 'apple', position: "top-right"});   
