@@ -1,6 +1,5 @@
 var connect = require('connect');
 var RedisStore = require('connect-redis');
-var connectCouchDB = require('../connect-couchdb');
 var express = require('express');
 
 var _ = require('underscore');
@@ -36,9 +35,12 @@ app.configure(function() {
     app.use(express.errorHandler({ dumpExceptions: true }));
     app.use(connect.cookieParser());
 
-    var store_opts = _.clone( ryth.cradle_config );
-    store_opts.database = 'sessions';
-    app.use(connect.session({ store: new connectCouchDB(store_opts), secret: 's3cr3+' }));
+    app.use(connect.session(
+        {
+            store: new RedisStore( { db: 'sessions' } ),
+            secret: 's3cr3+'
+        }
+    ));
 
     // Our custom authentication check
     app.use(ryth.authCheck);
