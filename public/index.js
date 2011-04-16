@@ -5,7 +5,7 @@
             "route_id": null,
             "controller": null,
             "action": null,
-            "server_base": window.location.protocol + "//" + window.location.host,
+            "server_base": location.protocol + "//" + window.location.hostname + ":3000",
             "session": false,
         };
         // Default ckeditor options are defined here until we get a configuration file
