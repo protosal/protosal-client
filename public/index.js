@@ -5,7 +5,7 @@
             "route_id": null,
             "controller": null,
             "action": null,
-            "server_base": location.protocol + "//" + window.location.hostname + ":3000",
+            "server_base": location.protocol + "//" + window.location.hostname + "/api/",
             "session": false,
         };
         // Default ckeditor options are defined here until we get a configuration file
@@ -38,7 +38,7 @@
                            }
                         });
                         
-                        var url = GLOBALS.server_base + "/user";
+                        var url = GLOBALS.server_base + "user";
                         $.ajax( url, {
                             dataType: "json",
                             complete: function(headers, data, data2){
@@ -98,7 +98,7 @@
                 logout: function(){
                 
                     $.ajax({
-                        url: "/logout",
+                        url: GLOBALS.server_base + "logout",
                         dataType: "json",
                         success: function(data){
                             GLOBALS.session = false;
@@ -217,7 +217,7 @@
                     formdata.template    = true;
                 }
                 
-                var url = GLOBALS.server_base + "/data";
+                var url = GLOBALS.server_base + "data";
                 type = "POST";
                 
                 // Detect if we are inserting (POST), or updating (PUT)

@@ -46,7 +46,7 @@ proposal_form_view = Backbone.View.extend({
         getAllClients: function(){
             console.log("Start fetching the clients");
             clients = {};
-            $.when( $.ajax("list_by_author_templates/client", { dataType: "json" }) )
+            $.when( $.ajax(GLOBALS.server_base + "list_by_author_templates/client", { dataType: "json" }) )
                 .then( function(data) {
                     //Update this clients
                     console.log("Clients received, send them to collection");
@@ -80,7 +80,7 @@ proposal_form_view = Backbone.View.extend({
         getAllTemplates: function(){
             console.log("Start fetching the section templates");
             section_templates = {};
-            $.when( $.ajax("list_by_author_templates/section", { dataType: "json" }) )
+            $.when( $.ajax(GLOBALS.server_base + "list_by_author_templates/section", { dataType: "json" }) )
                 .then( function(data) {
                     //Update this collections sections
                     console.log("Template sections received, send them to collection");
@@ -93,7 +93,7 @@ proposal_form_view = Backbone.View.extend({
             console.log("get related that");
             console.log(that);
             $.ajax({
-                url: "related2/proposal_section/" + that.proposalid,
+                url: GLOBALS.server_base + "related2/proposal_section/" + that.proposalid,
                 success: function(resp){
                     console.log("Found related sections");
                     console.log(resp);
@@ -118,7 +118,7 @@ proposal_form_view = Backbone.View.extend({
                    keys: feelist
             };
             if( obj.keys != "" ){
-                $.when( $.ajax("data/bulk_docs", { type: "post", dataType: "json", contentType: "application/json", data: $.toJSON(obj) }) )
+                $.when( $.ajax(GLOBALS.server_base + "data/bulk_docs", { type: "post", dataType: "json", contentType: "application/json", data: $.toJSON(obj) }) )
                 .then( function(data) {
                     //Update this collections sections
                     console.log("received fee data");
@@ -174,7 +174,7 @@ proposal_form_view = Backbone.View.extend({
                 // If the section we chose is not a template generate an instance of it
                 if( !options.template ) {
                 $.ajax({
-                    url: "data/newinstance/" + section.get("template_id"),
+                    url: GLOBALS.server_base + "data/newinstance/" + section.get("template_id"),
                     success: function( response ){
                         $(".section_" + section.cid).addClass("s_"+response._id);
                         $(".section_content", ".section_" + section.cid).html( _.template( $("#proposal_preview_section_content").html(), response ) );
@@ -189,7 +189,7 @@ proposal_form_view = Backbone.View.extend({
                 } else {
                     // Else lets just insert the template
                         $.ajax({
-                    url: "data/" + section.get("template_id"),
+                    url: GLOBALS.server_base + "data/" + section.get("template_id"),
                     success: function( response ){
                         
                         $(".section_" + section.cid).addClass("s_"+response._id);
@@ -226,7 +226,7 @@ proposal_form_view = Backbone.View.extend({
          
                      $("#atestform").dialog("close");
                          $.ajax({
-                            url: "data/" + section.id,
+                            url: GLOBALS.server_base + "data/" + section.id,
                             success: function( response ){section_fee_table_template
                                 $(".section_content", ".section_" + cid).html( _.template( $("#proposal_preview_section_content").html(), response ) );
                                 $(".section_heading", ".section_" + cid).text(response.name);
@@ -254,7 +254,7 @@ proposal_form_view = Backbone.View.extend({
                     delete CKEDITOR.instances.description
 			        mydialog.dialog("destroy");
                         $.ajax({
-                            url: "data/" + section.id,
+                            url: GLOBALS.server_base + "data/" + section.id,
                             success: function( response ){section_fee_table_template
                                 $(".section_content", ".s_" + section.id).html( _.template( $("#proposal_preview_section_content").html(), response ) );
                                 $(".section_heading", ".s_" + section.id).text(response.name);
@@ -428,7 +428,7 @@ proposal_form_view = Backbone.View.extend({
         el: $("#clients_combo"),
         initialize: function(){
             console.log("Initializing the clients view");
-                        $.when( $.ajax("list_by_author_templates/section", { dataType: "json" }) )
+                        $.when( $.ajax(GLOBALS.server_base + "list_by_author_templates/section", { dataType: "json" }) )
                 .then( function(data) {
                     //Update this collections sections
                     console.log("Template sections received, send them to collection");
@@ -507,7 +507,7 @@ proposal_form_view = Backbone.View.extend({
             $(event.currentTarget).parents(".ui-dialog-content").dialog("close");
             
             $.ajax({
-                url: "pdf/email",
+                url: GLOBALS.server_base + "pdf/email",
                 data: formdata,
                 dataType: "json",
                 type: "POST",
@@ -523,7 +523,7 @@ proposal_form_view = Backbone.View.extend({
             var that = this;
             console.log("hey"); 
             $.ajax({
-                url: "user",
+                url: GLOBALS.server_base + "user",
                 dataType: "json",
                 success: function( data ) {
                     that.set( data );
@@ -571,7 +571,7 @@ proposal_form_view = Backbone.View.extend({
             }
                 if( typeof options.client_id != "undefined" && options.client_id != ""){
                     
-                    $.ajax( "data/" + options.client_id ,{
+                    $.ajax( GLOBALS.server_base + "data/" + options.client_id ,{
                         dataType: "json",
                         success: function(data){
                             that.client = data;
@@ -628,7 +628,7 @@ proposal_form_view = Backbone.View.extend({
         updateClientData: function( event ){
             id = $(event.currentTarget ).val();
             if( id != ""){
-                $.when( $.ajax("data/" + id ) )
+                $.when( $.ajax(GLOBALS.server_base + "data/" + id ) )
                 .then( function(data) {
                     proposal_view.client = data
                     $("#email_pdf_client").val(data.email);
@@ -723,7 +723,7 @@ proposal_form_view = Backbone.View.extend({
                 } else {
                     options.template = formdata.template = false;
                 }
-                return $.ajax( "data/newinstance/proposal_template", {
+                return $.ajax( GLOBALS.server_base + "data/newinstance/proposal_template", {
                         dataType: "json",
                         type: "GET",
                         contentType: "application/json",
