@@ -3,7 +3,7 @@
     
     
        
-        <form id="add_settings_form" action="user" class="edit_settings_form" enctype="multipart/form-data" method="post">
+        <form id="add_settings_form" action="api/user" class="edit_settings_form" enctype="multipart/form-data" method="post">
         
     
     
@@ -51,7 +51,7 @@
             <div class="stackContent">
                            <h3>Upload a logo</h3>
                             <div style="border: 1px dashed #ccc; width: 400px; height: 95px; overflow: hidden;">
-                                    <img src="/logo/<%= GLOBALS.username %>" style="max-width: 400px;max-height: 95px;"/>
+                                    <img src="/api/logo/<%= GLOBALS.username %>" style="max-width: 400px;max-height: 95px;"/>
                                     </div>
                           <br />
                                     <p>Image: <input type="file" name="image" /></p>

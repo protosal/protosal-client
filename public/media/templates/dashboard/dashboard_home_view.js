@@ -84,7 +84,7 @@ dashboard_home_view = Backbone.View.extend({
     $(document).ready(function() {
         setTimeout( function(){    
             $.ajax({
-                url: '/proposal/stats',
+                url: GLOBALS.server_base + 'proposal/stats',
                 dataType: 'json',
                 success: function(data) {
                     var series = process_data( data );
@@ -133,7 +133,7 @@ dashboard_home_view = Backbone.View.extend({
     }
     $.ajax({
         dataType: "json",
-        url: "proposal/all/pending",
+        url: GLOBALS.server_base + "proposal/all/pending",
         success: function(data){
             if( data.length > 0 ){
                 $(".pending_container").html( _.template( $("#recent_container_template").html(), { proposals: data} ) );
@@ -146,7 +146,7 @@ dashboard_home_view = Backbone.View.extend({
     })
     $.ajax({
         dataType: "json",
-        url: "proposal",
+        url: GLOBALS.server_base + "proposal",
         success: function(data){
                         if( data.length > 0 ){
                 $(".recent_container").html( _.template( $("#recent_container_template").html(), { proposals: data} ) );

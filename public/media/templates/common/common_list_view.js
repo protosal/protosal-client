@@ -70,9 +70,9 @@ common_list_view =  Backbone.View.extend({
                 $("#pageheader").html( _.template( $("#page_header_template").jsthtml(), header_options ) );
                 
                 if( options.controller == "proposal" ){
-                    couch_view = "/list_by_author/";
+                    couch_view = "list_by_author/";
                 } else {
-                    couch_view = "/list_by_author_templates/";
+                    couch_view = "list_by_author_templates/";
                 }
                 var url = GLOBALS.server_base + couch_view + GLOBALS.controller;
                 $.ajax( url, {
@@ -109,7 +109,7 @@ common_list_view =  Backbone.View.extend({
                 var button = $(".ui-button-text", $(event.currentTarget));
                 var that = this;
                 if( !that.templatesActive ) { 
-                var url = GLOBALS.server_base + "/list_by_author_templates/" + GLOBALS.controller;
+                var url = GLOBALS.server_base + "list_by_author_templates/" + GLOBALS.controller;
                 $.ajax( url, {
                     dataType: "json",
                     success: function(data){
@@ -121,7 +121,7 @@ common_list_view =  Backbone.View.extend({
                 that.templatesActive = true;
                 $(button).text("Back to Proposals");
             }   else {
-                    var url = GLOBALS.server_base + "/list_by_author/" + GLOBALS.controller;
+                    var url = GLOBALS.server_base + "list_by_author/" + GLOBALS.controller;
                 $.ajax( url, {
                     dataType: "json",
                     success: function(data){
@@ -139,7 +139,7 @@ common_list_view =  Backbone.View.extend({
                 
                 var id = $(event.currentTarget).parents("tr").attr("row_id");
                 $.ajax({
-                    url: "data/newinstance/" + id,
+                    url: GLOBALS.server_base + "data/newinstance/" + id,
                     dataType: "json",
                     success: function( data ) {
                         redirect("proposal/edit/"+data._id);

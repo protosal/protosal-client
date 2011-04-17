@@ -78,7 +78,7 @@ common_edit_view = Backbone.View.extend({
                 templateid = options.templateid;
                 if (id && id != "template") {
                     // Do an ajax call to bring down any data associated with the document id
-                    var url = GLOBALS.server_base + "/data/" + id;
+                    var url = GLOBALS.server_base + "data/" + id;
                     $.ajax(url, {
                         dataType: "json",
                         success: function(data) {
@@ -113,7 +113,7 @@ common_edit_view = Backbone.View.extend({
                     });
                 } else if (options.controller == "user") {
                     // Bit of magicerky going on here, fix it up later.
-                    var url = '/user';
+                    var url = GLOBALS.server_base + 'user';
                     $.ajax(url, {
                         dataType: "json",
                         success: function(data) {

@@ -61,7 +61,7 @@ section_form_view = Backbone.View.extend({
                 section_backbone.fees = new Fees( null, { view: section_backbone });
                 console.log("lets get all the section fees that we have already added");
                     $.ajax({
-                        url: "related2/section_fee/" + resp.id,
+                        url: GLOBALS.server_base + "related2/section_fee/" + resp.id,
                         type: "GET",
                         dataType: "json",
                         success: function(data){
@@ -111,7 +111,7 @@ section_form_view = Backbone.View.extend({
                          
                                   $.ajax({
                    type: "GET",
-                   url: "list_by_author_templates/fee",
+                   url: GLOBALS.server_base + "list_by_author_templates/fee",
                    dataType: "json",
                    success: function( fees ){
                     
@@ -150,7 +150,7 @@ section_form_view = Backbone.View.extend({
                                 }
                                 $.ajax({
                                 type: "POST",
-                                url: "/data",
+                                url: GLOBALS.server_base + "data",
                                 data: $.toJSON(obj),
                                 dataType: "json",
                                 contentType: "application/json",
@@ -221,7 +221,7 @@ section_form_view = Backbone.View.extend({
                                 }
                                 $.ajax({
                                 type: "POST",
-                                url: "/data",
+                                url: GLOBALS.server_base + "data",
                                 data: $.toJSON(obj),
                                 dataType: "json",
                                 contentType: "application/json",

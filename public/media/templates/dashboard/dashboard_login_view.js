@@ -18,7 +18,7 @@ dashboard_login_view = Backbone.View.extend({
             console.log(formdata);
             
             $.ajax({
-                url: "user/login",
+                url: GLOBALS.server_base + "user/login",
                 dataType: "json",
                 type: "POST",
                 data: $.toJSON(formdata),
@@ -39,7 +39,7 @@ dashboard_login_view = Backbone.View.extend({
          formdata = $("#registrationform").serializeObject();
             console.log(formdata);
             $.ajax({
-                url: "user/register",
+                url: GLOBALS.server_base + "user/register",
                 dataType: "json",
                 type: "POST",
                 data: $.toJSON(formdata),
