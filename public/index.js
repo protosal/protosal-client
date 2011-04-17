@@ -42,7 +42,6 @@
                         $.ajax( url, {
                             dataType: "jsonp",
                             complete: function(headers, data, data2){
-                                alert("ASD");
                                 if( headers.status != 401 ){
                                     GLOBALS.session = true;
                                     console.log("User already logged in");
