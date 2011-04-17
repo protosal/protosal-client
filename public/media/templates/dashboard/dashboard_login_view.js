@@ -5,7 +5,6 @@ dashboard_login_view = Backbone.View.extend({
             LoginView = Backbone.View.extend({
         el: $("#loginwindow"),
         initialize: function(){
-            console.log("hey anold");
             $(".tabs").tabs();
         },
         events: {
@@ -13,9 +12,7 @@ dashboard_login_view = Backbone.View.extend({
             "click #registerbutton": "requestRegister"
         },
         requestLogin: function() {
-            console.log("hi");
             formdata = $("#loginform").serializeObject();
-            console.log(formdata);
             
             $.ajax({
                 url: GLOBALS.server_base + "user/login",
@@ -28,8 +25,6 @@ dashboard_login_view = Backbone.View.extend({
                     
                     GLOBALS.username = $("#username").val(); // never use for transactions
                     redirect( "dashboard/home" );
-                    console.log("whoop round 2");
-                    console.log(data);
                 }
             });
             
@@ -37,7 +32,6 @@ dashboard_login_view = Backbone.View.extend({
         },
         requestRegister: function() {
          formdata = $("#registrationform").serializeObject();
-            console.log(formdata);
             $.ajax({
                 url: GLOBALS.server_base + "user/register",
                 dataType: "json",

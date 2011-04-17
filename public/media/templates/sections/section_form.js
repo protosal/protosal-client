@@ -59,7 +59,6 @@ section_form_view = Backbone.View.extend({
             $.when( aaaaaa() ).then( function(resp){
                 that.section_id = resp.id;
                 section_backbone.fees = new Fees( null, { view: section_backbone });
-                console.log("lets get all the section fees that we have already added");
                     $.ajax({
                         url: GLOBALS.server_base + "related2/section_fee/" + resp.id,
                         type: "GET",
@@ -106,7 +105,6 @@ section_form_view = Backbone.View.extend({
                                     
                                     
                                 } else {
-                                 console.log("no rows");
                                 }
                          
                                   $.ajax({
@@ -135,7 +133,6 @@ section_form_view = Backbone.View.extend({
                         minLength: 0,
                         delay: 0,
                         select: function( event, ui ) {
-                            console.log(ui);
                             if( section_backbone.fees.get( ui.item.id ) ){
                               $.jGrowl("You have already added this",{  theme: 'apple', position: "bottom-right"});
                               $.jGrowl("Please try again",{  theme: 'apple', position: "bottom-right"});
@@ -155,8 +152,6 @@ section_form_view = Backbone.View.extend({
                                 dataType: "json",
                                 contentType: "application/json",
                                 success: function( model ){
-                                    
-                                    console.log("Relationship added, add it to the backbone collection");
                                     
                                     section_backbone.fees.add( {
                                         "id": ui.item.id,
@@ -194,7 +189,7 @@ section_form_view = Backbone.View.extend({
                                 
                                 
                             } else {
-                                console.log("we have an error");
+                                //error
                             }
                         }
                     });
@@ -204,9 +199,6 @@ section_form_view = Backbone.View.extend({
                
             },
             testingAdd: function(event, ui ){
-                             console.log(ui);
-                             console.log(event);
-                             console.log("ssss");
                             if( section_backbone.fees.get( ui.item.option.id ) ){
                               $.jGrowl("You have already added this",{  theme: 'apple', position: "bottom-right"});
                               $.jGrowl("Please try again",{  theme: 'apple', position: "bottom-right"});
@@ -227,9 +219,6 @@ section_form_view = Backbone.View.extend({
                                 contentType: "application/json",
                                 success: function( model ){
                                     
-                                    console.log("Relationship added, add it to the backbone collection");
-                                    console.log("as");
-                                    console.log(ui.item);
                                     section_backbone.fees.add( {
                                         "id": ui.item.option.id,
                                         "name": ui.item.label,
@@ -248,7 +237,6 @@ section_form_view = Backbone.View.extend({
                 "keypress #fees":  "checkEnter"
             },
             addFee: function (model) {
-                console.log(model);
                 $("#sortablefees3").append("<li id='" + model.id + "'><div class='" + model.id + "' style='float: left; width: 170px; overflow: hidden;'>" + model.get("name") + "</div><span class='delete_fee delete'>Delete</span><span class='edit_fee edit'>Edit</span></li>");
                 $(".edit", $("#sortablefees3")).button();
                 $(".delete", $("#sortablefees3")).button();
@@ -262,7 +250,6 @@ section_form_view = Backbone.View.extend({
             updateFeeValues: function(event, ui){
                        
                 sections = $("#sortablefees3").sortable('toArray').toString();
-                console.log(sections);
                 $("#feelist").val( sections );
                 
             },
@@ -318,8 +305,6 @@ section_form_view = Backbone.View.extend({
                 targetPane: "#fee_form_modal"
             };
             new common_edit_view( modal_options );
-            //_.jstTemplate( $("#fee_form_modal"), $("#common_edit_view_template"), );    
-            console.log(temp)
             var mydialog = $(temp).dialog({
 		        autoOpen: false,
                 draggable: false,
@@ -356,7 +341,6 @@ section_form_view = Backbone.View.extend({
                 var id = $(this).parents("li").attr("id")
                 $(this).parents("li").remove();
                  section_backbone.removeFee(id);
-                 console.log(section_backbone.fees.get( id ));
                  section_backbone.fees.remove( section_backbone.fees.get( id ) );
                 // $(this).parents("li").remove();
             }
@@ -402,7 +386,6 @@ section_form_view = Backbone.View.extend({
                         select: function( event, ui ) {
                             ui.item.option.selected = true;
                             
-                            console.log(section_backbone);
                             if(ui.item.option.id != ""){
                             section_backbone.testingAdd(event, ui);
                         }
