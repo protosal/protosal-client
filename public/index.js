@@ -250,7 +250,7 @@
             
             window.Document = Backbone.Model.extend({
                 url: function(){
-                    var base = "data";
+                    var base = GLOBALS.server_base + "data";
                     if (this.isNew()) return base;
                     rev = '';
                     if( typeof this.get("value")._rev != "undefined" ) {

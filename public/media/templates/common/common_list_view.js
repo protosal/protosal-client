@@ -35,7 +35,7 @@ common_list_view =  Backbone.View.extend({
             model: window.Document,
             initialize: function (){
                 this.bind( "refresh", this.renderTable );
-                this.url = "data";
+                this.url = GLOBALS.server_base + "data";
             },
             renderTable: function(){
                 $("#common_list_view_table_container").hide();
