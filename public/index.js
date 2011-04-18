@@ -40,11 +40,10 @@
                         
                         var url = GLOBALS.server_base + "user";
                         $.ajax( url, {
-                            dataType: "json",
+                            dataType: "jsonp",
                             complete: function(headers, data, data2){
                                 if( headers.status != 401 ){
                                     GLOBALS.session = true;
-                                    console.log("User already logged in");
                                     
                                     body = $.parseJSON( headers.responseText );
                                     GLOBALS.username = body._id.replace("org.couchdb.user:", "");
@@ -186,7 +185,7 @@
             });
             
             $(".back-button").live("click", function() { history.go(-1); return false;  });
-            $(".close-button").live("click", function(event) { console.log(event); $(event.currentTarget).parents(".ui-dialog-content").dialog("close"); return false; });
+            $(".close-button").live("click", function(event) {  $(event.currentTarget).parents(".ui-dialog-content").dialog("close"); return false; });
             window.saveclickHandler =  function(event){
 
                 var formdata = null;
@@ -240,7 +239,6 @@
                     data: $.toJSON(formdata),
                     success: function(data){
                         _.extend( data, formdata );
-						console.log(event.data.success)
                         event.data.success(data);
                     }
                 });

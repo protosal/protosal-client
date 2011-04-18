@@ -1,19 +1,19 @@
 proposal_form_view = Backbone.View.extend({
 
     initialize: function( options ) {
-        console.log("FUCK THE WHAT");
-        console.log( options );
+        
+        
         this.renderView("#proposal_formc", "#proposal_form_template", options );
     
     FeeModel = Backbone.Model.extend({
         initialize: function() {
-            console.log("New Fee Model created");
+            
         }
     });
 
     ClientModel = Backbone.Model.extend({
         initialize: function() {
-            console.log("New Client Model created");
+            
         }
     });
 
@@ -21,7 +21,7 @@ proposal_form_view = Backbone.View.extend({
     FeeCollection = Backbone.Collection.extend({
         model: FeeModel,
         initialize: function(){
-            console.log("Initialize the Fee collection");
+            
         }
     });
     ClientComboView = Backbone.View.extend({
@@ -39,30 +39,30 @@ proposal_form_view = Backbone.View.extend({
     ClientCollection = Backbone.Collection.extend({
         model: FeeModel,
         initialize: function(){
-            console.log("Initialize the Client collection");
+            
             this.view = new ClientComboView;
             this.bind("refresh", this.view.renderCombo)
         },
         getAllClients: function(){
-            console.log("Start fetching the clients");
+            
             clients = {};
             $.when( $.ajax(GLOBALS.server_base + "list_by_author_templates/client", { dataType: "json" }) )
                 .then( function(data) {
                     //Update this clients
-                    console.log("Clients received, send them to collection");
+                    
                     proposal_view.clients.refresh(data);
             }); //When statement end
         }
     });
     SectionModel = Backbone.Model.extend({
         initialize: function() {
-            console.log("New Section Model created");
+            
         }
     });
     SectionCollection = Backbone.Collection.extend({
         model: SectionModel,
         initialize: function(){
-            console.log("Initialise the Section collection");
+            
             //this.bind("refresh", function() { proposal_view.addSectionRender(); });
             //this.bind("add", this.addEvent );
 			this.bind("remove", this.deleteRelation );
@@ -71,32 +71,32 @@ proposal_form_view = Backbone.View.extend({
 			// This is deprecated
 		},
         addToPreview: function(section) {
-            console.log("adding to preview");
+            
 
-            console.log(section);
+            
             proposal_view.toc.addSection(section);
             proposal_view.section_container.addSection(section);
         },
         getAllTemplates: function(){
-            console.log("Start fetching the section templates");
+            
             section_templates = {};
             $.when( $.ajax(GLOBALS.server_base + "list_by_author_templates/section", { dataType: "json" }) )
                 .then( function(data) {
                     //Update this collections sections
-                    console.log("Template sections received, send them to collection");
+                    
                     proposal_view.allsections.refresh(data);
             }); //When statement end
         },
         getRelated: function(){
-            console.log("Get related sections")
+            
             var that = this;
-            console.log("get related that");
-            console.log(that);
+            
+            
             $.ajax({
                 url: GLOBALS.server_base + "related2/proposal_section/" + that.proposalid,
                 success: function(resp){
-                    console.log("Found related sections");
-                    console.log(resp);
+                    
+                    
                     
                     _.each( resp, function(model) {
                         model.value.id = model.value._id;
@@ -109,11 +109,11 @@ proposal_form_view = Backbone.View.extend({
     });
     FeeTableView = Backbone.View.extend({
         initialize: function( section ){
-            console.log("build the table");
-            console.log(section);
+            
+            
             var feelist = section.get("feelist");
-            console.log("Feetable feelist");
-            console.log(feelist);
+            
+            
             var obj = {
                    keys: feelist
             };
@@ -121,13 +121,12 @@ proposal_form_view = Backbone.View.extend({
                 $.when( $.ajax(GLOBALS.server_base + "data/bulk_docs", { type: "post", dataType: "json", contentType: "application/json", data: $.toJSON(obj) }) )
                 .then( function(data) {
                     //Update this collections sections
-                    console.log("received fee data");
-                    console.log(data)
-                    console.log(section);
+                    
+                    
                     $(".section_table", $(".s_" + section.id) ).html( _.template( $("#section_fee_table_template").html(), { fees: data} ) );
-                    console.log("hey");
+                    
                     proposal_view.applyVariables( $(".s_" + section.id) );
-                    console.log("o");
+                    
                 }); //When statement end
             } else {
                 $(".section_table", $(".s" + section.id) ).html("");
@@ -139,8 +138,8 @@ proposal_form_view = Backbone.View.extend({
     SectionsContainer = Backbone.View.extend({
         el: $("#section_container_test"),
         initialize: function(){
-            console.log("Iniitalize sections container");
-            console.log(this.el)
+            
+            
             $(".cid").die( "click" );
             $(".cid").live( "click", this.openEdit );
             $(".delete_section").die("click");
@@ -160,8 +159,8 @@ proposal_form_view = Backbone.View.extend({
 			return false;
 		},
         addSection: function( section ){
-            console.log("Add to sections container")
-            console.log($("#proposal_preview_section").html())
+            
+            
             if( typeof section.attributes.description != "undefined" ) {
                
                  $("#section_container_test ol").append( _.template( $("#proposal_preview_section").html(), { section: section } ) );
@@ -210,8 +209,8 @@ proposal_form_view = Backbone.View.extend({
             cid = sectionEl.attr("cid");
             template_id = sectionEl.attr("template_id");
             section = (proposal_view.sections.getByCid(cid));
-            console.log("opening edit screen")
-            console.log(section)
+            
+            
             $("#atestform").html(" ");
             var temp = $("#atestform");
             temp.hide();
@@ -268,7 +267,7 @@ proposal_form_view = Backbone.View.extend({
                 },
                 beforeClose: function(){
 				    
-                    console.log(cked);
+                    
 				    
 		        },
                 open: function(){
@@ -330,7 +329,7 @@ proposal_form_view = Backbone.View.extend({
             }); 
                 
             proposal_view.section_chooser.activemodal.dialog("open");
-            console.log("Dialog created")
+            
             
         },
         openNew: function( event ) {   
@@ -344,7 +343,7 @@ proposal_form_view = Backbone.View.extend({
                 modal: "yes",
                 success: function(data){
                     proposal_view.allsections.add({ value: { _id: data.id, name: $(".section_name").val()} });
-                    console.log(proposal_view.allsections);
+                    
                     proposal_view.section_chooser.activemodal.html(_.template( $("#section_chooser_list_template").html(), {sections: proposal_view.allsections.models} ));
                     delete CKEDITOR.instances.description
                     $("#atestform").dialog("close");
@@ -366,7 +365,7 @@ proposal_form_view = Backbone.View.extend({
                 },
                 beforeClose: function(){
 				    
-                    console.log(cked);
+                    
 				    
 		        },
                 open: function(){
@@ -385,15 +384,15 @@ proposal_form_view = Backbone.View.extend({
     TOCView = Backbone.View.extend({
         el: $("#proposal_preview_toc"),
         initialize: function(){
-            console.log("Initialize the table of contents");
+            
         },
         addSection: function( section ){
-            console.log("Add section to the ordered list");
-            console.log(this);
+            
+            
             $("#toc_list").append( _.template( $("#toc_list_item").html(), { section: section } ) );
             $("#toc_list").sortable({
                 update: function(event, ui) {
-                    console.log(arguments);
+                    
                 proposal_view.toc.updateOrder(event, ui)
                 }
             }); 
@@ -405,9 +404,9 @@ proposal_form_view = Backbone.View.extend({
             if( typeof ui != "undefined") {
                 
                 listitem = $(ui.item[0]);
-                console.log("hey")
-                console.log(listitem)
-                console.log($("#toc_list"));
+                
+                
+                
                 position = ($("#toc_list li").index(listitem)) + 1;
                 cid = proposal_view.sections.get($(listitem).attr("id")).cid;
                 sec = $(".proposal_preview #section_container_test li.cid:nth-child("+position+")");
@@ -419,19 +418,19 @@ proposal_form_view = Backbone.View.extend({
                 
             }
             sections = $("#toc_list").sortable('toArray').toString();
-            console.log("Update order of sections");
-            console.log(sections);
+            
+            
             $("#sectionlist").val( sections );
         }
     });
     ClientsView = Backbone.View.extend({
         el: $("#clients_combo"),
         initialize: function(){
-            console.log("Initializing the clients view");
+            
                         $.when( $.ajax(GLOBALS.server_base + "list_by_author_templates/section", { dataType: "json" }) )
                 .then( function(data) {
                     //Update this collections sections
-                    console.log("Template sections received, send them to collection");
+                    
                     proposal_view.allsections.refresh(data);
             }); //When statement end
         }
@@ -521,14 +520,14 @@ proposal_form_view = Backbone.View.extend({
     UserDetails = Backbone.Model.extend({
         initialize: function(){
             var that = this;
-            console.log("hey"); 
+             
             $.ajax({
                 url: GLOBALS.server_base + "user",
                 dataType: "json",
                 success: function( data ) {
                     that.set( data );
-                    console.log("user model");
-                    console.log(that);
+                    
+                    
                     $(".proposal_details").html( _.template($("#proposal_details_template").html(), { details: that }) );
                 }
             })   
@@ -557,13 +556,13 @@ proposal_form_view = Backbone.View.extend({
         client: null,
         initialize: function(){
             var that = this;
-            console.log("Initialize the proposal view");
+            
             $("body").append("<div class='proposal_preview_container'><div style='' class='proposalcontainer proposal_preview container'>Yo</div></div>");
 
             $.when( this.get_id() ).then( $.proxy( function(data){
                 $(".proposalcontainer").html( _.template( $("#proposal_preview").html(), options) );
-                console.log(arguments);
-                console.log("Get the proposal id");
+                
+                
                 if( typeof data._id != "undefined"){
                 that.proposalid = data._id;
             } else {
@@ -575,11 +574,11 @@ proposal_form_view = Backbone.View.extend({
                         dataType: "json",
                         success: function(data){
                             that.client = data;
-                            console.log(data)
+                            
                             if( typeof data.email != "undefined" ){
                                 $("#email_pdf_client").val(data.email);
                             }
-                            console.log("can't apply variables");
+                            
                             that.applyVariables( ".proposal_preview" );
                         }
                     })
@@ -599,10 +598,10 @@ proposal_form_view = Backbone.View.extend({
                     this.statusradios = new StatusRadioView;
                 } else {
                     
-                    console.log($("#proposal_pageheader h3"));
+                    
                     $("#proposal_pageheader h3").html("Proposal Templating");
                 }
-                console.log(this.clients);
+                
                 this.fees = new FeeCollection;
                 
                 this.toc = new TOCView;
@@ -672,12 +671,12 @@ proposal_form_view = Backbone.View.extend({
         applyVariables: function( element ) {
                 var variables = proposal_view.getVariables();
                     $(".variable", $(element) ).each(function(index){
-                        console.log(this)
+                        
                         $(this).after("{{" + $(this).attr("name") + "}}");
                         $(this).remove();
                     })
                     $(".empty_variable", $(element) ).each(function(index){
-                        console.log(this)
+                        
                         $(this).after("{{" + $(this).attr("name") + "}}");
                         $(this).remove();
                     })
@@ -699,13 +698,13 @@ proposal_form_view = Backbone.View.extend({
                     $(element).html(previewhtml);
                         $("#toc_list").sortable({
                             update: function(event, ui) {
-                                console.log(arguments);
+                                
                             proposal_view.toc.updateOrder(event, ui)
                             }
                         }); 
         },
         addSectionRender: function(){
-            console.log( "Render the add section modal window" );
+            
             var sections = this.allsections.models;
             // Now that we have all the section templates, populate the section choose
             proposal_view.section_chooser.renderList(sections);

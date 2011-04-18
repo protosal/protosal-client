@@ -8,8 +8,6 @@ dashboard_home_view = Backbone.View.extend({
 		
     var chart;
     function generate_chart(series) {
-        console.log("Generate Chart Series:");
-        console.log(series);
 
         return new Highcharts.Chart({
             chart: {

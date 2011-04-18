@@ -78,7 +78,6 @@ common_list_view =  Backbone.View.extend({
                 $.ajax( url, {
                     dataType: "json",
                     success: function(data){
-                        console.log("got data")
                         listdata.refresh(data);
                     }
                 
@@ -113,7 +112,6 @@ common_list_view =  Backbone.View.extend({
                 $.ajax( url, {
                     dataType: "json",
                     success: function(data){
-                        console.log("got data")
                         listdata.refresh(data);
                     }
                 
@@ -125,7 +123,6 @@ common_list_view =  Backbone.View.extend({
                 $.ajax( url, {
                     dataType: "json",
                     success: function(data){
-                        console.log("got data")
                         listdata.refresh(data);
                     }
                 
