@@ -80,6 +80,29 @@
 <script type="text/javascript">try{ clicky.init(66408528); }catch(e){}</script>
 <noscript><p><img alt="Clicky" width="1" height="1" src="//in.getclicky.com/66408528ns.gif" /></p></noscript>
 
+<!-- First include the script: -->
+<script type="text/javascript">
+var mp_protocol = (("https:" == document.location.protocol) ? "https://" : "http://");
+document.write(unescape("%3Cscript src='" + mp_protocol + "api.mixpanel.com/site_media/js/api/mixpanel.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+<!-- Initialize it with your project token -->
+<script type="text/javascript">
+try {
+    var mpmetrics = new MixpanelLib("fdfd2a9ead29c1f50b84eb6dd2810257");
+} catch(err) {
+    var null_fn = function () {};
+    var mpmetrics = { 
+        track: null_fn, 
+        track_funnel: null_fn, 
+        register: null_fn, 
+        register_once: null_fn,
+        register_funnel: null_fn,
+        identify: null_fn
+    };
+}
+</script>
+
 
     </body>    
 </html>      

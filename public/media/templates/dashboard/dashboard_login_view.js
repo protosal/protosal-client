@@ -24,6 +24,8 @@ dashboard_login_view = Backbone.View.extend({
                     GLOBALS.session = true;
                     
                     GLOBALS.username = $("#username").val(); // never use for transactions
+                    mpmetrics.identify(GLOBALS.username);
+                    mpmetrics.track("Account Login", { email: GLOBALS.username } );
                     redirect( "dashboard/home" );
                 }
             });
@@ -40,6 +42,7 @@ dashboard_login_view = Backbone.View.extend({
                 contentType: "application/json",
                 success: function(data, headers){
                     $("#username").val($("#email").val());
+                    mpmetrics.track("New Registration", { email: $("#email").val() });
                     setTimeout( function(){$("#password").focus();}, 300);
                     $(".userpage").click();
                        $.jGrowl("Thanks for signing up, now log in fool",{  theme: 'green', position: "top-right"});
@@ -54,6 +57,7 @@ dashboard_login_view = Backbone.View.extend({
     setTimeout( function (){ 
         if( options.route_id ) {   
             $("#password").focus();
+            mpmetrics.track("Account Activated", { email: options.route_id } );
             $.jGrowl("Your account has been activated",{  theme: 'green', position: "top-right"});
         } else {
             $("#username").focus();
@@ -63,12 +67,14 @@ dashboard_login_view = Backbone.View.extend({
     $(".userpage").click( function(){
         tab = $(this).attr("href");
         if( $(this).hasClass("register") ){
+            mpmetrics.track("Register button clicked");
            $("#tab-1").removeClass("active-tab"); 
            $("#tab-2").addClass("active-tab"); 
            $(this).removeClass("register").addClass("login").addClass("orange").removeClass("blue");
            $(this).text("Back to Login");
            setTimeout( function (){     $("#email").focus(); }, 100);
         } else {
+            mpmetrics.track("Back to login clicked");
            $("#tab-2").removeClass("active-tab"); 
            $("#tab-1").addClass("active-tab"); 
            
