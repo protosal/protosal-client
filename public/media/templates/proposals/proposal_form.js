@@ -538,6 +538,9 @@ proposal_form_view = Backbone.View.extend({
             $("#column3").html( $("#proposal_status_radio").html() );
                 $( "#radio" ).buttonset();
     thechecked = options.status;
+    if( typeof options.status == "undefined"){
+        thechecked = "pending";
+    }
     $("input[value='"+thechecked+"']").attr("checked", "checked")
     
     $( "#radio" ).buttonset('refresh');

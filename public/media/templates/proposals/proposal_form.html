@@ -27,12 +27,12 @@
     </div>
     <div id="sidemenu" style="">
     <a id="side_add_section" class=" ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button"><span class="ui-button-text">Add Section</span></a><br />
-    <% if(!template) { %>
+    <% if(!template || GLOBALS.route_id == "") {%>
     <br />
     <a id="side_print_preview" editing="true" class="button  ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button"><span class="ui-button-text">Print Preview</span></a><br />
     <a id="side_view_pdf" class="button  ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button"><span class="ui-button-text">View PDF</span></a>
     <a id="side_email_pdf" class="button  ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button"><span class="ui-button-text">Email Client</span></a>
-    <form action="pdf" method="POST" id="pdfcrowdform"><input type="hidden" id="open_pdf_proposal" name="ProposalName" /><textarea id="pdfcrowd" name="pdfdata" style="display: none;"></textarea></form>
+    <form action="api/pdf" method="POST" id="pdfcrowdform"><input type="hidden" id="open_pdf_proposal" name="ProposalName" /><textarea id="pdfcrowd" name="pdfdata" style="display: none;"></textarea></form>
     <% }; %>
     </div>
 </div>
@@ -63,9 +63,7 @@
 <label>Message</label>
 <textarea id="email_pdf_message" style="width: 450px;" name="HtmlBody">
 Hi {{client_firstname}},
-
-Find attached the requested proposal for contract xxxxxx
-{{client_email}}
+Find attached the requested proposal,
 
 Thank you
 </textarea>
@@ -191,7 +189,7 @@ Thank you
                     Loading
                 </div>
                 <div class="userlogo">
-                <img src="/api/logo/<%= GLOBALS.username %>" />
+                <img src="http://app.protosal.com/api/logo/<%= GLOBALS.username %>" />
                 </div>
                 
             </div>
