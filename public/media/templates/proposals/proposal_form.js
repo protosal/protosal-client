@@ -497,7 +497,7 @@ proposal_form_view = Backbone.View.extend({
             "click .send_email_button": "sendEmail"
         },
         sendEmail: function(event){
-            $("#email_pdf_message").val( proposal_view.replaceVariables( $("#email_pdf_message").val() ) );
+            $("#email_pdf_message").val( proposal_view.replaceVariables( $("#email_pdf_message").val().replace(/(\r\n|\r|\n)/g, "<br />") ) );
             $("#email_pdf_subject").val( proposal_view.replaceVariables( $("#email_pdf_subject").val() ) );
             $("#email_pdf_proposal").val( $("#proposal_name").val() );
             
