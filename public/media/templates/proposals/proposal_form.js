@@ -645,18 +645,19 @@ proposal_form_view = Backbone.View.extend({
         getVariables : function(){
             var  variables = {};
             proposal_details = {
-                proposal_name: $("#preview_proposal_name").text(),
-                company_name: proposal_view.userdetails.get("companyname"),
-                company_shortdescription: proposal_view.userdetails.get("companyshortdescription"),
-                company_phone: proposal_view.userdetails.get("phone"),
-                company_fax: proposal_view.userdetails.get("fax")
+                proposal_name: $("#preview_proposal_name").text()
             };
-            variables = _.extend(variables, proposal_details);
+            my_variables = {};
+            _.each( proposal_view.userdetails.attributes, function( value, key ) {
+                my_variables["my_" + key] = value;
+            });
+            variables = _.extend(variables, my_variables);
             client_variables = {};
             _.each( proposal_view.client, function( value, key ) {
                 client_variables["client_" + key] = value;
             });
             variables = _.extend(variables, client_variables);
+            console.log(variables);
             return variables;
         },
         replaceVariables: function( inputvalue ){
