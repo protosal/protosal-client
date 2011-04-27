@@ -180,7 +180,7 @@ Thank you
     <strong><%= details.get("companyname") != "" && typeof details.get("companyname") != "undefined" ? details.get("companyname") : "Example Company"  %></strong><br />
     <%= details.get("companyshortdescription") != "" && typeof details.get("companyshortdescription") != "undefined" ? details.get("companyshortdescription") : "Set your header details under the Setting tab" %><br />
     <br />
-    <strong>Ph</strong>: <%= details.get("phone") != "" && typeof details.get("phone") != "undefined" ? details.get("phone") : "1800 EXAMPLE" %><br /> 
+    <strong>Ph</strong>: <span style="display:none">_</span><%= details.get("phone") != "" && typeof details.get("phone") != "undefined" ? details.get("phone") : "1800 EXAMPLE" %><span style="display:none">_</span><br /> 
     <strong>Fx</strong>: <%= details.get("fax") != "" && typeof details.get("fax") != "undefined" ? details.get("fax") : "1300 EXAMPLE" %>
 </script>
 <script type="text/template" id="proposal_preview">
