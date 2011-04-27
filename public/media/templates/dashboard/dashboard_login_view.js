@@ -45,7 +45,7 @@ dashboard_login_view = Backbone.View.extend({
                     mpmetrics.track("New Registration", { email: $("#email").val() });
                     setTimeout( function(){$("#password").focus();}, 300);
                     $(".userpage").click();
-                       $.jGrowl("Thanks for signing up, now log in fool",{  theme: 'green', position: "top-right"});
+                       $.jGrowl("Thanks for signing up, check your inbox for activation",{  theme: 'green', position: "top-right"});
                 }
             });
             return false;
