@@ -27,6 +27,12 @@
     margin-top: -15px;
     
 }
+.userlogo img{
+	float: right;
+	
+	max-width: 400px;
+	max-height: 95px;
+}
 .proposal_preview .details {
     float: left;
     font-size: 1em;
