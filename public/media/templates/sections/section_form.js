@@ -33,7 +33,7 @@ section_form_view = Backbone.View.extend({
                 if( GLOBALS.route_id == "" || (GLOBALS.controller != options.controller && options.documentid == "")){
                     formdata = $(".edit_section_form").serializeObject();
                     formdata.type = "section";
-                       return $.ajax( "data", {
+                       return $.ajax( GLOBALS.server_base + "data", {
                             dataType: "json",
                             type: "POST",
                             contentType: "application/json",
