@@ -28,7 +28,6 @@
                 success: function(response){
                         // Once the html is loaded we can start rendering the pages
                         $("body").append(response);
-                        
                         // Add this prefilter to handle errors
                          $.ajaxPrefilter(function( options ) {
                            options.error = function(data){
@@ -40,7 +39,7 @@
                         
                         var url = GLOBALS.server_base + "user";
                         $.ajax( url, {
-                            dataType: "jsonp",
+                            dataType: "json",
                             complete: function(headers, data, data2){
                                 if( headers.status != 401 ){
                                     GLOBALS.session = true;
