@@ -551,7 +551,13 @@ margin-top: 2px;
 .ui-dialog-title {
     width: 100% !important;
 }
-
+.green .jGrowl-message {
+    font-size: 1.8em;
+}
+.green {
+width: 300px !important;
+background-color: #006600 !important;
+}
 .apple .jGrowl-message {
     font-size: 1.8em;
 }
