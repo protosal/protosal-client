@@ -6,6 +6,8 @@ dashboard_login_view = Backbone.View.extend({
         el: $("#loginwindow"),
         initialize: function(){
             $(".tabs").tabs();
+            
+    $(".userui").fadeOut(300);
         },
         events: {
             "click #loginbutton": "requestLogin",
@@ -26,6 +28,7 @@ dashboard_login_view = Backbone.View.extend({
                     GLOBALS.username = $("#username").val(); // never use for transactions
                     mpmetrics.identify(GLOBALS.username);
                     mpmetrics.track("Account Login", { email: GLOBALS.username } );
+                    $(".userui").fadeIn(300);
                     redirect( "dashboard/home" );
                 }
             });

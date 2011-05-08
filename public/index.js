@@ -43,7 +43,7 @@
                             complete: function(headers, data, data2){
                                 if( headers.status != 401 ){
                                     GLOBALS.session = true;
-                                    
+                                    $(".userui").fadeIn(300);
                                     body = $.parseJSON( headers.responseText );
                                     GLOBALS.username = body._id.replace("org.couchdb.user:", "");
                                 }
@@ -69,6 +69,7 @@
                                             
                                         });
                                     });
+                                    
                                     protosal_controller = new ProtosalController;
                                     Backbone.history.start();
                                     

@@ -994,3 +994,13 @@ margin: auto;
     .declined {
         background: #ff3333;
     }
+.userui{
+display: none;
+}
+.logouttext {
+color: #fff;
+}
+.logoutbutton{
+background: none !important;
+border: none !important;
+}
