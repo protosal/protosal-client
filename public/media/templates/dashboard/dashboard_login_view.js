@@ -67,6 +67,11 @@ dashboard_login_view = Backbone.View.extend({
         }  
          }, 100);
     $("button").button();
+    $("#demoaccount").click( function(){
+        $("#username").val("beta@protosal.com");
+        $("#password").val("flying");
+        return false;
+    });
     $(".userpage").click( function(){
         tab = $(this).attr("href");
         if( $(this).hasClass("register") ){
