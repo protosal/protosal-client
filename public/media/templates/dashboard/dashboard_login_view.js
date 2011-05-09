@@ -28,6 +28,15 @@ dashboard_login_view = Backbone.View.extend({
                     GLOBALS.username = $("#username").val(); // never use for transactions
                     mpmetrics.identify(GLOBALS.username);
                     mpmetrics.track("Account Login", { email: GLOBALS.username } );
+              
+  var clicky_custom = {};
+  clicky_custom.session = {
+    username: GLOBALS.username,
+    email: GLOBALS.username
+  };
+  clicky_custom.timer = 200;
+try{ clicky.init(66413073); }catch(e){};
+clicky.log("logged in");
                     $(".userui").fadeIn(300);
                     redirect( "dashboard/home" );
                 }
