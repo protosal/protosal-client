@@ -31,7 +31,7 @@ dashboard_login_view = Backbone.View.extend({
 
 
   
-clicky.log("User logged in");
+                    clicky.log("User logged in:" + GLOBALS.username);
 
                     $(".userui").fadeIn(300);
                     redirect( "dashboard/home" );
@@ -54,6 +54,7 @@ clicky.log("User logged in");
                     setTimeout( function(){$("#password").focus();}, 300);
                     $(".userpage").click();
                        $.jGrowl("Thanks for signing up, check your inbox for activation",{  theme: 'green', position: "top-right"});
+                    cicky.log("User registered:" +$("#email").val());
                 }
             });
             return false;

@@ -469,6 +469,7 @@ proposal_form_view = Backbone.View.extend({
             css = $("#proposal_css").val();
             $("#pdfcrowd").text(css  + html);
             $("#open_pdf_proposal").val( $("#proposal_name").val() );
+            clicky.log("Downloaded a proposal");
             $("#pdfcrowdform").submit();   
         },
         emailPdf: function(){
@@ -511,6 +512,7 @@ proposal_form_view = Backbone.View.extend({
                 dataType: "json",
                 type: "POST",
                 success: function( data ){
+                    clicky.log("Emailed a pdf");
                      $.jGrowl("Email sent successfully",{  theme: 'success', position: "top-right"});   
                 }
             })
