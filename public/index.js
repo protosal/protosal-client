@@ -120,13 +120,13 @@
                         redirect("dashboard/home");
                         return;
                     }
-
+                    
                     if( GLOBALS.session || action == "login") {
                         if( vid == null) vid = "";
                         GLOBALS.controller = controller;
                         GLOBALS.action = action;
                         GLOBALS.route_id = vid;
-
+                        clicky.log(controller + "/" + action);
                         $('.maintabs li').removeClass('ui-state-active').removeClass('ui-tabs-selected'); 
                         //Make all tabs inactive
                         $("#" + GLOBALS.controller).addClass('ui-state-active').addClass('ui-tabs-selected');
