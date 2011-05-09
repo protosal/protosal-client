@@ -41,7 +41,7 @@ dashboard_login_view = Backbone.View.extend({
   
 clicky.log("logged in");
 console.log("lol");
-}
+});
                     $(".userui").fadeIn(300);
                     redirect( "dashboard/home" );
                 }
