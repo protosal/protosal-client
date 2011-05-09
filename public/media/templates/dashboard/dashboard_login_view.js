@@ -6,7 +6,7 @@ dashboard_login_view = Backbone.View.extend({
         el: $("#loginwindow"),
         initialize: function(){
             $(".tabs").tabs();
-            
+            $("a[rel='example1']").colorbox();
     $(".userui").fadeOut(300);
         },
         events: {
