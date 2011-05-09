@@ -465,7 +465,7 @@ proposal_form_view = Backbone.View.extend({
             
         },
         openPdf: function(){
-            clicky.log("Downloaded a proposal");
+            setTimeout( 3000, function(){clicky.log("Downloaded a proposal")});
             html = $(".proposal_preview_container").html();
             css = $("#proposal_css").val();
             $("#pdfcrowd").text(css  + html);
@@ -562,7 +562,6 @@ proposal_form_view = Backbone.View.extend({
         client: null,
         initialize: function(){
             var that = this;
-            clicky.log("Editing a proposal");
             $("body").append("<div class='proposal_preview_container'><div style='' class='proposalcontainer proposal_preview container'>Yo</div></div>");
 
             $.when( this.get_id() ).then( $.proxy( function(data){
