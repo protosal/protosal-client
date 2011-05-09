@@ -465,11 +465,12 @@ proposal_form_view = Backbone.View.extend({
             
         },
         openPdf: function(){
+            clicky.log("Downloaded a proposal");
             html = $(".proposal_preview_container").html();
             css = $("#proposal_css").val();
             $("#pdfcrowd").text(css  + html);
             $("#open_pdf_proposal").val( $("#proposal_name").val() );
-            clicky.log("Downloaded a proposal");
+            
             $("#pdfcrowdform").submit();   
         },
         emailPdf: function(){
@@ -505,14 +506,14 @@ proposal_form_view = Backbone.View.extend({
             var formdata = $("#email_pdf_form").serializeObject();
             
             $(event.currentTarget).parents(".ui-dialog-content").dialog("close");
-            
+            clicky.log("Emailed a pdf");
             $.ajax({
                 url: GLOBALS.server_base + "pdf/email",
                 data: formdata,
                 dataType: "json",
                 type: "POST",
                 success: function( data ){
-                    clicky.log("Emailed a pdf");
+                    
                      $.jGrowl("Email sent successfully",{  theme: 'success', position: "top-right"});   
                 }
             })
@@ -561,7 +562,7 @@ proposal_form_view = Backbone.View.extend({
         client: null,
         initialize: function(){
             var that = this;
-            
+            clicky.log("Editing a proposal");
             $("body").append("<div class='proposal_preview_container'><div style='' class='proposalcontainer proposal_preview container'>Yo</div></div>");
 
             $.when( this.get_id() ).then( $.proxy( function(data){
