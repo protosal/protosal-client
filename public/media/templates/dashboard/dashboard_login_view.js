@@ -32,15 +32,11 @@ dashboard_login_view = Backbone.View.extend({
   var clicky_custom = {};
   clicky_custom.session = {
     username: "sex",
-    email: "sex",
+    email: GLOBALS.username,
     gender: "black"
   };
-  console.log(clicky_custom);
-  
   clicky_custom.timer = 200;
-  delete clicky;
   clicky.init(66408528);
-console.log("well that worked");
 clicky.log("logged in");
                     $(".userui").fadeIn(300);
                     redirect( "dashboard/home" );
