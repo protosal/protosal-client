@@ -29,7 +29,11 @@ dashboard_login_view = Backbone.View.extend({
                     mpmetrics.identify(GLOBALS.username);
                     mpmetrics.track("Account Login", { email: GLOBALS.username } );
 
-
+  var clicky_custom = {};
+  clicky_custom.session = {
+    username: GLOBALS.username,
+    email: GLOBALS.username
+  };
   
                     clicky.log("User logged in:" + GLOBALS.username);
 
