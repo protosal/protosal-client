@@ -1004,3 +1004,7 @@ color: #fff;
 background: none !important;
 border: none !important;
 }
+
+.demopic:hover {
+    opacity: 0.5;
+}

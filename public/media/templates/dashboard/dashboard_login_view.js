@@ -54,11 +54,10 @@ dashboard_login_view = Backbone.View.extend({
                 contentType: "application/json",
                 success: function(data, headers){
                     $("#username").val($("#email").val());
-                    mpmetrics.track("New Registration", { email: $("#email").val() });
                     setTimeout( function(){$("#password").focus();}, 300);
                     $(".userpage").click();
                        $.jGrowl("Thanks for signing up, check your inbox for activation",{  theme: 'green', position: "top-right"});
-                    cicky.log("User registered:" +$("#email").val());
+                    clicky.log("User registered: " +$("#email").val());
                 }
             });
             return false;
@@ -81,14 +80,14 @@ dashboard_login_view = Backbone.View.extend({
     $(".userpage").click( function(){
         tab = $(this).attr("href");
         if( $(this).hasClass("register") ){
-            mpmetrics.track("Register button clicked");
+           clicky.log("Register button clicked");
            $("#tab-1").removeClass("active-tab"); 
            $("#tab-2").addClass("active-tab"); 
            $(this).removeClass("register").addClass("login").addClass("orange").removeClass("blue");
            $(this).text("Back to Login");
            setTimeout( function (){     $("#email").focus(); }, 100);
         } else {
-            mpmetrics.track("Back to login clicked");
+           clicky.log("Back to login clicked");
            $("#tab-2").removeClass("active-tab"); 
            $("#tab-1").addClass("active-tab"); 
            

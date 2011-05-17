@@ -55,8 +55,9 @@
                 <div style="clear:both;"></div>
 
             </div> <!--  #contentcontainer -->
-            <div class="footer" style="text-align: center; padding-top: 40px;padding-bottom: 5px; color: #555;">
-            &copy;2010–2011 Protosal, Inc. | Version 2.1
+                
+            <div class="footer" style="margin-bottom: 30px; text-align: center; padding-top: 40px;padding-bottom: 5px; color: #555;">
+            &copy;2010–2011 Protosal | A project by <a href="http://thomasdavis.github.com/about.html" target="_blank">Thomas Davis</a> and <a href="http://twitter.com/ryan_kirkman" target="_blank">Ryan Kirkman</a>.
             </div>
         </div> <!-- #Container  -->
         <div class="containerspace" style="display:none;">
@@ -95,28 +96,7 @@
 
 
 
-<!-- First include the script: -->
-<script type="text/javascript">
-var mp_protocol = (("https:" == document.location.protocol) ? "https://" : "http://");
-document.write(unescape("%3Cscript src='" + mp_protocol + "api.mixpanel.com/site_media/js/api/mixpanel.js' type='text/javascript'%3E%3C/script%3E"));
-</script>
 
-<!-- Initialize it with your project token -->
-<script type="text/javascript">
-try {
-    var mpmetrics = new MixpanelLib("fdfd2a9ead29c1f50b84eb6dd2810257");
-} catch(err) {
-    var null_fn = function () {};
-    var mpmetrics = { 
-        track: null_fn, 
-        track_funnel: null_fn, 
-        register: null_fn, 
-        register_once: null_fn,
-        register_funnel: null_fn,
-        identify: null_fn
-    };
-}
-</script>
 
 
     </body>    
