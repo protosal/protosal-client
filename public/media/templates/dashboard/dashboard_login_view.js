@@ -26,8 +26,6 @@ dashboard_login_view = Backbone.View.extend({
                     GLOBALS.session = true;
                     
                     GLOBALS.username = $("#username").val(); // never use for transactions
-                    mpmetrics.identify(GLOBALS.username);
-                    mpmetrics.track("Account Login", { email: GLOBALS.username } );
 
   var clicky_custom = {};
   clicky_custom.session = {
@@ -69,7 +67,6 @@ dashboard_login_view = Backbone.View.extend({
     setTimeout( function (){ 
         if( options.route_id ) {   
             $("#password").focus();
-            mpmetrics.track("Account Activated", { email: options.route_id } );
             $.jGrowl("Your account has been activated",{  theme: 'green', position: "top-right"});
         } else {
             $("#username").focus();
