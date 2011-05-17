@@ -66,14 +66,18 @@ dashboard_login_view = Backbone.View.extend({
     
     setTimeout( function (){ 
         if( options.route_id ) {   
-            $("#password").focus();
+            $("#password").focus();y
             $.jGrowl("Your account has been activated",{  theme: 'green', position: "top-right"});
         } else {
             $("#username").focus();
         }  
          }, 100);
     $("button").button();
-  
+     $("#demoaccount").click( function(){
+        $("#username").val("testing@protosal.com");
+        $("#password").val("flying");
+        return false;
+    });
     $(".userpage").click( function(){
         tab = $(this).attr("href");
         if( $(this).hasClass("register") ){
