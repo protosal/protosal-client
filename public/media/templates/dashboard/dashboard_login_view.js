@@ -78,7 +78,7 @@ dashboard_login_view = Backbone.View.extend({
          }, 100);
     $("button").button();
     $("#demoaccount").click( function(){
-        $("#username").val("beta@protosal.com");
+        $("#username").val("testing@protosal.com");
         $("#password").val("flying");
         return false;
     });
