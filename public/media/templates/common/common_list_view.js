@@ -139,7 +139,7 @@ common_list_view =  Backbone.View.extend({
                     url: GLOBALS.server_base + "data/newinstance/" + id,
                     dataType: "json",
                     success: function( data ) {
-                        redirect("proposal/edit/"+data.id);
+                        redirect("proposal/edit/"+data._id);
                     }
                 });
                 return false;
