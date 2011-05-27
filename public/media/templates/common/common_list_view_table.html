@@ -30,8 +30,10 @@
                     class = "";
                     if( _(col).isInt() ){
                         class = "int";
+                    } else {
+                        col = _(col).escapeHTML();
                     }
-                    col = _(col).escapeHTML();
+                    
                     if( key == "status" ){
                         col = _.capitalize(col);
                     }
