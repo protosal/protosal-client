@@ -153,20 +153,27 @@ Thank you
 
 
 <script type="text/template" id="section_fee_table_template">
+    <% totalprice = 0; %>
 <table id="hor-minimalist-b">
     <thead>
         <tr>
             <th>Fee Name</th>
-            <th>Fee Price</th>
+            <th  style="text-align: center;">Fee Price</th>
         </tr>
     </thead>
     <tbody>
-        <% _.each( fees, function(fee) { %>
+        <% _.each( fees, function(fee) { 
+            totalprice += (fee.doc.price*1);
+            %>
             <tr>
                 <td><%= fee.doc.name %></td>
-                <td><%= fee.doc.price %></td>
+                <td style="text-align: center;">$<%= fee.doc.price %></td>
             </tr>
         <% }); %>
+           <tr>
+                <td><strong>Total</strong></td>
+                <td style="text-align: center;">$<%= totalprice %></td>
+            </tr>
     </tbody>
 </table>
 </script>
