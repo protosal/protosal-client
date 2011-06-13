@@ -188,7 +188,9 @@ Thank you
     <%= details.get("companyshortdescription") != "" && typeof details.get("companyshortdescription") != "undefined" ? details.get("companyshortdescription") : "Set your header details under the Setting tab" %><br />
     <br />
     <strong>Ph</strong>: <span style="display:none">_</span><%= details.get("phone") != "" && typeof details.get("phone") != "undefined" ? details.get("phone") : "1800 EXAMPLE" %><span style="display:none">_</span><br /> 
-    <strong>Fx</strong>: <%= details.get("fax") != "" && typeof details.get("fax") != "undefined" ? details.get("fax") : "1300 EXAMPLE" %>
+    
+    <%= details.get("fax") != "" && typeof details.get("fax") != "undefined" ? "<strong>Fx</strong>: " + details.get("fax") : "" %>
+    
 </script>
 <script type="text/template" id="proposal_preview">
             <div class="header">
