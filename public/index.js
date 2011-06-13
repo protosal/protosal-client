@@ -212,7 +212,9 @@
                 formdata.type = savebuttoncontroller;
                 
                 if(event.data.templateid == "" ) {
-                     $.jGrowl("Saved Template",{  theme: 'green', position: "top-right"});  
+                    if(  savebuttoncontroller != "client" ) {
+                     $.jGrowl("Saved Template",{  theme: 'green', position: "top-right"}); 
+                 } 
                     formdata.template    = true;
                 }
                 
