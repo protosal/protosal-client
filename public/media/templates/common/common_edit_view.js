@@ -153,7 +153,10 @@ common_edit_view = Backbone.View.extend({
                 }
 
 
-
+        GLOBALS["autosave"+options.controller] = setInterval( function(){
+    $("." + options.controller + "_save").trigger("click", [true]);
+                        console.log("saved");
+                    }, 60000 );
             }
 
         });

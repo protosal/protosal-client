@@ -7,6 +7,7 @@
             "action": null,
             "server_base": location.protocol + "//" + window.location.hostname + "/api/",
             "session": false,
+            "autosave": null
         };
         // Default ckeditor options are defined here until we get a configuration file
         ckeditor_options = {  
@@ -186,7 +187,7 @@
             
             $(".back-button").live("click", function() { history.go(-1); return false;  });
             $(".close-button").live("click", function(event) {  $(event.currentTarget).parents(".ui-dialog-content").dialog("close"); return false; });
-            window.saveclickHandler =  function(event){
+            window.saveclickHandler =  function(event, autosave){
 
                 var formdata = null;
 
@@ -210,10 +211,15 @@
                 }
                 formdata.template = false;
                 formdata.type = savebuttoncontroller;
-                
+                if(autosave){
+                    $.jGrowl("Auto Saved " + _.capitalize(formdata.type),{  theme: 'green', position: "top-right"}); 
+                } 
                 if(event.data.templateid == "" ) {
+                    
                     if(  savebuttoncontroller != "client" ) {
+                        if(!autosave){
                      $.jGrowl("Saved Template",{  theme: 'green', position: "top-right"}); 
+                 }
                  } 
                     formdata.template    = true;
                 }
@@ -232,7 +238,6 @@
                     }
                     type = "PUT";
                 }
-               
                 // Do the request and on success call custom success function
                 $.ajax( url, {
                     dataType: "json",
@@ -241,7 +246,10 @@
                     data: $.toJSON(formdata),
                     success: function(data){
                         _.extend( data, formdata );
-                        event.data.success(data);
+                        if(!autosave){
+                            event.data.success(data);
+                            clearInterval(GLOBALS["autosave"+savebuttoncontroller])
+                        }
                     }
                 });
                 
