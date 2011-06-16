@@ -659,7 +659,6 @@ proposal_form_view = Backbone.View.extend({
                 client_variables["client_" + key] = value;
             });
             variables = _.extend(variables, client_variables);
-            console.log(variables);
             return variables;
         },
         replaceVariables: function( inputvalue ){
